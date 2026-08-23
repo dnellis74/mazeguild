@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { aStarPath } from "./maze";
 import { runDungeon } from "./run";
 import type { SrdCharacter } from "./types";
 
@@ -29,5 +30,13 @@ describe("runDungeon", () => {
     const a = runDungeon({ seed: 42, party });
     const b = runDungeon({ seed: 43, party });
     expect(JSON.stringify(a.maze)).not.toBe(JSON.stringify(b.maze));
+  });
+
+  it("follows the A* shortest path without revisiting cells", () => {
+    const result = runDungeon({ seed: 42, party });
+    const route = aStarPath(result.maze, result.maze.entrance, result.maze.exit);
+    const expected = route.map((p) => `${p.x},${p.y}`);
+    expect(result.visited).toEqual(expected.slice(0, result.visited.length));
+    expect(result.stepsTaken).toBe(result.visited.length - 1);
   });
 });

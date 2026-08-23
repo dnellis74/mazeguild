@@ -58,6 +58,7 @@ export type PartySnapshot = {
   hp: number;
   maxHp: number;
   ac: number;
+  xp: number;
 };
 
 export type LogEvent =
@@ -108,27 +109,50 @@ export type LogEvent =
       survivors: string[];
     };
 
-/** Loose SRD 5.1 stat block as emitted by tools/srd_character_generator.py */
+/** Loose SRD 5.1 stat block as emitted by src/gen (and the old Python tool). */
 export type SrdCharacter = {
   name?: string;
   class: string;
   race: string;
   subrace?: string | null;
-  meta?: { level?: number };
+  background?: string;
+  alignment?: string;
+  meta?: { source?: string; level?: number; note?: string };
   ability_scores: Record<string, { score: number; modifier?: string }>;
   proficiency_bonus: string | number;
-  hit_points: { value: number };
-  armor_class: { value: number };
+  saving_throws?: Record<string, string>;
+  saving_throw_proficiencies?: string[];
+  skill_proficiencies?: string[];
+  armor_proficiencies?: string[];
+  weapon_proficiencies?: string[];
+  tool_proficiencies?: string[];
+  languages?: string[];
+  hit_points: { value: number; hit_die?: string; note?: string | null };
+  armor_class: { value: number; calculation?: string };
+  speed?: string;
   racial_traits?: string[];
+  draconic_ancestry?: {
+    dragon: string;
+    damage_type: string;
+    breath_weapon: string;
+  } | null;
+  high_elf_bonus_cantrip?: string | null;
+  tiefling_cantrip?: string | null;
   class_features_level_1?: string[];
   spellcasting?: {
     ability?: string;
+    spell_save_dc?: number;
+    spell_attack_bonus?: string;
     spell_slots?: Record<string, number>;
     spells_prepared?: string[];
     spells_known?: string[];
     cantrips_known?: string[];
+    spellbook?: string[];
+    spells_prepared_today?: string[];
+    prepared_count_formula?: string;
   } | null;
   equipment?: {
+    from_class?: string[];
     from_class_detail?: Array<{
       item: string;
       stats?: {
@@ -138,7 +162,9 @@ export type SrdCharacter = {
         properties?: string[];
       };
     }>;
+    from_background?: string[];
   };
+  background_feature?: { name: string; text: string };
 };
 
 export type DungeonInput = {

@@ -17,8 +17,11 @@ export function PartyRoster({ party }: { party: PartySnapshot[] }) {
                 {p.hp}/{p.maxHp}
               </span>
             </div>
-            <div className="truncate text-[11px] text-amber-600/80 phone-land:hidden">
-              {p.race} {p.class}
+            <div className="flex justify-between gap-2 text-amber-600/80">
+              <span className="truncate">
+                {p.race} {p.class}
+              </span>
+              <span className="shrink-0 tabular-nums">XP {p.xp}</span>
             </div>
             <div className="mt-1.5 h-1.5 bg-amber-950 phone-land:hidden">
               <div

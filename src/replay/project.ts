@@ -116,6 +116,9 @@ export function projectFrame(
         inCombat = false;
         enemies = [];
         score = e.xpTotal;
+        party = party.map((p) =>
+          p.hp > 0 ? { ...p, xp: e.xpTotal } : p,
+        );
         break;
       case "exit_reached":
         outcome = "exit";

@@ -25,3 +25,23 @@ export function dice(rng: Rng, count: number, sides: number): number {
 export function pickIndex(rng: Rng, length: number): number {
   return Math.floor(rng() * length);
 }
+
+export function pick<T>(rng: Rng, items: readonly T[]): T {
+  if (items.length === 0) {
+    throw new Error("pick() called with an empty list");
+  }
+  return items[pickIndex(rng, items.length)]!;
+}
+
+/** Sample `n` items without replacement. Order is pick order, not sorted. */
+export function sample<T>(rng: Rng, items: readonly T[], n: number): T[] {
+  const pool = items.slice();
+  const take = Math.min(n, pool.length);
+  const out: T[] = [];
+  for (let i = 0; i < take; i++) {
+    const idx = pickIndex(rng, pool.length);
+    out.push(pool[idx]!);
+    pool.splice(idx, 1);
+  }
+  return out;
+}

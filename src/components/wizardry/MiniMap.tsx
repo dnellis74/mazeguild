@@ -1,6 +1,8 @@
 import type { DungeonResult } from "@/sim/types";
 import type { ReplayFrame } from "@/replay/project";
 
+const WALL = "#c48a30";
+
 export function MiniMap({
   maze,
   frame,
@@ -16,11 +18,13 @@ export function MiniMap({
     <svg
       viewBox={`0 0 ${size} ${size}`}
       className="aspect-square w-full max-w-[8.5rem] shrink-0 border border-amber-700/60 bg-black phone-land:max-w-[9rem] sm:max-w-[12.5rem]"
-      aria-label="Maze map"
+      aria-label="Explored maze map"
     >
       {maze.grid.flatMap((row, y) =>
         row.map((c, x) => {
           const key = `${x},${y}`;
+          if (!seen.has(key)) return null;
+
           const isHere = frame.pos.x === x && frame.pos.y === y;
           const isExit = maze.exit.x === x && maze.exit.y === y;
           const isEnt = maze.entrance.x === x && maze.entrance.y === y;
@@ -30,9 +34,7 @@ export function MiniMap({
               ? "#3d8"
               : isEnt
                 ? "#68a"
-                : seen.has(key)
-                  ? "#3a2a10"
-                  : "#0a0804";
+                : "#3a2a10";
           const px = x * cell;
           const py = y * cell;
           return (
@@ -44,7 +46,27 @@ export function MiniMap({
                   y1={py}
                   x2={px + cell}
                   y2={py}
-                  stroke="#c48a30"
+                  stroke={WALL}
+                  strokeWidth="1"
+                />
+              )}
+              {c.e && (
+                <line
+                  x1={px + cell}
+                  y1={py}
+                  x2={px + cell}
+                  y2={py + cell}
+                  stroke={WALL}
+                  strokeWidth="1"
+                />
+              )}
+              {c.s && (
+                <line
+                  x1={px}
+                  y1={py + cell}
+                  x2={px + cell}
+                  y2={py + cell}
+                  stroke={WALL}
                   strokeWidth="1"
                 />
               )}
@@ -54,27 +76,7 @@ export function MiniMap({
                   y1={py}
                   x2={px}
                   y2={py + cell}
-                  stroke="#c48a30"
-                  strokeWidth="1"
-                />
-              )}
-              {c.s && y === maze.size - 1 && (
-                <line
-                  x1={px}
-                  y1={py + cell}
-                  x2={px + cell}
-                  y2={py + cell}
-                  stroke="#c48a30"
-                  strokeWidth="1"
-                />
-              )}
-              {c.e && x === maze.size - 1 && (
-                <line
-                  x1={px + cell}
-                  y1={py}
-                  x2={px + cell}
-                  y2={py + cell}
-                  stroke="#c48a30"
+                  stroke={WALL}
                   strokeWidth="1"
                 />
               )}

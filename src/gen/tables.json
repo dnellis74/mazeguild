@@ -1,0 +1,2075 @@
+{
+  "ABILITIES": [
+    "STR",
+    "DEX",
+    "CON",
+    "INT",
+    "WIS",
+    "CHA"
+  ],
+  "ALIGNMENTS": [
+    "Lawful Good",
+    "Neutral Good",
+    "Chaotic Good",
+    "Lawful Neutral",
+    "Neutral",
+    "Chaotic Neutral",
+    "Lawful Evil",
+    "Neutral Evil",
+    "Chaotic Evil"
+  ],
+  "STANDARD_LANGUAGES": [
+    "Common",
+    "Dwarvish",
+    "Elvish",
+    "Giant",
+    "Gnomish",
+    "Goblin",
+    "Halfling",
+    "Orc"
+  ],
+  "EXOTIC_LANGUAGES": [
+    "Abyssal",
+    "Celestial",
+    "Draconic",
+    "Deep Speech",
+    "Infernal",
+    "Primordial",
+    "Sylvan",
+    "Undercommon"
+  ],
+  "ALL_CHOOSABLE_LANGUAGES": [
+    "Common",
+    "Dwarvish",
+    "Elvish",
+    "Giant",
+    "Gnomish",
+    "Goblin",
+    "Halfling",
+    "Orc",
+    "Abyssal",
+    "Celestial",
+    "Draconic",
+    "Deep Speech",
+    "Infernal",
+    "Primordial",
+    "Sylvan",
+    "Undercommon"
+  ],
+  "ALL_SKILLS": [
+    "Acrobatics",
+    "Animal Handling",
+    "Arcana",
+    "Athletics",
+    "Deception",
+    "History",
+    "Insight",
+    "Intimidation",
+    "Investigation",
+    "Medicine",
+    "Nature",
+    "Perception",
+    "Performance",
+    "Persuasion",
+    "Religion",
+    "Sleight of Hand",
+    "Stealth",
+    "Survival"
+  ],
+  "MUSICAL_INSTRUMENTS": [
+    "Bagpipes",
+    "Drum",
+    "Dulcimer",
+    "Flute",
+    "Lute",
+    "Lyre",
+    "Horn",
+    "Pan flute",
+    "Shawm",
+    "Viol"
+  ],
+  "ARTISANS_TOOLS": [
+    "Alchemist's supplies",
+    "Brewer's supplies",
+    "Calligrapher's supplies",
+    "Carpenter's tools",
+    "Cartographer's tools",
+    "Cobbler's tools",
+    "Cook's utensils",
+    "Glassblower's tools",
+    "Jeweler's tools",
+    "Leatherworker's tools",
+    "Mason's tools",
+    "Painter's supplies",
+    "Potter's tools",
+    "Smith's tools",
+    "Tinker's tools",
+    "Weaver's tools",
+    "Woodcarver's tools"
+  ],
+  "DRACONIC_ANCESTRY": {
+    "Black": {
+      "damage_type": "Acid",
+      "breath_weapon": "5 by 30 ft. line (Dex. save)"
+    },
+    "Blue": {
+      "damage_type": "Lightning",
+      "breath_weapon": "5 by 30 ft. line (Dex. save)"
+    },
+    "Brass": {
+      "damage_type": "Fire",
+      "breath_weapon": "5 by 30 ft. line (Dex. save)"
+    },
+    "Bronze": {
+      "damage_type": "Lightning",
+      "breath_weapon": "5 by 30 ft. line (Dex. save)"
+    },
+    "Copper": {
+      "damage_type": "Acid",
+      "breath_weapon": "5 by 30 ft. line (Dex. save)"
+    },
+    "Gold": {
+      "damage_type": "Fire",
+      "breath_weapon": "15 ft. cone (Dex. save)"
+    },
+    "Green": {
+      "damage_type": "Poison",
+      "breath_weapon": "15 ft. cone (Con. save)"
+    },
+    "Red": {
+      "damage_type": "Fire",
+      "breath_weapon": "15 ft. cone (Dex. save)"
+    },
+    "Silver": {
+      "damage_type": "Cold",
+      "breath_weapon": "15 ft. cone (Con. save)"
+    },
+    "White": {
+      "damage_type": "Cold",
+      "breath_weapon": "15 ft. cone (Con. save)"
+    }
+  },
+  "RACES": {
+    "Dwarf": {
+      "ability_bonus": {
+        "CON": 2
+      },
+      "size": "Medium",
+      "speed": 25,
+      "languages": [
+        "Common",
+        "Dwarvish"
+      ],
+      "weapon_proficiencies": [
+        "battleaxe",
+        "handaxe",
+        "light hammer",
+        "warhammer"
+      ],
+      "tool_proficiency_choice": [
+        "Smith's tools",
+        "Brewer's supplies",
+        "Mason's tools"
+      ],
+      "traits": [
+        "Darkvision (60 ft.)",
+        "Dwarven Resilience: advantage on saving throws against poison, resistance to poison damage",
+        "Dwarven Combat Training: proficiency with battleaxe, handaxe, light hammer, warhammer",
+        "Tool Proficiency: proficiency with one of smith's tools, brewer's supplies, or mason's tools",
+        "Stonecunning: double proficiency bonus on History checks about the origin of stonework"
+      ],
+      "subraces": {
+        "Hill Dwarf": {
+          "ability_bonus": {
+            "WIS": 1
+          },
+          "hp_bonus_per_level": 1,
+          "traits": [
+            "Dwarven Toughness: hit point maximum increases by 1, and by 1 again every level"
+          ]
+        }
+      }
+    },
+    "Elf": {
+      "ability_bonus": {
+        "DEX": 2
+      },
+      "size": "Medium",
+      "speed": 30,
+      "languages": [
+        "Common",
+        "Elvish"
+      ],
+      "skill_bonus": [
+        "Perception"
+      ],
+      "traits": [
+        "Darkvision (60 ft.)",
+        "Keen Senses: proficiency in the Perception skill",
+        "Fey Ancestry: advantage on saving throws against being charmed, immune to magical sleep",
+        "Trance: 4 hours of trance-meditation substitutes for 8 hours of sleep"
+      ],
+      "subraces": {
+        "High Elf": {
+          "ability_bonus": {
+            "INT": 1
+          },
+          "weapon_proficiencies": [
+            "longsword",
+            "shortsword",
+            "shortbow",
+            "longbow"
+          ],
+          "cantrip_from_wizard_list": true,
+          "extra_language": true,
+          "traits": [
+            "Elf Weapon Training: proficiency with longsword, shortsword, shortbow, longbow",
+            "Cantrip: one wizard cantrip of choice (Intelligence is the spellcasting ability)",
+            "Extra Language: one extra language of choice"
+          ]
+        }
+      }
+    },
+    "Halfling": {
+      "ability_bonus": {
+        "DEX": 2
+      },
+      "size": "Small",
+      "speed": 25,
+      "languages": [
+        "Common",
+        "Halfling"
+      ],
+      "traits": [
+        "Lucky: reroll a natural 1 on an attack roll, ability check, or saving throw",
+        "Brave: advantage on saving throws against being frightened",
+        "Halfling Nimbleness: can move through the space of any creature that is a size larger"
+      ],
+      "subraces": {
+        "Lightfoot Halfling": {
+          "ability_bonus": {
+            "CHA": 1
+          },
+          "traits": [
+            "Naturally Stealthy: can hide even when obscured only by a creature one size larger"
+          ]
+        }
+      }
+    },
+    "Human": {
+      "ability_bonus": {
+        "STR": 1,
+        "DEX": 1,
+        "CON": 1,
+        "INT": 1,
+        "WIS": 1,
+        "CHA": 1
+      },
+      "size": "Medium",
+      "speed": 30,
+      "languages": [
+        "Common"
+      ],
+      "extra_language": true,
+      "traits": [
+        "Ability scores each increase by 1",
+        "One extra language of choice"
+      ],
+      "subraces": {}
+    },
+    "Dragonborn": {
+      "ability_bonus": {
+        "STR": 2,
+        "CHA": 1
+      },
+      "size": "Medium",
+      "speed": 30,
+      "languages": [
+        "Common",
+        "Draconic"
+      ],
+      "traits": [
+        "Draconic Ancestry: choose a dragon type, determining breath weapon and damage resistance",
+        "Breath Weapon: action to exhale energy in the shape/damage type of draconic ancestry; save DC = 8 + Con modifier + proficiency bonus; 2d6 damage (half on success) at level 1; usable once per short or long rest",
+        "Damage Resistance to the damage type of draconic ancestry"
+      ],
+      "subraces": {}
+    },
+    "Gnome": {
+      "ability_bonus": {
+        "INT": 2
+      },
+      "size": "Small",
+      "speed": 25,
+      "languages": [
+        "Common",
+        "Gnomish"
+      ],
+      "traits": [
+        "Darkvision (60 ft.)",
+        "Gnome Cunning: advantage on Intelligence, Wisdom, and Charisma saving throws against magic"
+      ],
+      "subraces": {
+        "Rock Gnome": {
+          "ability_bonus": {
+            "CON": 1
+          },
+          "tool_proficiencies": [
+            "Tinker's tools"
+          ],
+          "traits": [
+            "Artificer's Lore: double proficiency bonus on History checks about magic items, alchemical objects, or technological devices",
+            "Tinker: proficiency with tinker's tools; can build a Tiny clockwork device (clockwork toy, fire starter, or music box) with 1 hour and 10 gp of materials"
+          ]
+        }
+      }
+    },
+    "Half-Elf": {
+      "ability_bonus": {
+        "CHA": 2
+      },
+      "ability_bonus_choice": {
+        "count": 2,
+        "amount": 1,
+        "exclude": [
+          "CHA"
+        ]
+      },
+      "size": "Medium",
+      "speed": 30,
+      "languages": [
+        "Common",
+        "Elvish"
+      ],
+      "extra_language": true,
+      "skill_choice": {
+        "count": 2,
+        "pool": null
+      },
+      "traits": [
+        "Darkvision (60 ft.)",
+        "Fey Ancestry: advantage on saving throws against being charmed, immune to magical sleep",
+        "Skill Versatility: proficiency in two skills of choice"
+      ],
+      "subraces": {}
+    },
+    "Half-Orc": {
+      "ability_bonus": {
+        "STR": 2,
+        "CON": 1
+      },
+      "size": "Medium",
+      "speed": 30,
+      "languages": [
+        "Common",
+        "Orc"
+      ],
+      "skill_bonus": [
+        "Intimidation"
+      ],
+      "traits": [
+        "Darkvision (60 ft.)",
+        "Menacing: proficiency in the Intimidation skill",
+        "Relentless Endurance: when reduced to 0 HP but not killed outright, can drop to 1 HP instead (once per long rest)",
+        "Savage Attacks: on a melee critical hit, roll one extra weapon damage die"
+      ],
+      "subraces": {}
+    },
+    "Tiefling": {
+      "ability_bonus": {
+        "INT": 1,
+        "CHA": 2
+      },
+      "size": "Medium",
+      "speed": 30,
+      "languages": [
+        "Common",
+        "Infernal"
+      ],
+      "traits": [
+        "Darkvision (60 ft.)",
+        "Hellish Resistance: resistance to fire damage",
+        "Infernal Legacy: knows the thaumaturgy cantrip (Charisma is the spellcasting ability); hellish rebuke and darkness become available at higher levels"
+      ],
+      "subraces": {}
+    }
+  },
+  "CLASSES": {
+    "Barbarian": {
+      "hit_die": 12,
+      "saving_throws": [
+        "STR",
+        "CON"
+      ],
+      "armor_proficiencies": [
+        "Light armor",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Martial weapons"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Animal Handling",
+          "Athletics",
+          "Intimidation",
+          "Nature",
+          "Perception",
+          "Survival"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a greataxe",
+            "any martial melee weapon"
+          ]
+        },
+        {
+          "choose": [
+            "two handaxes",
+            "any simple weapon"
+          ]
+        },
+        {
+          "fixed": [
+            "Explorer's pack",
+            "4 javelins"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Rage",
+        "Unarmored Defense (10 + Dex mod + Con mod, no shield doesn't apply, shield still allowed)"
+      ],
+      "ability_priority": [
+        "STR",
+        "CON",
+        "DEX",
+        "WIS",
+        "CHA",
+        "INT"
+      ],
+      "unarmored_defense": "barbarian",
+      "spellcasting": null
+    },
+    "Bard": {
+      "hit_die": 8,
+      "saving_throws": [
+        "DEX",
+        "CHA"
+      ],
+      "armor_proficiencies": [
+        "Light armor"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Hand crossbows",
+        "Longswords",
+        "Rapiers",
+        "Shortswords"
+      ],
+      "tool_proficiencies": {
+        "choose": 3,
+        "pool": [
+          "Bagpipes",
+          "Drum",
+          "Dulcimer",
+          "Flute",
+          "Lute",
+          "Lyre",
+          "Horn",
+          "Pan flute",
+          "Shawm",
+          "Viol"
+        ],
+        "label": "musical instrument"
+      },
+      "skill_choice": {
+        "count": 3,
+        "pool": [
+          "Acrobatics",
+          "Animal Handling",
+          "Arcana",
+          "Athletics",
+          "Deception",
+          "History",
+          "Insight",
+          "Intimidation",
+          "Investigation",
+          "Medicine",
+          "Nature",
+          "Perception",
+          "Performance",
+          "Persuasion",
+          "Religion",
+          "Sleight of Hand",
+          "Stealth",
+          "Survival"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a rapier",
+            "a longsword",
+            "any simple weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a diplomat's pack",
+            "an entertainer's pack"
+          ]
+        },
+        {
+          "choose": [
+            "a lute",
+            "any other musical instrument"
+          ]
+        },
+        {
+          "fixed": [
+            "Leather armor",
+            "a dagger"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Spellcasting",
+        "Bardic Inspiration (d6)"
+      ],
+      "ability_priority": [
+        "CHA",
+        "DEX",
+        "CON",
+        "WIS",
+        "INT",
+        "STR"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": {
+        "ability": "CHA",
+        "type": "known",
+        "cantrips_known": 2,
+        "spells_known": 4,
+        "slots": {
+          "1": 2
+        }
+      }
+    },
+    "Cleric": {
+      "hit_die": 8,
+      "saving_throws": [
+        "WIS",
+        "CHA"
+      ],
+      "armor_proficiencies": [
+        "Light armor",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "History",
+          "Insight",
+          "Medicine",
+          "Persuasion",
+          "Religion"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a mace",
+            "a warhammer (if proficient)"
+          ]
+        },
+        {
+          "choose": [
+            "scale mail",
+            "leather armor",
+            "chain mail (if proficient)"
+          ]
+        },
+        {
+          "choose": [
+            "a light crossbow and 20 bolts",
+            "any simple weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a priest's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "A shield",
+            "a holy symbol"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Spellcasting",
+        "Divine Domain"
+      ],
+      "ability_priority": [
+        "WIS",
+        "CON",
+        "STR",
+        "CHA",
+        "DEX",
+        "INT"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": {
+        "ability": "WIS",
+        "type": "prepared",
+        "cantrips_known": 3,
+        "slots": {
+          "1": 2
+        }
+      }
+    },
+    "Druid": {
+      "hit_die": 8,
+      "saving_throws": [
+        "INT",
+        "WIS"
+      ],
+      "armor_proficiencies": [
+        "Light armor",
+        "Medium armor",
+        "Shields (non-metal only)"
+      ],
+      "weapon_proficiencies": [
+        "Clubs",
+        "Daggers",
+        "Darts",
+        "Javelins",
+        "Maces",
+        "Quarterstaffs",
+        "Scimitars",
+        "Sickles",
+        "Slings",
+        "Spears"
+      ],
+      "tool_proficiencies": [
+        "Herbalism kit"
+      ],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Arcana",
+          "Animal Handling",
+          "Insight",
+          "Medicine",
+          "Nature",
+          "Perception",
+          "Religion",
+          "Survival"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a wooden shield",
+            "any simple weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a scimitar",
+            "any simple melee weapon"
+          ]
+        },
+        {
+          "fixed": [
+            "Leather armor",
+            "an explorer's pack",
+            "a druidic focus"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Druidic",
+        "Spellcasting"
+      ],
+      "ability_priority": [
+        "WIS",
+        "CON",
+        "DEX",
+        "INT",
+        "CHA",
+        "STR"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": {
+        "ability": "WIS",
+        "type": "prepared",
+        "cantrips_known": 2,
+        "slots": {
+          "1": 2
+        }
+      }
+    },
+    "Fighter": {
+      "hit_die": 10,
+      "saving_throws": [
+        "STR",
+        "CON"
+      ],
+      "armor_proficiencies": [
+        "All armor",
+        "Shields"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Martial weapons"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Acrobatics",
+          "Animal Handling",
+          "Athletics",
+          "History",
+          "Insight",
+          "Intimidation",
+          "Perception",
+          "Survival"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "chain mail",
+            "leather armor, longbow, and 20 arrows"
+          ]
+        },
+        {
+          "choose": [
+            "a martial weapon and a shield",
+            "two martial weapons"
+          ]
+        },
+        {
+          "choose": [
+            "a light crossbow and 20 bolts",
+            "two handaxes"
+          ]
+        },
+        {
+          "choose": [
+            "a dungeoneer's pack",
+            "an explorer's pack"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Fighting Style",
+        "Second Wind"
+      ],
+      "ability_priority": [
+        "STR",
+        "CON",
+        "DEX",
+        "WIS",
+        "INT",
+        "CHA"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": null
+    },
+    "Monk": {
+      "hit_die": 8,
+      "saving_throws": [
+        "STR",
+        "DEX"
+      ],
+      "armor_proficiencies": [],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Shortswords"
+      ],
+      "tool_proficiencies": {
+        "choose": 1,
+        "pool": [
+          "Alchemist's supplies",
+          "Brewer's supplies",
+          "Calligrapher's supplies",
+          "Carpenter's tools",
+          "Cartographer's tools",
+          "Cobbler's tools",
+          "Cook's utensils",
+          "Glassblower's tools",
+          "Jeweler's tools",
+          "Leatherworker's tools",
+          "Mason's tools",
+          "Painter's supplies",
+          "Potter's tools",
+          "Smith's tools",
+          "Tinker's tools",
+          "Weaver's tools",
+          "Woodcarver's tools",
+          "Bagpipes",
+          "Drum",
+          "Dulcimer",
+          "Flute",
+          "Lute",
+          "Lyre",
+          "Horn",
+          "Pan flute",
+          "Shawm",
+          "Viol"
+        ],
+        "label": "artisan's tools or musical instrument"
+      },
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Acrobatics",
+          "Athletics",
+          "History",
+          "Insight",
+          "Religion",
+          "Stealth"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a shortsword",
+            "any simple weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a dungeoneer's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "10 darts"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Unarmored Defense (10 + Dex mod + Wis mod)",
+        "Martial Arts (1d4)"
+      ],
+      "ability_priority": [
+        "DEX",
+        "WIS",
+        "CON",
+        "STR",
+        "INT",
+        "CHA"
+      ],
+      "unarmored_defense": "monk",
+      "spellcasting": null
+    },
+    "Paladin": {
+      "hit_die": 10,
+      "saving_throws": [
+        "WIS",
+        "CHA"
+      ],
+      "armor_proficiencies": [
+        "All armor",
+        "Shields"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Martial weapons"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Athletics",
+          "Insight",
+          "Intimidation",
+          "Medicine",
+          "Persuasion",
+          "Religion"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a martial weapon and a shield",
+            "two martial weapons"
+          ]
+        },
+        {
+          "choose": [
+            "five javelins",
+            "any simple melee weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a priest's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "Chain mail",
+            "a holy symbol"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Divine Sense",
+        "Lay on Hands"
+      ],
+      "ability_priority": [
+        "STR",
+        "CHA",
+        "CON",
+        "WIS",
+        "DEX",
+        "INT"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": null
+    },
+    "Ranger": {
+      "hit_die": 10,
+      "saving_throws": [
+        "STR",
+        "DEX"
+      ],
+      "armor_proficiencies": [
+        "Light armor",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Martial weapons"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 3,
+        "pool": [
+          "Animal Handling",
+          "Athletics",
+          "Insight",
+          "Investigation",
+          "Nature",
+          "Perception",
+          "Stealth",
+          "Survival"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "scale mail",
+            "leather armor"
+          ]
+        },
+        {
+          "choose": [
+            "two shortswords",
+            "two simple melee weapons"
+          ]
+        },
+        {
+          "choose": [
+            "a dungeoneer's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "A longbow and a quiver of 20 arrows"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Favored Enemy",
+        "Natural Explorer"
+      ],
+      "ability_priority": [
+        "DEX",
+        "WIS",
+        "CON",
+        "STR",
+        "INT",
+        "CHA"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": null
+    },
+    "Rogue": {
+      "hit_die": 8,
+      "saving_throws": [
+        "DEX",
+        "INT"
+      ],
+      "armor_proficiencies": [
+        "Light armor"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons",
+        "Hand crossbows",
+        "Longswords",
+        "Rapiers",
+        "Shortswords"
+      ],
+      "tool_proficiencies": [
+        "Thieves' tools"
+      ],
+      "skill_choice": {
+        "count": 4,
+        "pool": [
+          "Acrobatics",
+          "Athletics",
+          "Deception",
+          "Insight",
+          "Intimidation",
+          "Investigation",
+          "Perception",
+          "Performance",
+          "Persuasion",
+          "Sleight of Hand",
+          "Stealth"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a rapier",
+            "a shortsword"
+          ]
+        },
+        {
+          "choose": [
+            "a shortbow and quiver of 20 arrows",
+            "a shortsword"
+          ]
+        },
+        {
+          "choose": [
+            "a burglar's pack",
+            "a dungeoneer's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "Leather armor",
+            "two daggers",
+            "thieves' tools"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Expertise",
+        "Sneak Attack (1d6)",
+        "Thieves' Cant"
+      ],
+      "ability_priority": [
+        "DEX",
+        "INT",
+        "CON",
+        "WIS",
+        "CHA",
+        "STR"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": null
+    },
+    "Sorcerer": {
+      "hit_die": 6,
+      "saving_throws": [
+        "CON",
+        "CHA"
+      ],
+      "armor_proficiencies": [],
+      "weapon_proficiencies": [
+        "Daggers",
+        "Darts",
+        "Slings",
+        "Quarterstaffs",
+        "Light crossbows"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Arcana",
+          "Deception",
+          "Insight",
+          "Intimidation",
+          "Persuasion",
+          "Religion"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a light crossbow and 20 bolts",
+            "any simple weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a component pouch",
+            "an arcane focus"
+          ]
+        },
+        {
+          "choose": [
+            "a dungeoneer's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "Two daggers"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Spellcasting",
+        "Sorcerous Origin"
+      ],
+      "ability_priority": [
+        "CHA",
+        "CON",
+        "DEX",
+        "WIS",
+        "INT",
+        "STR"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": {
+        "ability": "CHA",
+        "type": "known",
+        "cantrips_known": 4,
+        "spells_known": 2,
+        "slots": {
+          "1": 2
+        }
+      }
+    },
+    "Warlock": {
+      "hit_die": 8,
+      "saving_throws": [
+        "WIS",
+        "CHA"
+      ],
+      "armor_proficiencies": [
+        "Light armor"
+      ],
+      "weapon_proficiencies": [
+        "Simple weapons"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Arcana",
+          "Deception",
+          "History",
+          "Intimidation",
+          "Investigation",
+          "Nature",
+          "Religion"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a light crossbow and 20 bolts",
+            "any simple weapon"
+          ]
+        },
+        {
+          "choose": [
+            "a component pouch",
+            "an arcane focus"
+          ]
+        },
+        {
+          "choose": [
+            "a scholar's pack",
+            "a dungeoneer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "Leather armor",
+            "any simple weapon",
+            "two daggers"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Otherworldly Patron",
+        "Pact Magic"
+      ],
+      "ability_priority": [
+        "CHA",
+        "CON",
+        "DEX",
+        "WIS",
+        "INT",
+        "STR"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": {
+        "ability": "CHA",
+        "type": "known",
+        "cantrips_known": 2,
+        "spells_known": 2,
+        "slots": {
+          "1": 1
+        },
+        "pact_magic": true
+      }
+    },
+    "Wizard": {
+      "hit_die": 6,
+      "saving_throws": [
+        "INT",
+        "WIS"
+      ],
+      "armor_proficiencies": [],
+      "weapon_proficiencies": [
+        "Daggers",
+        "Darts",
+        "Slings",
+        "Quarterstaffs",
+        "Light crossbows"
+      ],
+      "tool_proficiencies": [],
+      "skill_choice": {
+        "count": 2,
+        "pool": [
+          "Arcana",
+          "History",
+          "Insight",
+          "Investigation",
+          "Medicine",
+          "Religion"
+        ]
+      },
+      "equipment_options": [
+        {
+          "choose": [
+            "a quarterstaff",
+            "a dagger"
+          ]
+        },
+        {
+          "choose": [
+            "a component pouch",
+            "an arcane focus"
+          ]
+        },
+        {
+          "choose": [
+            "a scholar's pack",
+            "an explorer's pack"
+          ]
+        },
+        {
+          "fixed": [
+            "A spellbook"
+          ]
+        }
+      ],
+      "level1_features": [
+        "Spellcasting",
+        "Arcane Recovery"
+      ],
+      "ability_priority": [
+        "INT",
+        "DEX",
+        "CON",
+        "WIS",
+        "CHA",
+        "STR"
+      ],
+      "unarmored_defense": null,
+      "spellcasting": {
+        "ability": "INT",
+        "type": "spellbook",
+        "cantrips_known": 3,
+        "spellbook_size": 6,
+        "slots": {
+          "1": 2
+        }
+      }
+    }
+  },
+  "BACKGROUND_ACOLYTE": {
+    "name": "Acolyte",
+    "skill_proficiencies": [
+      "Insight",
+      "Religion"
+    ],
+    "language_choice": 2,
+    "equipment": [
+      "A holy symbol",
+      "A prayer book or prayer wheel",
+      "5 sticks of incense",
+      "Vestments",
+      "A set of common clothes",
+      "A pouch containing 15 gp"
+    ],
+    "feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    }
+  },
+  "ARMOR": {
+    "Padded": {
+      "category": "light",
+      "cost": "5 gp",
+      "base_ac": 11,
+      "str_req": null,
+      "stealth_dis": true,
+      "weight": 8
+    },
+    "Leather": {
+      "category": "light",
+      "cost": "10 gp",
+      "base_ac": 11,
+      "str_req": null,
+      "stealth_dis": false,
+      "weight": 10
+    },
+    "Studded leather": {
+      "category": "light",
+      "cost": "45 gp",
+      "base_ac": 12,
+      "str_req": null,
+      "stealth_dis": false,
+      "weight": 13
+    },
+    "Hide": {
+      "category": "medium",
+      "cost": "10 gp",
+      "base_ac": 12,
+      "str_req": null,
+      "stealth_dis": false,
+      "weight": 12
+    },
+    "Chain shirt": {
+      "category": "medium",
+      "cost": "50 gp",
+      "base_ac": 13,
+      "str_req": null,
+      "stealth_dis": false,
+      "weight": 20
+    },
+    "Scale mail": {
+      "category": "medium",
+      "cost": "50 gp",
+      "base_ac": 14,
+      "str_req": null,
+      "stealth_dis": true,
+      "weight": 45
+    },
+    "Breastplate": {
+      "category": "medium",
+      "cost": "400 gp",
+      "base_ac": 14,
+      "str_req": null,
+      "stealth_dis": false,
+      "weight": 20
+    },
+    "Half plate": {
+      "category": "medium",
+      "cost": "750 gp",
+      "base_ac": 15,
+      "str_req": null,
+      "stealth_dis": true,
+      "weight": 40
+    },
+    "Ring mail": {
+      "category": "heavy",
+      "cost": "30 gp",
+      "base_ac": 14,
+      "str_req": null,
+      "stealth_dis": true,
+      "weight": 40
+    },
+    "Chain mail": {
+      "category": "heavy",
+      "cost": "75 gp",
+      "base_ac": 16,
+      "str_req": 13,
+      "stealth_dis": true,
+      "weight": 55
+    },
+    "Splint": {
+      "category": "heavy",
+      "cost": "200 gp",
+      "base_ac": 17,
+      "str_req": 15,
+      "stealth_dis": true,
+      "weight": 60
+    },
+    "Plate": {
+      "category": "heavy",
+      "cost": "1500 gp",
+      "base_ac": 18,
+      "str_req": 15,
+      "stealth_dis": true,
+      "weight": 65
+    }
+  },
+  "SHIELD_AC_BONUS": 2,
+  "WEAPONS": {
+    "club": {
+      "cost": "1 sp",
+      "damage": "1d4 bludgeoning",
+      "weight": 2,
+      "properties": [
+        "Light"
+      ]
+    },
+    "dagger": {
+      "cost": "2 gp",
+      "damage": "1d4 piercing",
+      "weight": 1,
+      "properties": [
+        "Finesse",
+        "Light",
+        "Thrown (20/60)"
+      ]
+    },
+    "greatclub": {
+      "cost": "2 sp",
+      "damage": "1d8 bludgeoning",
+      "weight": 10,
+      "properties": [
+        "Two-handed"
+      ]
+    },
+    "handaxe": {
+      "cost": "5 gp",
+      "damage": "1d6 slashing",
+      "weight": 2,
+      "properties": [
+        "Light",
+        "Thrown (20/60)"
+      ]
+    },
+    "javelin": {
+      "cost": "5 sp",
+      "damage": "1d6 piercing",
+      "weight": 2,
+      "properties": [
+        "Thrown (30/120)"
+      ]
+    },
+    "light hammer": {
+      "cost": "2 gp",
+      "damage": "1d4 bludgeoning",
+      "weight": 2,
+      "properties": [
+        "Light",
+        "Thrown (20/60)"
+      ]
+    },
+    "mace": {
+      "cost": "5 gp",
+      "damage": "1d6 bludgeoning",
+      "weight": 4,
+      "properties": []
+    },
+    "quarterstaff": {
+      "cost": "2 sp",
+      "damage": "1d6 bludgeoning",
+      "weight": 4,
+      "properties": [
+        "Versatile (1d8)"
+      ]
+    },
+    "sickle": {
+      "cost": "1 gp",
+      "damage": "1d4 slashing",
+      "weight": 2,
+      "properties": [
+        "Light"
+      ]
+    },
+    "spear": {
+      "cost": "1 gp",
+      "damage": "1d6 piercing",
+      "weight": 3,
+      "properties": [
+        "Thrown (20/60)",
+        "Versatile (1d8)"
+      ]
+    },
+    "light crossbow": {
+      "cost": "25 gp",
+      "damage": "1d8 piercing",
+      "weight": 5,
+      "properties": [
+        "Ammunition (80/320)",
+        "Loading",
+        "Two-handed"
+      ]
+    },
+    "dart": {
+      "cost": "5 cp",
+      "damage": "1d4 piercing",
+      "weight": 0.25,
+      "properties": [
+        "Finesse",
+        "Thrown (20/60)"
+      ]
+    },
+    "shortbow": {
+      "cost": "25 gp",
+      "damage": "1d6 piercing",
+      "weight": 2,
+      "properties": [
+        "Ammunition (80/320)",
+        "Two-handed"
+      ]
+    },
+    "sling": {
+      "cost": "1 sp",
+      "damage": "1d4 bludgeoning",
+      "weight": 0,
+      "properties": [
+        "Ammunition (30/120)"
+      ]
+    },
+    "battleaxe": {
+      "cost": "10 gp",
+      "damage": "1d8 slashing",
+      "weight": 4,
+      "properties": [
+        "Versatile (1d10)"
+      ]
+    },
+    "flail": {
+      "cost": "10 gp",
+      "damage": "1d8 bludgeoning",
+      "weight": 2,
+      "properties": []
+    },
+    "glaive": {
+      "cost": "20 gp",
+      "damage": "1d10 slashing",
+      "weight": 6,
+      "properties": [
+        "Heavy",
+        "Reach",
+        "Two-handed"
+      ]
+    },
+    "greataxe": {
+      "cost": "30 gp",
+      "damage": "1d12 slashing",
+      "weight": 7,
+      "properties": [
+        "Heavy",
+        "Two-handed"
+      ]
+    },
+    "greatsword": {
+      "cost": "50 gp",
+      "damage": "2d6 slashing",
+      "weight": 6,
+      "properties": [
+        "Heavy",
+        "Two-handed"
+      ]
+    },
+    "halberd": {
+      "cost": "20 gp",
+      "damage": "1d10 slashing",
+      "weight": 6,
+      "properties": [
+        "Heavy",
+        "Reach",
+        "Two-handed"
+      ]
+    },
+    "lance": {
+      "cost": "10 gp",
+      "damage": "1d12 piercing",
+      "weight": 6,
+      "properties": [
+        "Reach",
+        "Special"
+      ]
+    },
+    "longsword": {
+      "cost": "15 gp",
+      "damage": "1d8 slashing",
+      "weight": 3,
+      "properties": [
+        "Versatile (1d10)"
+      ]
+    },
+    "maul": {
+      "cost": "10 gp",
+      "damage": "2d6 bludgeoning",
+      "weight": 10,
+      "properties": [
+        "Heavy",
+        "Two-handed"
+      ]
+    },
+    "morningstar": {
+      "cost": "15 gp",
+      "damage": "1d8 piercing",
+      "weight": 4,
+      "properties": []
+    },
+    "pike": {
+      "cost": "5 gp",
+      "damage": "1d10 piercing",
+      "weight": 18,
+      "properties": [
+        "Heavy",
+        "Reach",
+        "Two-handed"
+      ]
+    },
+    "rapier": {
+      "cost": "25 gp",
+      "damage": "1d8 piercing",
+      "weight": 2,
+      "properties": [
+        "Finesse"
+      ]
+    },
+    "scimitar": {
+      "cost": "25 gp",
+      "damage": "1d6 slashing",
+      "weight": 3,
+      "properties": [
+        "Finesse",
+        "Light"
+      ]
+    },
+    "shortsword": {
+      "cost": "10 gp",
+      "damage": "1d6 piercing",
+      "weight": 2,
+      "properties": [
+        "Finesse",
+        "Light"
+      ]
+    },
+    "trident": {
+      "cost": "5 gp",
+      "damage": "1d6 piercing",
+      "weight": 4,
+      "properties": [
+        "Thrown (20/60)",
+        "Versatile (1d8)"
+      ]
+    },
+    "war pick": {
+      "cost": "5 gp",
+      "damage": "1d8 piercing",
+      "weight": 2,
+      "properties": []
+    },
+    "warhammer": {
+      "cost": "15 gp",
+      "damage": "1d8 bludgeoning",
+      "weight": 2,
+      "properties": [
+        "Versatile (1d10)"
+      ]
+    },
+    "whip": {
+      "cost": "2 gp",
+      "damage": "1d4 slashing",
+      "weight": 3,
+      "properties": [
+        "Finesse",
+        "Reach"
+      ]
+    },
+    "blowgun": {
+      "cost": "10 gp",
+      "damage": "1 piercing",
+      "weight": 1,
+      "properties": [
+        "Ammunition (25/100)",
+        "Loading"
+      ]
+    },
+    "hand crossbow": {
+      "cost": "75 gp",
+      "damage": "1d6 piercing",
+      "weight": 3,
+      "properties": [
+        "Ammunition (30/120)",
+        "Light",
+        "Loading"
+      ]
+    },
+    "heavy crossbow": {
+      "cost": "50 gp",
+      "damage": "1d10 piercing",
+      "weight": 18,
+      "properties": [
+        "Ammunition (100/400)",
+        "Heavy",
+        "Loading",
+        "Two-handed"
+      ]
+    },
+    "longbow": {
+      "cost": "50 gp",
+      "damage": "1d8 piercing",
+      "weight": 2,
+      "properties": [
+        "Ammunition (150/600)",
+        "Heavy",
+        "Two-handed"
+      ]
+    },
+    "net": {
+      "cost": "1 gp",
+      "damage": "-",
+      "weight": 3,
+      "properties": [
+        "Special",
+        "Thrown (5/15)"
+      ]
+    }
+  },
+  "EQUIPMENT_PACKS": {
+    "Burglar's pack": {
+      "cost": "16 gp",
+      "contents": [
+        "Backpack",
+        "Bag of 1,000 ball bearings",
+        "10 ft. string",
+        "Bell",
+        "5 candles",
+        "Crowbar",
+        "Hammer",
+        "10 pitons",
+        "Hooded lantern",
+        "2 flasks of oil",
+        "5 days rations",
+        "Tinderbox",
+        "Waterskin",
+        "50 ft. hempen rope"
+      ]
+    },
+    "Diplomat's pack": {
+      "cost": "39 gp",
+      "contents": [
+        "Chest",
+        "2 cases for maps and scrolls",
+        "Fine clothes",
+        "Bottle of ink",
+        "Ink pen",
+        "Lamp",
+        "2 flasks of oil",
+        "5 sheets of paper",
+        "Vial of perfume",
+        "Sealing wax",
+        "Soap"
+      ]
+    },
+    "Dungeoneer's pack": {
+      "cost": "12 gp",
+      "contents": [
+        "Backpack",
+        "Crowbar",
+        "Hammer",
+        "10 pitons",
+        "10 torches",
+        "Tinderbox",
+        "10 days of rations",
+        "Waterskin",
+        "50 ft. hempen rope"
+      ]
+    },
+    "Entertainer's pack": {
+      "cost": "40 gp",
+      "contents": [
+        "Backpack",
+        "Bedroll",
+        "2 costumes",
+        "5 candles",
+        "5 days of rations",
+        "Waterskin",
+        "Disguise kit"
+      ]
+    },
+    "Explorer's pack": {
+      "cost": "10 gp",
+      "contents": [
+        "Backpack",
+        "Bedroll",
+        "Mess kit",
+        "Tinderbox",
+        "10 torches",
+        "10 days of rations",
+        "Waterskin",
+        "50 ft. hempen rope"
+      ]
+    },
+    "Priest's pack": {
+      "cost": "19 gp",
+      "contents": [
+        "Backpack",
+        "Blanket",
+        "10 candles",
+        "Tinderbox",
+        "Alms box",
+        "2 blocks of incense",
+        "Censer",
+        "Vestments",
+        "2 days of rations",
+        "Waterskin"
+      ]
+    },
+    "Scholar's pack": {
+      "cost": "40 gp",
+      "contents": [
+        "Backpack",
+        "Book of lore",
+        "Bottle of ink",
+        "Ink pen",
+        "10 sheets of parchment",
+        "Little bag of sand",
+        "Small knife"
+      ]
+    }
+  },
+  "SPELLS": {
+    "Bard": {
+      "cantrips": [
+        "Dancing Lights",
+        "Light",
+        "Mage Hand",
+        "Mending",
+        "Message",
+        "Minor Illusion",
+        "Prestidigitation",
+        "True Strike",
+        "Vicious Mockery"
+      ],
+      "level1": [
+        "Animal Friendship",
+        "Bane",
+        "Charm Person",
+        "Comprehend Languages",
+        "Cure Wounds",
+        "Detect Magic",
+        "Disguise Self",
+        "Faerie Fire",
+        "Feather Fall",
+        "Healing Word",
+        "Heroism",
+        "Hideous Laughter",
+        "Identify",
+        "Illusory Script",
+        "Longstrider",
+        "Silent Image",
+        "Sleep",
+        "Speak with Animals",
+        "Thunderwave",
+        "Unseen Servant"
+      ]
+    },
+    "Cleric": {
+      "cantrips": [
+        "Guidance",
+        "Light",
+        "Mending",
+        "Resistance",
+        "Sacred Flame",
+        "Spare the Dying",
+        "Thaumaturgy"
+      ],
+      "level1": [
+        "Bane",
+        "Bless",
+        "Command",
+        "Create or Destroy Water",
+        "Cure Wounds",
+        "Detect Evil and Good",
+        "Detect Magic",
+        "Detect Poison and Disease",
+        "Guiding Bolt",
+        "Healing Word",
+        "Inflict Wounds",
+        "Protection from Evil and Good",
+        "Purify Food and Drink",
+        "Sanctuary",
+        "Shield of Faith"
+      ]
+    },
+    "Druid": {
+      "cantrips": [
+        "Druidcraft",
+        "Guidance",
+        "Mending",
+        "Poison Spray",
+        "Produce Flame",
+        "Resistance",
+        "Shillelagh"
+      ],
+      "level1": [
+        "Animal Friendship",
+        "Charm Person",
+        "Create or Destroy Water",
+        "Cure Wounds",
+        "Detect Magic",
+        "Detect Poison and Disease",
+        "Entangle",
+        "Faerie Fire",
+        "Fog Cloud",
+        "Goodberry",
+        "Healing Word",
+        "Jump",
+        "Longstrider",
+        "Purify Food and Drink",
+        "Speak with Animals",
+        "Thunderwave"
+      ]
+    },
+    "Sorcerer": {
+      "cantrips": [
+        "Acid Splash",
+        "Chill Touch",
+        "Dancing Lights",
+        "Fire Bolt",
+        "Light",
+        "Mage Hand",
+        "Mending",
+        "Message",
+        "Minor Illusion",
+        "Poison Spray",
+        "Prestidigitation",
+        "Ray of Frost",
+        "Shocking Grasp",
+        "True Strike"
+      ],
+      "level1": [
+        "Burning Hands",
+        "Charm Person",
+        "Color Spray",
+        "Comprehend Languages",
+        "Detect Magic",
+        "Disguise Self",
+        "Expeditious Retreat",
+        "False Life",
+        "Feather Fall",
+        "Fog Cloud",
+        "Jump",
+        "Mage Armor",
+        "Magic Missile",
+        "Shield",
+        "Silent Image",
+        "Sleep",
+        "Thunderwave"
+      ]
+    },
+    "Warlock": {
+      "cantrips": [
+        "Chill Touch",
+        "Eldritch Blast",
+        "Mage Hand",
+        "Minor Illusion",
+        "Poison Spray",
+        "Prestidigitation",
+        "True Strike"
+      ],
+      "level1": [
+        "Charm Person",
+        "Comprehend Languages",
+        "Expeditious Retreat",
+        "Hellish Rebuke",
+        "Illusory Script",
+        "Protection from Evil and Good",
+        "Unseen Servant"
+      ]
+    },
+    "Wizard": {
+      "cantrips": [
+        "Acid Splash",
+        "Chill Touch",
+        "Dancing Lights",
+        "Fire Bolt",
+        "Light",
+        "Mage Hand",
+        "Mending",
+        "Message",
+        "Minor Illusion",
+        "Poison Spray",
+        "Prestidigitation",
+        "Ray of Frost",
+        "Shocking Grasp",
+        "True Strike"
+      ],
+      "level1": [
+        "Alarm",
+        "Burning Hands",
+        "Charm Person",
+        "Color Spray",
+        "Comprehend Languages",
+        "Detect Magic",
+        "Disguise Self",
+        "Expeditious Retreat",
+        "False Life",
+        "Feather Fall",
+        "Find Familiar",
+        "Floating Disk",
+        "Fog Cloud",
+        "Grease",
+        "Hideous Laughter",
+        "Identify",
+        "Illusory Script",
+        "Jump",
+        "Longstrider",
+        "Mage Armor",
+        "Magic Missile",
+        "Protection from Evil and Good",
+        "Shield",
+        "Silent Image",
+        "Sleep",
+        "Thunderwave",
+        "Unseen Servant"
+      ]
+    }
+  },
+  "STANDARD_ARRAY": [
+    15,
+    14,
+    13,
+    12,
+    10,
+    8
+  ]
+}

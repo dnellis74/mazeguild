@@ -1,10 +1,9 @@
 import { characterToCombatant } from "./adapter";
 import { runCombat } from "./combat";
 import { pickLoot, spawnEncounter } from "./encounters";
-import { distanceToExit, generateMaze } from "./maze";
+import { aStarPath, dirBetween, generateMaze } from "./maze";
 import { createRng, d } from "./rng";
-import type { Dir, DungeonInput, DungeonResult, LogEvent } from "./types";
-import { wanderStep } from "./wander";
+import type { DungeonInput, DungeonResult, LogEvent } from "./types";
 
 const STEP_CAP = 5000;
 const PARTY_CAP = 6;
@@ -17,12 +16,12 @@ export function runDungeon(input: DungeonInput): DungeonResult {
   const seed = input.seed >>> 0;
   const rng = createRng(seed);
   const maze = generateMaze(rng, 20);
-  const dist = distanceToExit(maze);
+  const route = aStarPath(maze, maze.entrance, maze.exit);
   const party = input.party.slice(0, PARTY_CAP).map(characterToCombatant);
 
   const log: LogEvent[] = [];
   let pos = { x: maze.entrance.x, y: maze.entrance.y };
-  let lastDir: Dir | null = null;
+  let routeIndex = 0;
   let stepsTaken = 0;
   let stepsUntilEncounter = d(rng, 6) + d(rng, 6) + d(rng, 6);
   let xp = 0;
@@ -41,6 +40,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       hp: p.hp,
       maxHp: p.maxHp,
       ac: p.ac,
+      xp: 0,
     })),
   });
 
@@ -54,10 +54,15 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       break;
     }
 
-    const move = wanderStep(rng, maze, dist, pos, lastDir);
+    const next = route[routeIndex + 1];
+    if (!next) {
+      log.push({ event: "aborted_step_cap", steps: stepsTaken });
+      break;
+    }
     const from = { x: pos.x, y: pos.y };
-    pos = { x: move.nx, y: move.ny };
-    lastDir = move.dir;
+    const facing = dirBetween(from, next);
+    pos = { x: next.x, y: next.y };
+    routeIndex += 1;
     stepsTaken += 1;
     visited.add(`${pos.x},${pos.y}`);
     stepsUntilEncounter -= 1;
@@ -67,7 +72,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       n: stepsTaken,
       from,
       to: { ...pos },
-      facing: move.dir,
+      facing,
     });
 
     const atExit = pos.x === maze.exit.x && pos.y === maze.exit.y;
