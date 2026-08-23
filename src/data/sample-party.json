@@ -1,0 +1,1122 @@
+[
+  {
+    "meta": {
+      "source": "SRD 5.1 (Open Gaming License v1.0a), data extracted from the supplied project PDF",
+      "level": 1,
+      "note": "Ability-score assignment method and priority order are a generation convenience not specified by the SRD; see script docstring."
+    },
+    "race": "Halfling",
+    "subrace": "Lightfoot Halfling",
+    "class": "Monk",
+    "background": "Acolyte",
+    "alignment": "Chaotic Evil",
+    "ability_scores": {
+      "STR": {
+        "score": 12,
+        "modifier": "+1"
+      },
+      "DEX": {
+        "score": 17,
+        "modifier": "+3"
+      },
+      "CON": {
+        "score": 13,
+        "modifier": "+1"
+      },
+      "INT": {
+        "score": 10,
+        "modifier": "+0"
+      },
+      "WIS": {
+        "score": 14,
+        "modifier": "+2"
+      },
+      "CHA": {
+        "score": 9,
+        "modifier": "-1"
+      }
+    },
+    "proficiency_bonus": "+2",
+    "saving_throws": {
+      "STR": "+3",
+      "DEX": "+5",
+      "CON": "+1",
+      "INT": "+0",
+      "WIS": "+2",
+      "CHA": "-1"
+    },
+    "saving_throw_proficiencies": [
+      "STR",
+      "DEX"
+    ],
+    "skill_proficiencies": [
+      "Acrobatics",
+      "Insight",
+      "Religion",
+      "Stealth"
+    ],
+    "armor_proficiencies": [],
+    "weapon_proficiencies": [
+      "Shortswords",
+      "Simple weapons"
+    ],
+    "tool_proficiencies": [
+      "Viol"
+    ],
+    "languages": [
+      "Common",
+      "Deep Speech",
+      "Dwarvish",
+      "Halfling"
+    ],
+    "hit_points": {
+      "value": 9,
+      "hit_die": "1d8",
+      "note": null
+    },
+    "armor_class": {
+      "value": 15,
+      "calculation": "Unarmored Defense (monk): 10 + Dex mod + Wis mod"
+    },
+    "speed": "25 ft.",
+    "racial_traits": [
+      "Lucky: reroll a natural 1 on an attack roll, ability check, or saving throw",
+      "Brave: advantage on saving throws against being frightened",
+      "Halfling Nimbleness: can move through the space of any creature that is a size larger",
+      "Naturally Stealthy: can hide even when obscured only by a creature one size larger"
+    ],
+    "draconic_ancestry": null,
+    "high_elf_bonus_cantrip": null,
+    "tiefling_cantrip": null,
+    "class_features_level_1": [
+      "Unarmored Defense (10 + Dex mod + Wis mod)",
+      "Martial Arts (1d4)"
+    ],
+    "spellcasting": null,
+    "equipment": {
+      "from_class": [
+        "a shortsword",
+        "an explorer's pack",
+        "10 darts"
+      ],
+      "from_class_detail": [
+        {
+          "item": "a shortsword",
+          "stats": {
+            "type": "weapon",
+            "name": "Shortsword",
+            "cost": "10 gp",
+            "damage": "1d6 piercing",
+            "weight": 2,
+            "properties": [
+              "Finesse",
+              "Light"
+            ]
+          }
+        },
+        {
+          "item": "an explorer's pack",
+          "stats": {
+            "type": "pack",
+            "name": "Explorer's pack",
+            "cost": "10 gp",
+            "contents": [
+              "Backpack",
+              "Bedroll",
+              "Mess kit",
+              "Tinderbox",
+              "10 torches",
+              "10 days of rations",
+              "Waterskin",
+              "50 ft. hempen rope"
+            ]
+          }
+        },
+        {
+          "item": "10 darts",
+          "stats": {
+            "type": "weapon",
+            "name": "Dart",
+            "cost": "5 cp",
+            "damage": "1d4 piercing",
+            "weight": 0.25,
+            "properties": [
+              "Finesse",
+              "Thrown (20/60)"
+            ]
+          }
+        }
+      ],
+      "from_background": [
+        "A holy symbol",
+        "A prayer book or prayer wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "A set of common clothes",
+        "A pouch containing 15 gp"
+      ]
+    },
+    "background_feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    },
+    "name": "Pip"
+  },
+  {
+    "meta": {
+      "source": "SRD 5.1 (Open Gaming License v1.0a), data extracted from the supplied project PDF",
+      "level": 1,
+      "note": "Ability-score assignment method and priority order are a generation convenience not specified by the SRD; see script docstring."
+    },
+    "race": "Dwarf",
+    "subrace": "Hill Dwarf",
+    "class": "Druid",
+    "background": "Acolyte",
+    "alignment": "Lawful Good",
+    "ability_scores": {
+      "STR": {
+        "score": 8,
+        "modifier": "-1"
+      },
+      "DEX": {
+        "score": 13,
+        "modifier": "+1"
+      },
+      "CON": {
+        "score": 16,
+        "modifier": "+3"
+      },
+      "INT": {
+        "score": 12,
+        "modifier": "+1"
+      },
+      "WIS": {
+        "score": 16,
+        "modifier": "+3"
+      },
+      "CHA": {
+        "score": 10,
+        "modifier": "+0"
+      }
+    },
+    "proficiency_bonus": "+2",
+    "saving_throws": {
+      "STR": "-1",
+      "DEX": "+1",
+      "CON": "+3",
+      "INT": "+3",
+      "WIS": "+5",
+      "CHA": "+0"
+    },
+    "saving_throw_proficiencies": [
+      "INT",
+      "WIS"
+    ],
+    "skill_proficiencies": [
+      "Insight",
+      "Nature",
+      "Religion",
+      "Survival"
+    ],
+    "armor_proficiencies": [
+      "Light armor",
+      "Medium armor",
+      "Shields (non-metal only)"
+    ],
+    "weapon_proficiencies": [
+      "Clubs",
+      "Daggers",
+      "Darts",
+      "Javelins",
+      "Maces",
+      "Quarterstaffs",
+      "Scimitars",
+      "Sickles",
+      "Slings",
+      "Spears",
+      "battleaxe",
+      "handaxe",
+      "light hammer",
+      "warhammer"
+    ],
+    "tool_proficiencies": [
+      "Herbalism kit",
+      "Smith's tools"
+    ],
+    "languages": [
+      "Abyssal",
+      "Common",
+      "Draconic",
+      "Dwarvish"
+    ],
+    "hit_points": {
+      "value": 12,
+      "hit_die": "1d8",
+      "note": "includes Dwarven Toughness (+1)"
+    },
+    "armor_class": {
+      "value": 14,
+      "calculation": "Leather (light armor) + shield (+2)"
+    },
+    "speed": "25 ft.",
+    "racial_traits": [
+      "Darkvision (60 ft.)",
+      "Dwarven Resilience: advantage on saving throws against poison, resistance to poison damage",
+      "Dwarven Combat Training: proficiency with battleaxe, handaxe, light hammer, warhammer",
+      "Tool Proficiency: proficiency with one of smith's tools, brewer's supplies, or mason's tools",
+      "Stonecunning: double proficiency bonus on History checks about the origin of stonework",
+      "Dwarven Toughness: hit point maximum increases by 1, and by 1 again every level"
+    ],
+    "draconic_ancestry": null,
+    "high_elf_bonus_cantrip": null,
+    "tiefling_cantrip": null,
+    "class_features_level_1": [
+      "Druidic",
+      "Spellcasting"
+    ],
+    "spellcasting": {
+      "ability": "WIS",
+      "spell_save_dc": 13,
+      "spell_attack_bonus": "+5",
+      "cantrips_known": [
+        "Druidcraft",
+        "Produce Flame"
+      ],
+      "spell_slots": {
+        "1": 2
+      },
+      "spells_prepared": [
+        "Cure Wounds",
+        "Healing Word",
+        "Purify Food and Drink",
+        "Thunderwave"
+      ],
+      "prepared_count_formula": "WIS modifier (+3) + class level (1), min 1"
+    },
+    "equipment": {
+      "from_class": [
+        "a wooden shield",
+        "a scimitar",
+        "Leather armor",
+        "an explorer's pack",
+        "a druidic focus"
+      ],
+      "from_class_detail": [
+        {
+          "item": "a wooden shield"
+        },
+        {
+          "item": "a scimitar",
+          "stats": {
+            "type": "weapon",
+            "name": "Scimitar",
+            "cost": "25 gp",
+            "damage": "1d6 slashing",
+            "weight": 3,
+            "properties": [
+              "Finesse",
+              "Light"
+            ]
+          }
+        },
+        {
+          "item": "Leather armor",
+          "stats": {
+            "type": "armor",
+            "name": "Leather",
+            "category": "light",
+            "cost": "10 gp",
+            "base_ac": 11,
+            "str_req": null,
+            "stealth_dis": false,
+            "weight": 10
+          }
+        },
+        {
+          "item": "an explorer's pack",
+          "stats": {
+            "type": "pack",
+            "name": "Explorer's pack",
+            "cost": "10 gp",
+            "contents": [
+              "Backpack",
+              "Bedroll",
+              "Mess kit",
+              "Tinderbox",
+              "10 torches",
+              "10 days of rations",
+              "Waterskin",
+              "50 ft. hempen rope"
+            ]
+          }
+        },
+        {
+          "item": "a druidic focus"
+        }
+      ],
+      "from_background": [
+        "A holy symbol",
+        "A prayer book or prayer wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "A set of common clothes",
+        "A pouch containing 15 gp"
+      ]
+    },
+    "background_feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    },
+    "name": "Bramble"
+  },
+  {
+    "meta": {
+      "source": "SRD 5.1 (Open Gaming License v1.0a), data extracted from the supplied project PDF",
+      "level": 1,
+      "note": "Ability-score assignment method and priority order are a generation convenience not specified by the SRD; see script docstring."
+    },
+    "race": "Half-Elf",
+    "subrace": null,
+    "class": "Sorcerer",
+    "background": "Acolyte",
+    "alignment": "Neutral Good",
+    "ability_scores": {
+      "STR": {
+        "score": 9,
+        "modifier": "-1"
+      },
+      "DEX": {
+        "score": 14,
+        "modifier": "+2"
+      },
+      "CON": {
+        "score": 14,
+        "modifier": "+2"
+      },
+      "INT": {
+        "score": 10,
+        "modifier": "+0"
+      },
+      "WIS": {
+        "score": 12,
+        "modifier": "+1"
+      },
+      "CHA": {
+        "score": 17,
+        "modifier": "+3"
+      }
+    },
+    "proficiency_bonus": "+2",
+    "saving_throws": {
+      "STR": "-1",
+      "DEX": "+2",
+      "CON": "+4",
+      "INT": "+0",
+      "WIS": "+1",
+      "CHA": "+5"
+    },
+    "saving_throw_proficiencies": [
+      "CON",
+      "CHA"
+    ],
+    "skill_proficiencies": [
+      "Animal Handling",
+      "Deception",
+      "Insight",
+      "Medicine",
+      "Persuasion",
+      "Religion"
+    ],
+    "armor_proficiencies": [],
+    "weapon_proficiencies": [
+      "Daggers",
+      "Darts",
+      "Light crossbows",
+      "Quarterstaffs",
+      "Slings"
+    ],
+    "tool_proficiencies": [],
+    "languages": [
+      "Common",
+      "Deep Speech",
+      "Draconic",
+      "Elvish",
+      "Halfling"
+    ],
+    "hit_points": {
+      "value": 8,
+      "hit_die": "1d6",
+      "note": null
+    },
+    "armor_class": {
+      "value": 12,
+      "calculation": "Unarmored: 10 + Dex mod"
+    },
+    "speed": "30 ft.",
+    "racial_traits": [
+      "Darkvision (60 ft.)",
+      "Fey Ancestry: advantage on saving throws against being charmed, immune to magical sleep",
+      "Skill Versatility: proficiency in two skills of choice"
+    ],
+    "draconic_ancestry": null,
+    "high_elf_bonus_cantrip": null,
+    "tiefling_cantrip": null,
+    "class_features_level_1": [
+      "Spellcasting",
+      "Sorcerous Origin"
+    ],
+    "spellcasting": {
+      "ability": "CHA",
+      "spell_save_dc": 13,
+      "spell_attack_bonus": "+5",
+      "cantrips_known": [
+        "Chill Touch",
+        "Dancing Lights",
+        "Prestidigitation",
+        "True Strike"
+      ],
+      "spell_slots": {
+        "1": 2
+      },
+      "spells_known": [
+        "Expeditious Retreat",
+        "Mage Armor"
+      ]
+    },
+    "equipment": {
+      "from_class": [
+        "any simple weapon",
+        "a component pouch",
+        "a dungeoneer's pack",
+        "Two daggers"
+      ],
+      "from_class_detail": [
+        {
+          "item": "any simple weapon"
+        },
+        {
+          "item": "a component pouch"
+        },
+        {
+          "item": "a dungeoneer's pack",
+          "stats": {
+            "type": "pack",
+            "name": "Dungeoneer's pack",
+            "cost": "12 gp",
+            "contents": [
+              "Backpack",
+              "Crowbar",
+              "Hammer",
+              "10 pitons",
+              "10 torches",
+              "Tinderbox",
+              "10 days of rations",
+              "Waterskin",
+              "50 ft. hempen rope"
+            ]
+          }
+        },
+        {
+          "item": "Two daggers",
+          "stats": {
+            "type": "weapon",
+            "name": "Dagger",
+            "cost": "2 gp",
+            "damage": "1d4 piercing",
+            "weight": 1,
+            "properties": [
+              "Finesse",
+              "Light",
+              "Thrown (20/60)"
+            ]
+          }
+        }
+      ],
+      "from_background": [
+        "A holy symbol",
+        "A prayer book or prayer wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "A set of common clothes",
+        "A pouch containing 15 gp"
+      ]
+    },
+    "background_feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    },
+    "name": "Lyra"
+  },
+  {
+    "meta": {
+      "source": "SRD 5.1 (Open Gaming License v1.0a), data extracted from the supplied project PDF",
+      "level": 1,
+      "note": "Ability-score assignment method and priority order are a generation convenience not specified by the SRD; see script docstring."
+    },
+    "race": "Elf",
+    "subrace": "High Elf",
+    "class": "Rogue",
+    "background": "Acolyte",
+    "alignment": "Lawful Neutral",
+    "ability_scores": {
+      "STR": {
+        "score": 8,
+        "modifier": "-1"
+      },
+      "DEX": {
+        "score": 17,
+        "modifier": "+3"
+      },
+      "CON": {
+        "score": 13,
+        "modifier": "+1"
+      },
+      "INT": {
+        "score": 15,
+        "modifier": "+2"
+      },
+      "WIS": {
+        "score": 12,
+        "modifier": "+1"
+      },
+      "CHA": {
+        "score": 10,
+        "modifier": "+0"
+      }
+    },
+    "proficiency_bonus": "+2",
+    "saving_throws": {
+      "STR": "-1",
+      "DEX": "+5",
+      "CON": "+1",
+      "INT": "+4",
+      "WIS": "+1",
+      "CHA": "+0"
+    },
+    "saving_throw_proficiencies": [
+      "DEX",
+      "INT"
+    ],
+    "skill_proficiencies": [
+      "Insight",
+      "Intimidation",
+      "Investigation",
+      "Perception",
+      "Performance",
+      "Religion",
+      "Sleight of Hand"
+    ],
+    "armor_proficiencies": [
+      "Light armor"
+    ],
+    "weapon_proficiencies": [
+      "Hand crossbows",
+      "Longswords",
+      "Rapiers",
+      "Shortswords",
+      "Simple weapons",
+      "longbow",
+      "longsword",
+      "shortbow",
+      "shortsword"
+    ],
+    "tool_proficiencies": [
+      "Thieves' tools"
+    ],
+    "languages": [
+      "Celestial",
+      "Common",
+      "Deep Speech",
+      "Elvish",
+      "Orc"
+    ],
+    "hit_points": {
+      "value": 9,
+      "hit_die": "1d8",
+      "note": null
+    },
+    "armor_class": {
+      "value": 14,
+      "calculation": "Leather (light armor)"
+    },
+    "speed": "30 ft.",
+    "racial_traits": [
+      "Darkvision (60 ft.)",
+      "Keen Senses: proficiency in the Perception skill",
+      "Fey Ancestry: advantage on saving throws against being charmed, immune to magical sleep",
+      "Trance: 4 hours of trance-meditation substitutes for 8 hours of sleep",
+      "Elf Weapon Training: proficiency with longsword, shortsword, shortbow, longbow",
+      "Cantrip: one wizard cantrip of choice (Intelligence is the spellcasting ability)",
+      "Extra Language: one extra language of choice"
+    ],
+    "draconic_ancestry": null,
+    "high_elf_bonus_cantrip": "Light",
+    "tiefling_cantrip": null,
+    "class_features_level_1": [
+      "Expertise",
+      "Sneak Attack (1d6)",
+      "Thieves' Cant"
+    ],
+    "spellcasting": null,
+    "equipment": {
+      "from_class": [
+        "a shortsword",
+        "a shortsword",
+        "a dungeoneer's pack",
+        "Leather armor",
+        "two daggers",
+        "thieves' tools"
+      ],
+      "from_class_detail": [
+        {
+          "item": "a shortsword",
+          "stats": {
+            "type": "weapon",
+            "name": "Shortsword",
+            "cost": "10 gp",
+            "damage": "1d6 piercing",
+            "weight": 2,
+            "properties": [
+              "Finesse",
+              "Light"
+            ]
+          }
+        },
+        {
+          "item": "a shortsword",
+          "stats": {
+            "type": "weapon",
+            "name": "Shortsword",
+            "cost": "10 gp",
+            "damage": "1d6 piercing",
+            "weight": 2,
+            "properties": [
+              "Finesse",
+              "Light"
+            ]
+          }
+        },
+        {
+          "item": "a dungeoneer's pack",
+          "stats": {
+            "type": "pack",
+            "name": "Dungeoneer's pack",
+            "cost": "12 gp",
+            "contents": [
+              "Backpack",
+              "Crowbar",
+              "Hammer",
+              "10 pitons",
+              "10 torches",
+              "Tinderbox",
+              "10 days of rations",
+              "Waterskin",
+              "50 ft. hempen rope"
+            ]
+          }
+        },
+        {
+          "item": "Leather armor",
+          "stats": {
+            "type": "armor",
+            "name": "Leather",
+            "category": "light",
+            "cost": "10 gp",
+            "base_ac": 11,
+            "str_req": null,
+            "stealth_dis": false,
+            "weight": 10
+          }
+        },
+        {
+          "item": "two daggers",
+          "stats": {
+            "type": "weapon",
+            "name": "Dagger",
+            "cost": "2 gp",
+            "damage": "1d4 piercing",
+            "weight": 1,
+            "properties": [
+              "Finesse",
+              "Light",
+              "Thrown (20/60)"
+            ]
+          }
+        },
+        {
+          "item": "thieves' tools"
+        }
+      ],
+      "from_background": [
+        "A holy symbol",
+        "A prayer book or prayer wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "A set of common clothes",
+        "A pouch containing 15 gp"
+      ]
+    },
+    "background_feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    },
+    "name": "Jorik"
+  },
+  {
+    "meta": {
+      "source": "SRD 5.1 (Open Gaming License v1.0a), data extracted from the supplied project PDF",
+      "level": 1,
+      "note": "Ability-score assignment method and priority order are a generation convenience not specified by the SRD; see script docstring."
+    },
+    "race": "Human",
+    "subrace": null,
+    "class": "Cleric",
+    "background": "Acolyte",
+    "alignment": "Lawful Evil",
+    "ability_scores": {
+      "STR": {
+        "score": 14,
+        "modifier": "+2"
+      },
+      "DEX": {
+        "score": 11,
+        "modifier": "+0"
+      },
+      "CON": {
+        "score": 15,
+        "modifier": "+2"
+      },
+      "INT": {
+        "score": 9,
+        "modifier": "-1"
+      },
+      "WIS": {
+        "score": 16,
+        "modifier": "+3"
+      },
+      "CHA": {
+        "score": 13,
+        "modifier": "+1"
+      }
+    },
+    "proficiency_bonus": "+2",
+    "saving_throws": {
+      "STR": "+2",
+      "DEX": "+0",
+      "CON": "+2",
+      "INT": "-1",
+      "WIS": "+5",
+      "CHA": "+3"
+    },
+    "saving_throw_proficiencies": [
+      "WIS",
+      "CHA"
+    ],
+    "skill_proficiencies": [
+      "History",
+      "Insight",
+      "Medicine",
+      "Religion"
+    ],
+    "armor_proficiencies": [
+      "Light armor",
+      "Medium armor",
+      "Shields"
+    ],
+    "weapon_proficiencies": [
+      "Simple weapons"
+    ],
+    "tool_proficiencies": [],
+    "languages": [
+      "Common",
+      "Draconic",
+      "Elvish",
+      "Undercommon"
+    ],
+    "hit_points": {
+      "value": 10,
+      "hit_die": "1d8",
+      "note": null
+    },
+    "armor_class": {
+      "value": 13,
+      "calculation": "Leather (light armor) + shield (+2)"
+    },
+    "speed": "30 ft.",
+    "racial_traits": [
+      "Ability scores each increase by 1",
+      "One extra language of choice"
+    ],
+    "draconic_ancestry": null,
+    "high_elf_bonus_cantrip": null,
+    "tiefling_cantrip": null,
+    "class_features_level_1": [
+      "Spellcasting",
+      "Divine Domain"
+    ],
+    "spellcasting": {
+      "ability": "WIS",
+      "spell_save_dc": 13,
+      "spell_attack_bonus": "+5",
+      "cantrips_known": [
+        "Light",
+        "Resistance",
+        "Sacred Flame"
+      ],
+      "spell_slots": {
+        "1": 2
+      },
+      "spells_prepared": [
+        "Command",
+        "Detect Evil and Good",
+        "Detect Poison and Disease",
+        "Purify Food and Drink"
+      ],
+      "prepared_count_formula": "WIS modifier (+3) + class level (1), min 1"
+    },
+    "equipment": {
+      "from_class": [
+        "a warhammer (if proficient)",
+        "leather armor",
+        "any simple weapon",
+        "an explorer's pack",
+        "A shield",
+        "a holy symbol"
+      ],
+      "from_class_detail": [
+        {
+          "item": "a warhammer (if proficient)",
+          "stats": {
+            "type": "weapon",
+            "name": "Warhammer",
+            "cost": "15 gp",
+            "damage": "1d8 bludgeoning",
+            "weight": 2,
+            "properties": [
+              "Versatile (1d10)"
+            ]
+          }
+        },
+        {
+          "item": "leather armor",
+          "stats": {
+            "type": "armor",
+            "name": "Leather",
+            "category": "light",
+            "cost": "10 gp",
+            "base_ac": 11,
+            "str_req": null,
+            "stealth_dis": false,
+            "weight": 10
+          }
+        },
+        {
+          "item": "any simple weapon"
+        },
+        {
+          "item": "an explorer's pack",
+          "stats": {
+            "type": "pack",
+            "name": "Explorer's pack",
+            "cost": "10 gp",
+            "contents": [
+              "Backpack",
+              "Bedroll",
+              "Mess kit",
+              "Tinderbox",
+              "10 torches",
+              "10 days of rations",
+              "Waterskin",
+              "50 ft. hempen rope"
+            ]
+          }
+        },
+        {
+          "item": "A shield"
+        },
+        {
+          "item": "a holy symbol"
+        }
+      ],
+      "from_background": [
+        "A holy symbol",
+        "A prayer book or prayer wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "A set of common clothes",
+        "A pouch containing 15 gp"
+      ]
+    },
+    "background_feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    },
+    "name": "Vessa"
+  },
+  {
+    "meta": {
+      "source": "SRD 5.1 (Open Gaming License v1.0a), data extracted from the supplied project PDF",
+      "level": 1,
+      "note": "Ability-score assignment method and priority order are a generation convenience not specified by the SRD; see script docstring."
+    },
+    "race": "Elf",
+    "subrace": "High Elf",
+    "class": "Barbarian",
+    "background": "Acolyte",
+    "alignment": "Neutral Good",
+    "ability_scores": {
+      "STR": {
+        "score": 15,
+        "modifier": "+2"
+      },
+      "DEX": {
+        "score": 15,
+        "modifier": "+2"
+      },
+      "CON": {
+        "score": 14,
+        "modifier": "+2"
+      },
+      "INT": {
+        "score": 9,
+        "modifier": "-1"
+      },
+      "WIS": {
+        "score": 12,
+        "modifier": "+1"
+      },
+      "CHA": {
+        "score": 10,
+        "modifier": "+0"
+      }
+    },
+    "proficiency_bonus": "+2",
+    "saving_throws": {
+      "STR": "+4",
+      "DEX": "+2",
+      "CON": "+4",
+      "INT": "-1",
+      "WIS": "+1",
+      "CHA": "+0"
+    },
+    "saving_throw_proficiencies": [
+      "STR",
+      "CON"
+    ],
+    "skill_proficiencies": [
+      "Insight",
+      "Intimidation",
+      "Perception",
+      "Religion",
+      "Survival"
+    ],
+    "armor_proficiencies": [
+      "Light armor",
+      "Medium armor",
+      "Shields"
+    ],
+    "weapon_proficiencies": [
+      "Martial weapons",
+      "Simple weapons",
+      "longbow",
+      "longsword",
+      "shortbow",
+      "shortsword"
+    ],
+    "tool_proficiencies": [],
+    "languages": [
+      "Common",
+      "Elvish",
+      "Giant",
+      "Gnomish",
+      "Orc"
+    ],
+    "hit_points": {
+      "value": 14,
+      "hit_die": "1d12",
+      "note": null
+    },
+    "armor_class": {
+      "value": 14,
+      "calculation": "Unarmored Defense (barbarian): 10 + Dex mod + Con mod"
+    },
+    "speed": "30 ft.",
+    "racial_traits": [
+      "Darkvision (60 ft.)",
+      "Keen Senses: proficiency in the Perception skill",
+      "Fey Ancestry: advantage on saving throws against being charmed, immune to magical sleep",
+      "Trance: 4 hours of trance-meditation substitutes for 8 hours of sleep",
+      "Elf Weapon Training: proficiency with longsword, shortsword, shortbow, longbow",
+      "Cantrip: one wizard cantrip of choice (Intelligence is the spellcasting ability)",
+      "Extra Language: one extra language of choice"
+    ],
+    "draconic_ancestry": null,
+    "high_elf_bonus_cantrip": "Message",
+    "tiefling_cantrip": null,
+    "class_features_level_1": [
+      "Rage",
+      "Unarmored Defense (10 + Dex mod + Con mod, no shield doesn't apply, shield still allowed)"
+    ],
+    "spellcasting": null,
+    "equipment": {
+      "from_class": [
+        "any martial melee weapon",
+        "any simple weapon",
+        "Explorer's pack",
+        "4 javelins"
+      ],
+      "from_class_detail": [
+        {
+          "item": "any martial melee weapon"
+        },
+        {
+          "item": "any simple weapon"
+        },
+        {
+          "item": "Explorer's pack",
+          "stats": {
+            "type": "pack",
+            "name": "Explorer's pack",
+            "cost": "10 gp",
+            "contents": [
+              "Backpack",
+              "Bedroll",
+              "Mess kit",
+              "Tinderbox",
+              "10 torches",
+              "10 days of rations",
+              "Waterskin",
+              "50 ft. hempen rope"
+            ]
+          }
+        },
+        {
+          "item": "4 javelins",
+          "stats": {
+            "type": "weapon",
+            "name": "Javelin",
+            "cost": "5 sp",
+            "damage": "1d6 piercing",
+            "weight": 2,
+            "properties": [
+              "Thrown (30/120)"
+            ]
+          }
+        }
+      ],
+      "from_background": [
+        "A holy symbol",
+        "A prayer book or prayer wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "A set of common clothes",
+        "A pouch containing 15 gp"
+      ]
+    },
+    "background_feature": {
+      "name": "Shelter of the Faithful",
+      "text": "You command the respect of those who share your faith and can perform its religious ceremonies. You and your companions can expect free healing and care at a temple, shrine, or other established presence of your faith (you must provide material components for spells yourself). Those who share your religion will support you, but only you, at a modest lifestyle."
+    },
+    "name": "Faelar"
+  }
+]
