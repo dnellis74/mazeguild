@@ -12,6 +12,10 @@ import { PartyRoster } from "./PartyRoster";
 const tap =
   "inline-flex min-h-11 min-w-11 items-center justify-center border px-3 font-mono text-sm tracking-wide select-none touch-manipulation disabled:opacity-40";
 
+/** Walk pace at 1x. Combat events keep a faster cadence. */
+const STEP_MS = 500;
+const BATTLE_MS = 160;
+
 export function GameClient({ party }: { party: SrdCharacter[] }) {
   const [seed, setSeed] = useState(99);
   const [result, setResult] = useState<DungeonResult | null>(null);
@@ -34,7 +38,7 @@ export function GameClient({ party }: { party: SrdCharacter[] }) {
   useEffect(() => {
     if (!playing || !result) return;
     const event = result.log[cursor];
-    const base = event?.event === "step" ? 35 : 160;
+    const base = event?.event === "step" ? STEP_MS : BATTLE_MS;
     const id = window.setTimeout(() => {
       if (cursor >= result.log.length - 1) {
         setPlaying(false);
@@ -106,6 +110,7 @@ export function GameClient({ party }: { party: SrdCharacter[] }) {
                 pos={frame.pos}
                 facing={frame.facing}
                 inCombat={frame.inCombat}
+                enemies={frame.enemies}
               />
             </div>
 

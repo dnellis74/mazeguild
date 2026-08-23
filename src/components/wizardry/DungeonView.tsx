@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Dir, DungeonResult, Pos } from "@/sim/types";
 
 const AMBER = "#e4b45a";
 const DIM = "#6a4a1a";
+const GOBLIN_SRC = "/monsters/goblin.png";
 
 function hasWall(
   maze: DungeonResult["maze"],
@@ -42,19 +43,44 @@ function rect(depth: number, w: number, h: number) {
   return { x: ix, y: iy, w: w - ix * 2, h: h - iy * 2 };
 }
 
+function isGoblinoid(name: string): boolean {
+  return /goblin/i.test(name);
+}
+
 export function DungeonView({
   maze,
   pos,
   facing,
   inCombat,
+  enemies,
 }: {
   maze: DungeonResult["maze"];
   pos: Pos;
   facing: Dir;
   inCombat: boolean;
+  enemies: string[];
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const spriteRef = useRef<HTMLImageElement | null>(null);
+  const [spriteReady, setSpriteReady] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = GOBLIN_SRC;
+    const markReady = () => {
+      spriteRef.current = img;
+      setSpriteReady(true);
+    };
+    if (img.complete && img.naturalWidth > 0) {
+      markReady();
+      return;
+    }
+    img.onload = markReady;
+    return () => {
+      img.onload = null;
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -132,13 +158,33 @@ export function DungeonView({
       }
 
       if (inCombat) {
-        ctx.fillStyle = "rgba(180, 40, 20, 0.18)";
-        ctx.fillRect(0, 0, cssW, cssH);
+        const sprite = spriteRef.current;
+        const count = Math.min(2, Math.max(1, enemies.filter(isGoblinoid).length || enemies.length));
+        if (sprite && sprite.naturalWidth > 0) {
+          const maxH = cssH * (count === 1 ? 0.82 : 0.64);
+          const maxW = cssW * (count === 1 ? 0.5 : 0.36);
+          const scale = Math.min(
+            maxW / sprite.naturalWidth,
+            maxH / sprite.naturalHeight,
+          );
+          const w = sprite.naturalWidth * scale;
+          const h = sprite.naturalHeight * scale;
+          const gap = Math.max(6, cssW * 0.02);
+          const total = count * w + (count - 1) * gap;
+          const floorY = cssH * 0.94;
+          let x = (cssW - total) / 2;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          for (let i = 0; i < count; i++) {
+            ctx.drawImage(sprite, x, floorY - h, w, h);
+            x += w + gap;
+          }
+        }
         ctx.fillStyle = AMBER;
-        ctx.font = `600 ${Math.max(14, Math.round(cssW / 22))}px ui-monospace, monospace`;
+        ctx.font = `600 ${Math.max(11, Math.round(cssW / 28))}px ui-monospace, monospace`;
         ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("! FIGHT !", cssW / 2, cssH / 2);
+        ctx.textBaseline = "top";
+        ctx.fillText("FIGHT", cssW / 2, Math.max(6, cssH * 0.04));
       }
     };
 
@@ -146,7 +192,7 @@ export function DungeonView({
     ro.observe(wrap);
     draw();
     return () => ro.disconnect();
-  }, [maze, pos, facing, inCombat]);
+  }, [maze, pos, facing, inCombat, spriteReady, enemies.join("\0")]);
 
   return (
     <div
@@ -156,7 +202,11 @@ export function DungeonView({
       <canvas
         ref={canvasRef}
         className="block h-full w-full touch-none"
-        aria-label="First-person dungeon view"
+        aria-label={
+          inCombat
+            ? `First-person dungeon view, fighting ${enemies.join(", ") || "monsters"}`
+            : "First-person dungeon view"
+        }
       />
     </div>
   );
