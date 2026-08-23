@@ -28,7 +28,7 @@ export function EventLog({
   return (
     <ol
       ref={listRef}
-      className="relative max-h-[22dvh] min-h-24 flex-1 overflow-y-auto overscroll-contain border border-amber-800/60 bg-black/60 p-2 font-mono text-xs leading-5 text-amber-300 phone-land:hidden md:max-h-48"
+      className="relative max-h-[22dvh] min-h-24 flex-1 overflow-y-auto overscroll-contain border border-amber-800/60 bg-black/60 p-2 font-mono text-xs leading-5 text-amber-300 md:max-h-48"
     >
       {lines.map((x, idx) => (
         <li

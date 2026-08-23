@@ -203,8 +203,8 @@ export function GameClient() {
             error={error}
           />
         ) : (
-          <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.2fr)_minmax(7.5rem,8.5rem)_minmax(9rem,12rem)] grid-rows-[minmax(0,1fr)_auto] gap-2">
-            <div className="col-start-1 row-start-1 min-h-0">
+          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)_auto] gap-2">
+            <div className="col-start-1 row-start-1 flex min-h-0 flex-col gap-2">
               <DungeonView
                 maze={result.maze}
                 pos={frame.pos}
@@ -212,17 +212,14 @@ export function GameClient() {
                 inCombat={frame.inCombat}
                 enemies={frame.enemies}
               />
+              <MiniMap maze={result.maze} frame={frame} />
             </div>
 
-            <aside className="col-start-2 row-start-1 flex min-h-0 flex-col">
-              <MiniMap maze={result.maze} frame={frame} />
-            </aside>
-
-            <aside className="col-start-3 row-start-1 min-h-0 overflow-y-auto">
+            <aside className="col-start-2 row-start-1 min-h-0 overflow-y-auto">
               <PartyRoster party={frame.party} />
             </aside>
 
-            <div className="col-span-3 row-start-2 flex min-h-0 flex-col gap-2">
+            <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
               {frame.inCombat && (
                 <p className="font-mono text-xs text-red-400">
                   FIGHTING: {frame.enemies.join(", ")}

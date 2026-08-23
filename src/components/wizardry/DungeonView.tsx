@@ -197,7 +197,7 @@ export function DungeonView({
   return (
     <div
       ref={wrapRef}
-      className="aspect-[8/5] h-full w-full max-h-[min(32dvh,15rem)] min-h-[9rem] overflow-hidden border border-amber-700/60 bg-black phone-land:aspect-auto phone-land:max-h-none phone-land:min-h-0 lg:max-h-[min(52dvh,28rem)]"
+      className="min-h-0 w-full flex-1 overflow-hidden border border-amber-700/60 bg-black"
     >
       <canvas
         ref={canvasRef}
