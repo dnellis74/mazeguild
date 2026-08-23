@@ -112,6 +112,16 @@ export function GameClient() {
   );
 
   useEffect(() => {
+    if (!result || !frame) return;
+    console.log("[maze]", {
+      pos: `${frame.pos.x},${frame.pos.y}`,
+      face: frame.facing.toUpperCase(),
+      xp: frame.score,
+      steps: cursor,
+    });
+  }, [result, frame, cursor]);
+
+  useEffect(() => {
     if (!playing || !result) return;
     const event = result.log[cursor];
     const base = event?.event === "step" ? STEP_MS : BATTLE_MS;
@@ -193,8 +203,8 @@ export function GameClient() {
             error={error}
           />
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-2 phone-land:grid phone-land:h-full phone-land:grid-cols-[minmax(0,1.35fr)_minmax(10.5rem,0.9fr)] phone-land:grid-rows-[auto_minmax(0,1fr)] phone-land:gap-2 lg:grid lg:h-full lg:grid-cols-[minmax(0,1fr)_12.5rem] lg:grid-rows-[auto_auto_auto_1fr]">
-            <div className="phone-land:col-start-1 phone-land:row-span-2 phone-land:row-start-1 phone-land:min-h-0 lg:col-start-1 lg:row-start-1">
+          <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.2fr)_minmax(7.5rem,8.5rem)_minmax(9rem,12rem)] grid-rows-[minmax(0,1fr)_auto] gap-2">
+            <div className="col-start-1 row-start-1 min-h-0">
               <DungeonView
                 maze={result.maze}
                 pos={frame.pos}
@@ -204,31 +214,20 @@ export function GameClient() {
               />
             </div>
 
-            <aside className="flex flex-row items-start gap-3 phone-land:col-start-2 phone-land:row-start-1 lg:col-start-2 lg:row-start-1 lg:flex-col">
+            <aside className="col-start-2 row-start-1 flex min-h-0 flex-col">
               <MiniMap maze={result.maze} frame={frame} />
-              <div className="font-mono text-xs leading-5 text-amber-500">
-                <div>
-                  POS {frame.pos.x},{frame.pos.y} FACE{" "}
-                  {frame.facing.toUpperCase()}
-                </div>
-                <div>XP {frame.score}</div>
-                <div>STEPS {cursor}</div>
-                {frame.outcome !== "ongoing" && (
-                  <div className="text-amber-200">{frame.outcome}</div>
-                )}
-              </div>
             </aside>
 
-            <div className="flex min-h-0 flex-col gap-2 phone-land:col-start-2 phone-land:row-start-2 phone-land:overflow-y-auto lg:col-span-2">
+            <aside className="col-start-3 row-start-1 min-h-0 overflow-y-auto">
               <PartyRoster party={frame.party} />
+            </aside>
+
+            <div className="col-span-3 row-start-2 flex min-h-0 flex-col gap-2">
               {frame.inCombat && (
                 <p className="font-mono text-xs text-red-400">
                   FIGHTING: {frame.enemies.join(", ")}
                 </p>
               )}
-              <p className="min-h-10 font-mono text-sm leading-5 text-amber-200">
-                {frame.lastNarrative}
-              </p>
               <input
                 type="range"
                 min={0}

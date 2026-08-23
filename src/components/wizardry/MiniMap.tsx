@@ -17,7 +17,7 @@ export function MiniMap({
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
-      className="aspect-square w-full max-w-[8.5rem] shrink-0 border border-amber-700/60 bg-black phone-land:max-w-[9rem] sm:max-w-[12.5rem]"
+      className="aspect-square w-full shrink-0 border border-amber-700/60 bg-black"
       aria-label="Explored maze map"
     >
       {maze.grid.flatMap((row, y) =>

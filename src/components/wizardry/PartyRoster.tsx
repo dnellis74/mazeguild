@@ -2,7 +2,7 @@ import type { PartySnapshot } from "@/sim/types";
 
 export function PartyRoster({ party }: { party: PartySnapshot[] }) {
   return (
-    <div className="grid grid-cols-2 gap-1.5 font-mono text-xs uppercase tracking-wide phone-land:grid-cols-3 lg:grid-cols-3">
+    <div className="flex flex-col gap-1.5 font-mono text-xs uppercase tracking-wide">
       {party.map((p) => {
         const dead = p.hp <= 0;
         const pct = p.maxHp > 0 ? p.hp / p.maxHp : 0;
