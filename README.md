@@ -65,7 +65,7 @@ curl -s -X POST http://localhost:3000/api/run \
 EOF
 ```
 
-Or import `runDungeon` from `src/sim` and call it in-process. The browser UI does that directly; the API is the same function.
+Or import `runDungeon` from `src/sim` and call it in-process. The browser UI posts to `/api/run`; the API is the same function.
 
 ### Event log
 

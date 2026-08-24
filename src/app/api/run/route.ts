@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
 import { runDungeon } from "@/sim/run";
-import type { SrdCharacter } from "@/sim/types";
+import type { DungeonResult, SrdCharacter } from "@/sim/types";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   let body: unknown;
   try {
     body = await request.json();
@@ -26,10 +25,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = runDungeon({
+  const result: DungeonResult = runDungeon({
     seed: Math.floor(seed),
     party: party as SrdCharacter[],
   });
+
   console.log(
     JSON.stringify({
       msg: "dungeon_run",
@@ -39,5 +39,6 @@ export async function POST(request: NextRequest) {
       events: result.log.length,
     }),
   );
+
   return Response.json(result);
 }

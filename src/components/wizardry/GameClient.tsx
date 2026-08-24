@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { projectFrame } from "@/replay/project";
-import { runDungeon } from "@/sim/run";
 import type { DungeonResult, SrdCharacter } from "@/sim/types";
 import { DungeonView } from "./DungeonView";
 import { EventLog } from "./EventLog";
@@ -32,6 +31,7 @@ export function GameClient() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [busy, setBusy] = useState(true);
+  const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export function GameClient() {
     });
   }, []);
 
-  const enterTavern = useCallback(() => {
+  const enterMaze = useCallback(async () => {
     if (selected.length !== PARTY_SIZE) {
       setError("Hire 6 companions first.");
       return;
@@ -99,10 +99,25 @@ export function GameClient() {
       return;
     }
     setError(null);
-    const next = runDungeon({ seed, party });
-    setResult(next);
-    setCursor(0);
-    setPlaying(false);
+    setRunning(true);
+    try {
+      const res = await fetch("/api/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ seed, party }),
+      });
+      const data = (await res.json()) as DungeonResult & { error?: string };
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? "maze run failed");
+      }
+      setResult(data);
+      setCursor(0);
+      setPlaying(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "maze run failed");
+    } finally {
+      setRunning(false);
+    }
   }, [seed, selected, patrons]);
 
   function backToTown() {
@@ -264,6 +279,8 @@ export function GameClient() {
               ) : (
                 <EventLog log={result.log} cursor={cursor} />
               )
+            ) : running ? (
+              <TownLog lines={["The maze is being prepared…"]} />
             ) : (
               <TownLog lines={TOWN_LINES} />
             )}
@@ -283,11 +300,11 @@ export function GameClient() {
         ) : (
           <button
             type="button"
-            onClick={enterTavern}
-            disabled={busy || selected.length !== PARTY_SIZE}
+            onClick={() => void enterMaze()}
+            disabled={busy || running || selected.length !== PARTY_SIZE}
             className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
           >
-            ENTER MAZE
+            {running ? "…" : "ENTER MAZE"}
           </button>
         )}
         <button
