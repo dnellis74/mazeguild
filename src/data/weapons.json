@@ -1,0 +1,91 @@
+{
+  "_source_notes": {
+    "weapons": "SRD 5.1 weapon stats (damage dice and properties). Used by combat simulation.",
+    "class_fallback": "Default melee weapon when a character has no parsed equipment weapons.",
+    "monster_weapons": "Weapon assigned to each monster type in encounters."
+  },
+
+  "weapons": {
+    "greataxe": {
+      "name": "Greataxe",
+      "damage": { "count": 1, "sides": 12 },
+      "damageType": "slashing",
+      "properties": ["Heavy", "Two-handed"]
+    },
+    "longsword": {
+      "name": "Longsword",
+      "damage": { "count": 1, "sides": 8 },
+      "damageType": "slashing",
+      "properties": ["Versatile (1d10)"]
+    },
+    "shortsword": {
+      "name": "Shortsword",
+      "damage": { "count": 1, "sides": 6 },
+      "damageType": "piercing",
+      "properties": ["Finesse", "Light"]
+    },
+    "mace": {
+      "name": "Mace",
+      "damage": { "count": 1, "sides": 6 },
+      "damageType": "bludgeoning",
+      "properties": []
+    },
+    "scimitar": {
+      "name": "Scimitar",
+      "damage": { "count": 1, "sides": 6 },
+      "damageType": "slashing",
+      "properties": ["Finesse", "Light"]
+    },
+    "rapier": {
+      "name": "Rapier",
+      "damage": { "count": 1, "sides": 8 },
+      "damageType": "piercing",
+      "properties": ["Finesse"]
+    },
+    "dagger": {
+      "name": "Dagger",
+      "damage": { "count": 1, "sides": 4 },
+      "damageType": "piercing",
+      "properties": ["Finesse", "Light", "Thrown (20/60)"]
+    },
+    "morningstar": {
+      "name": "Morningstar",
+      "damage": { "count": 1, "sides": 8 },
+      "damageType": "piercing",
+      "properties": []
+    },
+    "unarmed": {
+      "name": "Unarmed strike",
+      "damage": { "count": 1, "sides": 1 },
+      "damageType": "bludgeoning",
+      "properties": []
+    },
+    "monk_unarmed": {
+      "name": "Unarmed strike",
+      "damage": { "count": 1, "sides": 4 },
+      "damageType": "bludgeoning",
+      "properties": ["Finesse"]
+    }
+  },
+
+  "class_fallback": {
+    "Barbarian": "greataxe",
+    "Fighter": "longsword",
+    "Paladin": "longsword",
+    "Ranger": "shortsword",
+    "Rogue": "shortsword",
+    "Monk": "shortsword",
+    "Cleric": "mace",
+    "Druid": "scimitar",
+    "Bard": "rapier",
+    "Wizard": "dagger",
+    "Sorcerer": "dagger",
+    "Warlock": "dagger"
+  },
+
+  "monster_weapons": {
+    "Goblin": "scimitar",
+    "Hobgoblin": "longsword",
+    "Bugbear": "morningstar"
+  }
+}

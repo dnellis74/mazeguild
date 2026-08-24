@@ -1,4 +1,8 @@
 import { abilityMod } from "./rules";
+import {
+  classFallbackWeapon,
+  monkUnarmedWeapon,
+} from "./weapons";
 import type {
   Ability,
   Combatant,
@@ -13,40 +17,6 @@ const ABILITIES: Ability[] = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 const TANK = new Set(["Barbarian", "Fighter", "Paladin"]);
 const HEALER = new Set(["Cleric", "Druid", "Bard"]);
 const SPELL_HEALER = new Set(["Cleric", "Druid", "Bard", "Ranger"]);
-
-function weapon(
-  name: string,
-  count: number,
-  sides: number,
-  damageType: string,
-  properties: string[],
-): Weapon {
-  return {
-    name,
-    damage: { count, sides },
-    damageType,
-    properties,
-    finesse: properties.some((p) => /finesse/i.test(p)),
-    ranged: properties.some((p) => /ammunition/i.test(p)),
-  };
-}
-
-const FALLBACK: Record<string, Weapon> = {
-  Barbarian: weapon("Greataxe", 1, 12, "slashing", ["Heavy", "Two-handed"]),
-  Fighter: weapon("Longsword", 1, 8, "slashing", ["Versatile (1d10)"]),
-  Paladin: weapon("Longsword", 1, 8, "slashing", ["Versatile (1d10)"]),
-  Ranger: weapon("Shortsword", 1, 6, "piercing", ["Finesse", "Light"]),
-  Rogue: weapon("Shortsword", 1, 6, "piercing", ["Finesse", "Light"]),
-  Monk: weapon("Shortsword", 1, 6, "piercing", ["Finesse", "Light"]),
-  Cleric: weapon("Mace", 1, 6, "bludgeoning", []),
-  Druid: weapon("Scimitar", 1, 6, "slashing", ["Finesse", "Light"]),
-  Bard: weapon("Rapier", 1, 8, "piercing", ["Finesse"]),
-  Wizard: weapon("Dagger", 1, 4, "piercing", ["Finesse", "Light", "Thrown (20/60)"]),
-  Sorcerer: weapon("Dagger", 1, 4, "piercing", ["Finesse", "Light", "Thrown (20/60)"]),
-  Warlock: weapon("Dagger", 1, 4, "piercing", ["Finesse", "Light", "Thrown (20/60)"]),
-};
-
-const UNARMED = weapon("Unarmed strike", 1, 1, "bludgeoning", []);
 
 function parseDamage(text: string): { expr: DiceExpr; type: string } | null {
   const m = text.match(/(\d+)d(\d+)\s+(\w+)/i);
@@ -101,9 +71,9 @@ function pickWeapon(ch: SrdCharacter, className: string): Weapon {
     });
   }
   if (className === "Monk") {
-    return weapon("Unarmed strike", 1, 4, "bludgeoning", ["Finesse"]);
+    return monkUnarmedWeapon();
   }
-  return FALLBACK[className] ?? UNARMED;
+  return classFallbackWeapon(className);
 }
 
 function traitsOf(ch: SrdCharacter): string {

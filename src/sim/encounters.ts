@@ -4,34 +4,8 @@ import {
   type EncounterMonsterGroup,
 } from "./encounterScaling";
 import type { Rng } from "./rng";
-import type { Combatant, Weapon } from "./types";
-
-const SCIMITAR: Weapon = {
-  name: "Scimitar",
-  damage: { count: 1, sides: 6 },
-  damageType: "slashing",
-  properties: ["Finesse", "Light"],
-  finesse: true,
-  ranged: false,
-};
-
-const LONGSWORD: Weapon = {
-  name: "Longsword",
-  damage: { count: 1, sides: 8 },
-  damageType: "slashing",
-  properties: ["Versatile (1d10)"],
-  finesse: false,
-  ranged: false,
-};
-
-const MORNINGSTAR: Weapon = {
-  name: "Morningstar",
-  damage: { count: 1, sides: 8 },
-  damageType: "piercing",
-  properties: [],
-  finesse: false,
-  ranged: false,
-};
+import { monsterWeapon } from "./weapons";
+import type { Combatant } from "./types";
 
 const GOBLIN = {
   STR: 8,
@@ -82,7 +56,6 @@ type MonsterBlueprint = {
   ac: number;
   hp: number;
   abilities: Record<"STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA", number>;
-  weapon: Weapon;
   xpValue: number;
 };
 
@@ -91,21 +64,18 @@ const MONSTER_STATS: Record<string, MonsterBlueprint> = {
     ac: 15,
     hp: 7,
     abilities: GOBLIN,
-    weapon: SCIMITAR,
     xpValue: 50,
   },
   Hobgoblin: {
     ac: 18,
     hp: 11,
     abilities: HOBGOBLIN,
-    weapon: LONGSWORD,
     xpValue: 100,
   },
   Bugbear: {
     ac: 16,
     hp: 27,
     abilities: BUGBEAR,
-    weapon: MORNINGSTAR,
     xpValue: 200,
   },
 };
@@ -128,7 +98,7 @@ function expandGroups(
           ac: stats.ac,
           hp: stats.hp,
           abilities: stats.abilities,
-          weapon: stats.weapon,
+          weapon: monsterWeapon(group.type),
           xpValue: stats.xpValue,
         }),
       );
