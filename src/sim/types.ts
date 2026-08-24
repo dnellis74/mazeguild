@@ -124,6 +124,7 @@ export type SrdCharacter = {
   background?: string;
   alignment?: string;
   meta?: { source?: string; level?: number; note?: string };
+  xp?: number;
   ability_scores: Record<string, { score: number; modifier?: string }>;
   proficiency_bonus: string | number;
   saving_throws?: Record<string, string>;
@@ -145,6 +146,7 @@ export type SrdCharacter = {
   high_elf_bonus_cantrip?: string | null;
   tiefling_cantrip?: string | null;
   class_features_level_1?: string[];
+  class_features?: string[];
   spellcasting?: {
     ability?: string;
     spell_save_dc?: number;

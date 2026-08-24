@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { applyTavernReturn, characterLabel, sortPatrons } from "@/campaign/tavern";
 import { projectFrame } from "@/replay/project";
 import type { DungeonResult, SrdCharacter } from "@/sim/types";
 import { CharacterSheet } from "./CharacterSheet";
@@ -26,22 +27,28 @@ const TOWN_LINES = [
 export function GameClient() {
   const [seed, setSeed] = useState(99);
   const [patrons, setPatrons] = useState<SrdCharacter[]>([]);
-  const [selected, setSelected] = useState<number[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [disabled, setDisabled] = useState<string[]>([]);
   const [result, setResult] = useState<DungeonResult | null>(null);
+  const [runParty, setRunParty] = useState<string[]>([]);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [busy, setBusy] = useState(true);
   const [running, setRunning] = useState(false);
-  const [inspecting, setInspecting] = useState<number | null>(null);
+  const [inspecting, setInspecting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [campaignStarted, setCampaignStarted] = useState(false);
 
   useEffect(() => {
+    if (campaignStarted) return;
+
     const ac = new AbortController();
     const id = window.setTimeout(() => {
       setBusy(true);
       setError(null);
       setResult(null);
+      setRunParty([]);
       setPlaying(false);
       setSelected([]);
       setInspecting(null);
@@ -65,7 +72,7 @@ export function GameClient() {
           if (!res.ok || !data.party) {
             throw new Error(data.error ?? "tavern failed to fill");
           }
-          setPatrons(data.party);
+          setPatrons(sortPatrons(data.party));
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") return;
           setPatrons([]);
@@ -79,27 +86,27 @@ export function GameClient() {
       window.clearTimeout(id);
       ac.abort();
     };
-  }, [seed]);
+  }, [seed, campaignStarted]);
 
   const actOnInspected = useCallback(() => {
-    if (inspecting === null) return;
+    if (inspecting === null || disabled.includes(inspecting)) return;
     setSelected((cur) => {
       if (cur.includes(inspecting)) {
-        return cur.filter((i) => i !== inspecting);
+        return cur.filter((label) => label !== inspecting);
       }
       if (cur.length >= PARTY_SIZE) return cur;
       return [...cur, inspecting];
     });
     setInspecting(null);
-  }, [inspecting]);
+  }, [inspecting, disabled]);
 
   const enterMaze = useCallback(async () => {
-    if (selected.length !== PARTY_SIZE) {
+    if (selected.length !== PARTY_SIZE || selected.some((label) => disabled.includes(label))) {
       setError("Hire 6 companions first.");
       return;
     }
     const party = selected
-      .map((i) => patrons[i])
+      .map((label) => patrons.find((ch) => characterLabel(ch) === label))
       .filter((ch): ch is SrdCharacter => ch !== undefined);
     if (party.length !== PARTY_SIZE) {
       setError("Hire 6 companions first.");
@@ -107,6 +114,7 @@ export function GameClient() {
     }
     setError(null);
     setRunning(true);
+    setRunParty([...selected]);
     try {
       const res = await fetch("/api/run", {
         method: "POST",
@@ -120,17 +128,43 @@ export function GameClient() {
       setResult(data);
       setCursor(0);
       setPlaying(false);
+      setCampaignStarted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "maze run failed");
     } finally {
       setRunning(false);
     }
-  }, [seed, selected, patrons]);
+  }, [seed, selected, patrons, disabled]);
 
-  function backToTown() {
+  const returnToTavern = useCallback(() => {
+    if (!result) return;
+    const finalFrame = projectFrame(result, result.log.length - 1);
+    const wiped = finalFrame.outcome === "wipe";
+
+    setPatrons((current) =>
+      applyTavernReturn(current, runParty, finalFrame.party, wiped),
+    );
+
+    if (wiped) {
+      setDisabled((current) =>
+        [...new Set([...current, ...runParty])].sort((a, b) =>
+          a.localeCompare(b),
+        ),
+      );
+    }
+
     setResult(null);
+    setRunParty([]);
+    setSelected([]);
     setPlaying(false);
-  }
+    setCursor(0);
+    setInspecting(null);
+    setError(
+      wiped
+        ? "The party was wiped. Those adventurers are gone."
+        : null,
+    );
+  }, [result, runParty]);
 
   const frame = useMemo(
     () => (result ? projectFrame(result, cursor) : null),
@@ -178,12 +212,15 @@ export function GameClient() {
 
   const atEnd = !result || cursor >= result.log.length - 1;
   const sheet =
-    inspecting !== null && !inMaze ? patrons[inspecting] : undefined;
+    inspecting !== null && !inMaze
+      ? patrons.find((ch) => characterLabel(ch) === inspecting)
+      : undefined;
   const sheetHired = inspecting !== null && selected.includes(inspecting);
+  const sheetDisabled = inspecting !== null && disabled.includes(inspecting);
   const sheetHireBlocked =
     inspecting !== null &&
     !sheetHired &&
-    selected.length >= PARTY_SIZE;
+    (sheetDisabled || selected.length >= PARTY_SIZE);
 
   return (
     <div className="crt flex h-dvh max-h-dvh flex-col overflow-hidden px-[max(1rem,var(--safe-left))] pt-[max(0.5rem,var(--safe-top))] pr-[max(1rem,var(--safe-right))] text-amber-300">
@@ -198,10 +235,10 @@ export function GameClient() {
           {inMaze ? (
             <button
               type="button"
-              onClick={backToTown}
+              onClick={returnToTavern}
               className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500 underline-offset-2 hover:text-amber-300"
             >
-              THE MAZE
+              RETURN TO TAVERN
             </button>
           ) : sheet ? (
             <p className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500">
@@ -223,9 +260,10 @@ export function GameClient() {
             autoCorrect="off"
             spellCheck={false}
             value={seed}
+            disabled={campaignStarted}
             onChange={(e) => setSeed(Number(e.target.value))}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-[5.5rem] border border-amber-700 bg-black px-2 text-amber-200"
+            className="w-[5.5rem] border border-amber-700 bg-black px-2 text-amber-200 disabled:opacity-40"
             aria-label="Dungeon seed"
           />
         </label>
@@ -233,7 +271,13 @@ export function GameClient() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain py-2 phone-land:overflow-hidden lg:overflow-hidden">
         {sheet ? (
-          <CharacterSheet character={sheet} />
+          <CharacterSheet
+            character={sheet}
+            hired={sheetHired}
+            hireBlocked={sheetHireBlocked}
+            onHire={actOnInspected}
+            onBack={() => setInspecting(null)}
+          />
         ) : (
           <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)_auto] gap-2">
             <div className="col-start-1 row-start-1 flex min-h-0 flex-col gap-2">
@@ -265,6 +309,7 @@ export function GameClient() {
                   mode="hire"
                   patrons={patrons}
                   selected={selected}
+                  disabled={disabled}
                   onInspect={setInspecting}
                   busy={busy}
                 />
@@ -311,32 +356,23 @@ export function GameClient() {
       </main>
 
       <nav className="relative z-20 grid shrink-0 grid-cols-4 gap-2 border-t border-amber-900/70 bg-[#050301] pt-2 pb-[max(0.5rem,var(--safe-bottom))] phone-land:flex sm:flex sm:flex-wrap">
-        {sheet ? (
+        {inMaze ? (
           <>
             <button
               type="button"
-              onClick={actOnInspected}
-              disabled={!sheetHired && sheetHireBlocked}
+              onClick={() => setPlaying((p) => !p)}
               className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
             >
-              {sheetHired ? "DISMISS" : "HIRE"}
+              {playing ? "PAUSE" : "PLAY"}
             </button>
             <button
               type="button"
-              onClick={() => setInspecting(null)}
+              onClick={returnToTavern}
               className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
             >
-              BACK TO TAVERN
+              RETURN TO TAVERN
             </button>
           </>
-        ) : inMaze ? (
-          <button
-            type="button"
-            onClick={() => setPlaying((p) => !p)}
-            className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
-          >
-            {playing ? "PAUSE" : "PLAY"}
-          </button>
         ) : (
           <button
             type="button"
@@ -347,7 +383,7 @@ export function GameClient() {
             {running ? "…" : "ENTER MAZE"}
           </button>
         )}
-        {!sheet ? (
+        {inMaze ? (
           <>
             <button
               type="button"

@@ -157,7 +157,7 @@ export function characterToCombatant(
     layOnHands: /Lay on Hands/i.test(traits) ? 5 : 0,
     spellMod: abilityMod(abilities[spellAbility]),
     healDice: { count: 1, sides: 8 },
-    xp: 0,
+    xp: ch.xp ?? 0,
     xpValue: 0,
   };
 }

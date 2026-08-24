@@ -1,11 +1,14 @@
 import type { PartySnapshot } from "@/sim/types";
 import type { SrdCharacter } from "@/sim/types";
+import { characterLabel } from "@/campaign/tavern";
+import { computeMaxHp } from "@/sim/leveling";
 
 type HireProps = {
   mode: "hire";
   patrons: SrdCharacter[];
-  selected: number[];
-  onInspect: (index: number) => void;
+  selected: string[];
+  disabled?: string[];
+  onInspect: (label: string) => void;
   busy?: boolean;
 };
 
@@ -16,42 +19,49 @@ type PartyProps = {
 
 export function PartyRoster(props: HireProps | PartyProps) {
   if (props.mode === "hire") {
-    const { patrons, selected, onInspect, busy } = props;
+    const { patrons, selected, disabled = [], onInspect, busy } = props;
+    const disabledSet = new Set(disabled);
     return (
       <div className="flex h-full min-h-0 flex-col gap-1 font-mono text-[10px] uppercase leading-tight tracking-wide sm:gap-1.5 sm:text-xs sm:leading-normal">
         <p className="shrink-0 text-amber-500">{selected.length}/6 HIRED</p>
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain sm:gap-1.5">
-          {patrons.map((ch, index) => {
-            const on = selected.includes(index);
+          {patrons.map((ch) => {
+            const label = characterLabel(ch);
+            const on = selected.includes(label);
+            const dead = disabledSet.has(label);
             const full = selected.length >= 6 && !on;
             const hp = ch.hit_points.value;
-            const label = ch.name?.trim() || `${ch.race} ${ch.class}`;
+            const maxHp = computeMaxHp(ch, ch.meta?.level ?? 1);
+            const level = ch.meta?.level ?? 1;
+            const xp = ch.xp ?? 0;
             return (
               <button
-                key={`${label}-${index}`}
+                key={label}
                 type="button"
                 aria-pressed={on}
-                disabled={busy}
-                onClick={() => onInspect(index)}
-                className={`shrink-0 border px-1.5 py-1 text-left select-none touch-manipulation sm:px-2 sm:py-1.5 ${
-                  on
-                    ? "border-amber-400 bg-amber-900/50 text-amber-100"
-                    : full
-                      ? "border-amber-900/40 text-amber-700"
-                      : "border-amber-800/70 text-amber-200"
+                disabled={busy || dead}
+                onClick={() => onInspect(label)}
+                className={`shrink-0 border px-1.5 py-1 text-left select-none touch-manipulation disabled:opacity-40 sm:px-2 sm:py-1.5 ${
+                  dead
+                    ? "border-red-900/70 text-red-600"
+                    : on
+                      ? "border-amber-400 bg-amber-900/50 text-amber-100"
+                      : full
+                        ? "border-amber-900/40 text-amber-700"
+                        : "border-amber-800/70 text-amber-200"
                 }`}
               >
                 <div className="flex justify-between gap-2">
                   <span className="truncate">{label}</span>
                   <span className="shrink-0 tabular-nums">
-                    {hp}/{hp}
+                    {dead ? "FALLEN" : `${hp}/${maxHp}`}
                   </span>
                 </div>
                 <div className="flex justify-between gap-2 text-amber-600/80">
                   <span className="truncate">
-                    {ch.race} {ch.class}
+                    {ch.race} {ch.class} L{level}
                   </span>
-                  <span className="shrink-0 tabular-nums">XP 0</span>
+                  <span className="shrink-0 tabular-nums">XP {xp}</span>
                 </div>
               </button>
             );

@@ -24,7 +24,22 @@ function list(items: string[] | undefined): string | null {
   return items.join(", ");
 }
 
-export function CharacterSheet({ character }: { character: SrdCharacter }) {
+const tap =
+  "inline-flex min-h-11 min-w-11 items-center justify-center border px-3 font-mono text-sm tracking-wide select-none touch-manipulation disabled:opacity-40";
+
+export function CharacterSheet({
+  character,
+  hired,
+  hireBlocked,
+  onHire,
+  onBack,
+}: {
+  character: SrdCharacter;
+  hired: boolean;
+  hireBlocked: boolean;
+  onHire: () => void;
+  onBack: () => void;
+}) {
   const name = character.name?.trim() || `${character.race} ${character.class}`;
   const abilities = ["STR", "DEX", "CON", "INT", "WIS", "CHA"] as const;
   const gear = [
@@ -41,15 +56,40 @@ export function CharacterSheet({ character }: { character: SrdCharacter }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden font-mono text-xs uppercase tracking-wide text-amber-300">
+      <div className="grid shrink-0 grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={onHire}
+          disabled={!hired && hireBlocked}
+          className={`${tap} border-amber-400 bg-amber-900/40 text-amber-100`}
+        >
+          {hired ? "DISMISS" : "HIRE"}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          className={`${tap} border-amber-700`}
+        >
+          BACK TO TAVERN
+        </button>
+      </div>
+
       <header className="shrink-0 border border-amber-700/70 bg-black/60 px-3 py-2">
         <h2 className="text-base tracking-widest text-amber-100 sm:text-lg">
           {name}
         </h2>
         <p className="text-amber-500">
-          {[character.subrace || character.race, character.class, "Level 1"]
+          {[
+            character.subrace || character.race,
+            character.class,
+            `Level ${character.meta?.level ?? 1}`,
+          ]
             .filter(Boolean)
             .join(" · ")}
         </p>
+        {(character.xp ?? 0) > 0 ? (
+          <p className="text-amber-600/90 tabular-nums">XP {character.xp}</p>
+        ) : null}
         <p className="text-amber-600/90">
           {[character.background, character.alignment].filter(Boolean).join(" · ")}
         </p>
@@ -142,12 +182,15 @@ export function CharacterSheet({ character }: { character: SrdCharacter }) {
         </Section>
 
         <Section title="Class Features">
-          {character.class_features_level_1 &&
-          character.class_features_level_1.length > 0 ? (
+          {(character.class_features ?? character.class_features_level_1) &&
+          (character.class_features ?? character.class_features_level_1)!
+            .length > 0 ? (
             <ul className="list-none space-y-1 normal-case tracking-normal">
-              {character.class_features_level_1.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
+              {(character.class_features ?? character.class_features_level_1)!.map(
+                (t) => (
+                  <li key={t}>{t}</li>
+                ),
+              )}
             </ul>
           ) : null}
         </Section>
