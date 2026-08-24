@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { projectFrame } from "@/replay/project";
 import type { DungeonResult, SrdCharacter } from "@/sim/types";
+import { CharacterSheet } from "./CharacterSheet";
 import { DungeonView } from "./DungeonView";
 import { EventLog } from "./EventLog";
 import { MiniMap } from "./MiniMap";
@@ -32,6 +33,7 @@ export function GameClient() {
   const [speed, setSpeed] = useState(1);
   const [busy, setBusy] = useState(true);
   const [running, setRunning] = useState(false);
+  const [inspecting, setInspecting] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export function GameClient() {
       setResult(null);
       setPlaying(false);
       setSelected([]);
+      setInspecting(null);
       void (async () => {
         try {
           const res = await fetch("/api/party", {
@@ -78,13 +81,17 @@ export function GameClient() {
     };
   }, [seed]);
 
-  const toggleHire = useCallback((index: number) => {
+  const actOnInspected = useCallback(() => {
+    if (inspecting === null) return;
     setSelected((cur) => {
-      if (cur.includes(index)) return cur.filter((i) => i !== index);
+      if (cur.includes(inspecting)) {
+        return cur.filter((i) => i !== inspecting);
+      }
       if (cur.length >= PARTY_SIZE) return cur;
-      return [...cur, index];
+      return [...cur, inspecting];
     });
-  }, []);
+    setInspecting(null);
+  }, [inspecting]);
 
   const enterMaze = useCallback(async () => {
     if (selected.length !== PARTY_SIZE) {
@@ -170,6 +177,13 @@ export function GameClient() {
   }
 
   const atEnd = !result || cursor >= result.log.length - 1;
+  const sheet =
+    inspecting !== null && !inMaze ? patrons[inspecting] : undefined;
+  const sheetHired = inspecting !== null && selected.includes(inspecting);
+  const sheetHireBlocked =
+    inspecting !== null &&
+    !sheetHired &&
+    selected.length >= PARTY_SIZE;
 
   return (
     <div className="crt flex h-dvh max-h-dvh flex-col overflow-hidden px-[max(1rem,var(--safe-left))] pt-[max(0.5rem,var(--safe-top))] pr-[max(1rem,var(--safe-right))] text-amber-300">
@@ -189,6 +203,10 @@ export function GameClient() {
             >
               THE MAZE
             </button>
+          ) : sheet ? (
+            <p className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500">
+              CHARACTER SHEET
+            </p>
           ) : (
             <p className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500">
               A BUSY TOWN
@@ -214,82 +232,104 @@ export function GameClient() {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain py-2 phone-land:overflow-hidden lg:overflow-hidden">
-        <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)_auto] gap-2">
-          <div className="col-start-1 row-start-1 flex min-h-0 flex-col gap-2">
-            {inMaze && frame && result ? (
-              <>
-                <DungeonView
-                  scene="maze"
-                  maze={result.maze}
-                  pos={frame.pos}
-                  facing={frame.facing}
-                  inCombat={frame.inCombat}
-                  enemies={frame.enemies}
-                />
-                <MiniMap maze={result.maze} frame={frame} />
-              </>
-            ) : (
-              <>
-                <DungeonView scene="town" />
-                <TownMap />
-              </>
-            )}
-          </div>
-
-          <aside className="col-start-2 row-start-1 min-h-0 overflow-hidden">
-            {inMaze && frame ? (
-              <PartyRoster party={frame.party} />
-            ) : (
-              <PartyRoster
-                mode="hire"
-                patrons={patrons}
-                selected={selected}
-                onToggle={toggleHire}
-                busy={busy}
-              />
-            )}
-          </aside>
-
-          <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
-            {error ? (
-              <p className="font-mono text-xs text-amber-200">{error}</p>
-            ) : null}
-            {inMaze && frame?.inCombat ? (
-              <p className="font-mono text-xs text-red-400">
-                FIGHTING: {frame.enemies.join(", ")}
-              </p>
-            ) : null}
-            {inMaze && result ? (
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, result.log.length - 1)}
-                value={cursor}
-                onChange={(e) => {
-                  setPlaying(false);
-                  setCursor(Number(e.target.value));
-                }}
-                className="w-full"
-                aria-label="Replay position"
-              />
-            ) : null}
-            {inMaze && result ? (
-              cursor === 0 && !playing ? (
-                <TownLog lines={["Press PLAY to see the party's fate."]} />
+        {sheet ? (
+          <CharacterSheet character={sheet} />
+        ) : (
+          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)_auto] gap-2">
+            <div className="col-start-1 row-start-1 flex min-h-0 flex-col gap-2">
+              {inMaze && frame && result ? (
+                <>
+                  <DungeonView
+                    scene="maze"
+                    maze={result.maze}
+                    pos={frame.pos}
+                    facing={frame.facing}
+                    inCombat={frame.inCombat}
+                    enemies={frame.enemies}
+                  />
+                  <MiniMap maze={result.maze} frame={frame} />
+                </>
               ) : (
-                <EventLog log={result.log} cursor={cursor} />
-              )
-            ) : running ? (
-              <TownLog lines={["The maze is being prepared…"]} />
-            ) : (
-              <TownLog lines={TOWN_LINES} />
-            )}
+                <>
+                  <DungeonView scene="town" />
+                  <TownMap />
+                </>
+              )}
+            </div>
+
+            <aside className="col-start-2 row-start-1 min-h-0 overflow-hidden">
+              {inMaze && frame ? (
+                <PartyRoster party={frame.party} />
+              ) : (
+                <PartyRoster
+                  mode="hire"
+                  patrons={patrons}
+                  selected={selected}
+                  onInspect={setInspecting}
+                  busy={busy}
+                />
+              )}
+            </aside>
+
+            <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
+              {error ? (
+                <p className="font-mono text-xs text-amber-200">{error}</p>
+              ) : null}
+              {inMaze && frame?.inCombat ? (
+                <p className="font-mono text-xs text-red-400">
+                  FIGHTING: {frame.enemies.join(", ")}
+                </p>
+              ) : null}
+              {inMaze && result ? (
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, result.log.length - 1)}
+                  value={cursor}
+                  onChange={(e) => {
+                    setPlaying(false);
+                    setCursor(Number(e.target.value));
+                  }}
+                  className="w-full"
+                  aria-label="Replay position"
+                />
+              ) : null}
+              {inMaze && result ? (
+                cursor === 0 && !playing ? (
+                  <TownLog lines={["Press PLAY to see the party's fate."]} />
+                ) : (
+                  <EventLog log={result.log} cursor={cursor} />
+                )
+              ) : running ? (
+                <TownLog lines={["The maze is being prepared…"]} />
+              ) : (
+                <TownLog lines={TOWN_LINES} />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       <nav className="relative z-20 grid shrink-0 grid-cols-4 gap-2 border-t border-amber-900/70 bg-[#050301] pt-2 pb-[max(0.5rem,var(--safe-bottom))] phone-land:flex sm:flex sm:flex-wrap">
-        {inMaze ? (
+        {sheet ? (
+          <>
+            <button
+              type="button"
+              onClick={actOnInspected}
+              disabled={!sheetHired && sheetHireBlocked}
+              className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
+            >
+              {sheetHired ? "DISMISS" : "HIRE"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setInspecting(null)}
+              className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
+            >
+              BACK TO TAVERN
+            </button>
+          </>
+        ) : inMaze ? (
           <button
             type="button"
             onClick={() => setPlaying((p) => !p)}
@@ -307,40 +347,44 @@ export function GameClient() {
             {running ? "…" : "ENTER MAZE"}
           </button>
         )}
-        <button
-          type="button"
-          disabled={atEnd}
-          onClick={() => {
-            setPlaying(false);
-            setCursor((c) => c + 1);
-          }}
-          className={`${tap} border-amber-700 phone-land:flex-1 sm:flex-1`}
-        >
-          STEP
-        </button>
-        <label
-          className={`${tap} col-span-2 gap-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
-        >
-          SPD
-          <select
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
-            className="min-h-0 border-0 bg-transparent py-0"
-            aria-label="Playback speed"
-          >
-            <option value={1}>1x</option>
-            <option value={2}>2x</option>
-            <option value={4}>4x</option>
-          </select>
-        </label>
-        <button
-          type="button"
-          disabled={!result}
-          onClick={download}
-          className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
-        >
-          JSON
-        </button>
+        {!sheet ? (
+          <>
+            <button
+              type="button"
+              disabled={atEnd}
+              onClick={() => {
+                setPlaying(false);
+                setCursor((c) => c + 1);
+              }}
+              className={`${tap} border-amber-700 phone-land:flex-1 sm:flex-1`}
+            >
+              STEP
+            </button>
+            <label
+              className={`${tap} col-span-2 gap-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
+            >
+              SPD
+              <select
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+                className="min-h-0 border-0 bg-transparent py-0"
+                aria-label="Playback speed"
+              >
+                <option value={1}>1x</option>
+                <option value={2}>2x</option>
+                <option value={4}>4x</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              disabled={!result}
+              onClick={download}
+              className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
+            >
+              JSON
+            </button>
+          </>
+        ) : null}
       </nav>
     </div>
   );

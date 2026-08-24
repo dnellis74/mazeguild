@@ -5,7 +5,7 @@ type HireProps = {
   mode: "hire";
   patrons: SrdCharacter[];
   selected: number[];
-  onToggle: (index: number) => void;
+  onInspect: (index: number) => void;
   busy?: boolean;
 };
 
@@ -16,7 +16,7 @@ type PartyProps = {
 
 export function PartyRoster(props: HireProps | PartyProps) {
   if (props.mode === "hire") {
-    const { patrons, selected, onToggle, busy } = props;
+    const { patrons, selected, onInspect, busy } = props;
     return (
       <div className="flex h-full min-h-0 flex-col gap-1 font-mono text-[10px] uppercase leading-tight tracking-wide sm:gap-1.5 sm:text-xs sm:leading-normal">
         <p className="shrink-0 text-amber-500">{selected.length}/6 HIRED</p>
@@ -31,8 +31,8 @@ export function PartyRoster(props: HireProps | PartyProps) {
                 key={`${label}-${index}`}
                 type="button"
                 aria-pressed={on}
-                disabled={busy || (full && !on)}
-                onClick={() => onToggle(index)}
+                disabled={busy}
+                onClick={() => onInspect(index)}
                 className={`shrink-0 border px-1.5 py-1 text-left select-none touch-manipulation sm:px-2 sm:py-1.5 ${
                   on
                     ? "border-amber-400 bg-amber-900/50 text-amber-100"
