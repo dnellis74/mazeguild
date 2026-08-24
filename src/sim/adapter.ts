@@ -1,3 +1,4 @@
+import { CLASS_ATTACK_CANTRIP } from "./cantrips";
 import { abilityMod } from "./rules";
 import {
   classFallbackWeapon,
@@ -17,6 +18,15 @@ const ABILITIES: Ability[] = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 const TANK = new Set(["Barbarian", "Fighter", "Paladin"]);
 const HEALER = new Set(["Cleric", "Druid", "Bard"]);
 const SPELL_HEALER = new Set(["Cleric", "Druid", "Bard", "Ranger"]);
+
+const ATTACK_CANTRIPS = new Set(Object.values(CLASS_ATTACK_CANTRIP));
+
+function assignedAttackCantrip(ch: SrdCharacter): string | undefined {
+  const known = ch.spellcasting?.cantrips_known?.find((name) =>
+    ATTACK_CANTRIPS.has(name),
+  );
+  return known ?? CLASS_ATTACK_CANTRIP[ch.class];
+}
 
 function parseDamage(text: string): { expr: DiceExpr; type: string } | null {
   const m = text.match(/(\d+)d(\d+)\s+(\w+)/i);
@@ -119,6 +129,7 @@ export function characterToCombatant(
     hp: ch.hit_points?.value ?? 8,
     alive: true,
     weapon: pickWeapon(ch, className),
+    cantrip: assignedAttackCantrip(ch),
     lucky: /Lucky/i.test(traits) || race === "Halfling",
     relentless: /Relentless Endurance/i.test(traits),
     relentlessUsed: false,

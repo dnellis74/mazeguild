@@ -103,4 +103,21 @@ describe("generateParty", () => {
     expect(combatant.ac).toBeGreaterThan(0);
     expect(combatant.weapon.name.length).toBeGreaterThan(0);
   });
+
+  it("pins combat cantrips so casters do not fall back to a dagger", () => {
+    const expected: Record<string, string> = {
+      Wizard: "Fire Bolt",
+      Sorcerer: "Fire Bolt",
+      Druid: "Produce Flame",
+      Warlock: "Eldritch Blast",
+    };
+    for (const [className, cantrip] of Object.entries(expected)) {
+      const party = generateParty(
+        opts({ seed: 8, class: className, balanced: false, count: 1 }),
+      );
+      const ch = party[0]!;
+      expect(ch.spellcasting?.cantrips_known).toContain(cantrip);
+      expect(characterToCombatant(ch, 0).cantrip).toBe(cantrip);
+    }
+  });
 });

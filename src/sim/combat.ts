@@ -81,6 +81,7 @@ export function runCombat(
 
       const target = foes.find((f) => f.id === intent.targetId);
       if (!target?.alive) continue;
+      const used = intent.ability ?? actor.weapon.name;
       const result = resolveAttack(
         rng,
         actor,
@@ -98,6 +99,7 @@ export function runCombat(
           crit: result.crit,
           damage: result.damage,
           targetHpAfter: target.hp,
+          used,
         });
         if (!target.alive) {
           log.push({ event: "death", round, name: target.name });
@@ -109,6 +111,7 @@ export function runCombat(
           actor: actor.name,
           target: target.name,
           hit: false,
+          used,
         });
       }
     }

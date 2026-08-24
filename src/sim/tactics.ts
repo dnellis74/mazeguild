@@ -2,7 +2,7 @@ import type { Combatant } from "./types";
 
 export type Intent =
   | { type: "heal"; targetId: string }
-  | { type: "attack"; targetId: string }
+  | { type: "attack"; targetId: string; ability?: string }
   | { type: "none" };
 
 function living(list: Combatant[]): Combatant[] {
@@ -37,7 +37,11 @@ export function chooseAction(
     if (actor.role === "dps") return a.hp - b.hp || byId(a, b);
     return b.hp - a.hp || byId(a, b);
   });
-  return { type: "attack", targetId: sorted[0].id };
+  const targetId = sorted[0]!.id;
+  if (actor.cantrip) {
+    return { type: "attack", targetId, ability: actor.cantrip };
+  }
+  return { type: "attack", targetId };
 }
 
 /** Enemies pick a uniformly random living party member (seeded). */

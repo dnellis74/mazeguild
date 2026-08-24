@@ -33,8 +33,14 @@ export function describeEvent(e: LogEvent): string | null {
     case "encounter_start":
       return `Encounter! ${e.enemies.join(", ")}`;
     case "attack":
-      if (!e.hit) return `${e.actor} misses ${e.target}.`;
-      return `${e.actor} hits ${e.target}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`;
+      if (!e.hit) {
+        return e.used
+          ? `${e.actor} misses ${e.target} with ${e.used}.`
+          : `${e.actor} misses ${e.target}.`;
+      }
+      return e.used
+        ? `${e.actor} hits ${e.target} with ${e.used}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`
+        : `${e.actor} hits ${e.target}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`;
     case "heal":
       return `${e.actor} heals ${e.target} for ${e.amount} (${e.targetHpAfter} hp).`;
     case "death":

@@ -40,6 +40,8 @@ export type Combatant = {
   hp: number;
   alive: boolean;
   weapon: Weapon;
+  /** Assigned attack-roll cantrip name, e.g. "Fire Bolt". Omitted for weapon attacks. */
+  cantrip?: string;
   lucky: boolean;
   relentless: boolean;
   relentlessUsed: boolean;
@@ -82,6 +84,8 @@ export type LogEvent =
       crit?: boolean;
       damage?: number;
       targetHpAfter?: number;
+      /** Weapon or cantrip used for this attack. */
+      used?: string;
     }
   | {
       event: "heal";

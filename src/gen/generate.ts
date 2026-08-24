@@ -1,4 +1,5 @@
 import { abilityMod } from "@/sim/rules";
+import { CLASS_ATTACK_CANTRIP } from "@/sim/cantrips";
 import { createRng, pick, sample, type Rng } from "@/sim/rng";
 import type { Ability, SrdCharacter } from "@/sim/types";
 import {
@@ -258,6 +259,16 @@ function computeHp(
   return { hp, note };
 }
 
+function pinCombatCantrip(className: string, cantrips: string[]): string[] {
+  const pinned = CLASS_ATTACK_CANTRIP[className];
+  if (!pinned) return [...cantrips].sort();
+  if (cantrips.includes(pinned)) return [...cantrips].sort();
+  const next = cantrips.slice();
+  if (next.length > 0) next[next.length - 1] = pinned;
+  else next.push(pinned);
+  return next.sort();
+}
+
 function buildSpellcasting(
   rng: Rng,
   className: string,
@@ -271,11 +282,14 @@ function buildSpellcasting(
   const mod = abilityMod(scores[ability]);
   const saveDc = 8 + 2 + mod;
   const attackBonus = 2 + mod;
-  const cantrips = sample(
-    rng,
-    spellData.cantrips,
-    Math.min(spec.cantrips_known, spellData.cantrips.length),
-  ).sort();
+  const cantrips = pinCombatCantrip(
+    className,
+    sample(
+      rng,
+      spellData.cantrips,
+      Math.min(spec.cantrips_known, spellData.cantrips.length),
+    ),
+  );
 
   const result: NonNullable<SrdCharacter["spellcasting"]> & Record<string, unknown> = {
     ability,
