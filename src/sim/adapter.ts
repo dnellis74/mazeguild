@@ -157,6 +157,7 @@ export function characterToCombatant(
     layOnHands: /Lay on Hands/i.test(traits) ? 5 : 0,
     spellMod: abilityMod(abilities[spellAbility]),
     healDice: { count: 1, sides: 8 },
+    xp: 0,
     xpValue: 0,
   };
 }
@@ -192,6 +193,7 @@ export function makeMonster(opts: {
     layOnHands: 0,
     spellMod: 0,
     healDice: { count: 1, sides: 8 },
+    xp: 0,
     xpValue: opts.xpValue,
   };
 }

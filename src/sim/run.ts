@@ -1,6 +1,7 @@
 import { characterToCombatant } from "./adapter";
 import { runCombat } from "./combat";
 import { pickLoot, spawnEncounter } from "./encounters";
+import { applyXp } from "./rules";
 import { aStarPath, dirBetween, generateMaze } from "./maze";
 import { createRng, d } from "./rng";
 import type { DungeonInput, DungeonResult, LogEvent } from "./types";
@@ -24,7 +25,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
   let routeIndex = 0;
   let stepsTaken = 0;
   let stepsUntilEncounter = d(rng, 6) + d(rng, 6) + d(rng, 6);
-  let xp = 0;
+  let score = 0;
   const visited = new Set<string>([`${pos.x},${pos.y}`]);
 
   log.push({
@@ -40,7 +41,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       hp: p.hp,
       maxHp: p.maxHp,
       ac: p.ac,
-      xp: 0,
+      xp: p.xp,
     })),
   });
 
@@ -88,11 +89,22 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       const survived = runCombat(rng, party, enemies, log);
       if (survived) {
         const gained = enemies.reduce((s, e) => s + e.xpValue, 0);
-        xp += gained;
+        const survivors = party.filter((p) => p.alive);
+        const share =
+          survivors.length > 0 ? Math.floor(gained / survivors.length) : 0;
+        score += gained;
+        for (const p of survivors) {
+          applyXp(p, share);
+          log.push({
+            event: "xp_gain",
+            name: p.name,
+            amount: share,
+            xpAfter: p.xp,
+          });
+        }
         log.push({
           event: "encounter_won",
           xpGained: gained,
-          xpTotal: xp,
           loot: pickLoot(rng),
         });
       }
@@ -112,7 +124,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
   }
   log.push({
     event: "run_end",
-    score: xp,
+    score,
     stepsTaken,
     survivors: party.filter((p) => p.alive).map((p) => p.name),
   });
@@ -126,7 +138,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       exit: maze.exit,
     },
     log,
-    score: xp,
+    score,
     stepsTaken,
     cellsVisited: visited.size,
     visited: [...visited],

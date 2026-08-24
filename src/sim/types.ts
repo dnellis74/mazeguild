@@ -48,6 +48,7 @@ export type Combatant = {
   layOnHands: number;
   spellMod: number;
   healDice: DiceExpr;
+  xp: number;
   xpValue: number;
 };
 
@@ -92,9 +93,14 @@ export type LogEvent =
     }
   | { event: "death"; round: number; name: string }
   | {
+      event: "xp_gain";
+      name: string;
+      amount: number;
+      xpAfter: number;
+    }
+  | {
       event: "encounter_won";
       xpGained: number;
-      xpTotal: number;
       loot: string;
     }
   | { event: "next_encounter_in"; steps: number }

@@ -39,6 +39,8 @@ export function describeEvent(e: LogEvent): string | null {
       return `${e.actor} heals ${e.target} for ${e.amount} (${e.targetHpAfter} hp).`;
     case "death":
       return `${e.name} falls.`;
+    case "xp_gain":
+      return `${e.name} gains ${e.amount} xp (${e.xpAfter} total).`;
     case "encounter_won":
       return `Victory. +${e.xpGained} xp. Loot: ${e.loot}.`;
     case "next_encounter_in":
@@ -112,13 +114,15 @@ export function projectFrame(
         party = party.map((p) => (p.name === e.name ? { ...p, hp: 0 } : p));
         enemies = enemies.filter((n) => n !== e.name);
         break;
+      case "xp_gain":
+        party = party.map((p) =>
+          p.name === e.name ? { ...p, xp: e.xpAfter } : p,
+        );
+        break;
       case "encounter_won":
         inCombat = false;
         enemies = [];
-        score = e.xpTotal;
-        party = party.map((p) =>
-          p.hp > 0 ? { ...p, xp: e.xpTotal } : p,
-        );
+        score += e.xpGained;
         break;
       case "exit_reached":
         outcome = "exit";

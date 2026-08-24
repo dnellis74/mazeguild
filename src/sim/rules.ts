@@ -80,3 +80,8 @@ export function applyHeal(target: Combatant, amount: number): void {
   if (!target.alive) return;
   target.hp = Math.min(target.maxHp, target.hp + amount);
 }
+
+export function applyXp(target: Combatant, amount: number): void {
+  if (!target.alive) return;
+  target.xp += amount;
+}
