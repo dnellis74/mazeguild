@@ -1,9 +1,10 @@
 import { characterToCombatant } from "./adapter";
 import { runCombat } from "./combat";
 import { pickLoot, spawnEncounter } from "./encounters";
+import { levelForXp } from "./leveling";
 import { applyXp } from "./rules";
 import { aStarPath, dirBetween, generateMaze } from "./maze";
-import { createRng, d } from "./rng";
+import { createRng, dice } from "./rng";
 import type { DungeonInput, DungeonResult, LogEvent } from "./types";
 
 const STEP_CAP = 5000;
@@ -19,12 +20,15 @@ export function runDungeon(input: DungeonInput): DungeonResult {
   const maze = generateMaze(rng, 20);
   const route = aStarPath(maze, maze.entrance, maze.exit);
   const party = input.party.slice(0, PARTY_CAP).map(characterToCombatant);
+  const partyLevels = party.map((member) => ({
+    level: levelForXp(member.className, member.xp),
+  }));
 
   const log: LogEvent[] = [];
   let pos = { x: maze.entrance.x, y: maze.entrance.y };
   let routeIndex = 0;
   let stepsTaken = 0;
-  let stepsUntilEncounter = d(rng, 6) + d(rng, 6) + d(rng, 6);
+  let stepsUntilEncounter = dice(rng, 6, 8);
   let score = 0;
   const visited = new Set<string>([`${pos.x},${pos.y}`]);
 
@@ -78,7 +82,16 @@ export function runDungeon(input: DungeonInput): DungeonResult {
 
     const atExit = pos.x === maze.exit.x && pos.y === maze.exit.y;
     if (stepsUntilEncounter <= 0 && !atExit) {
-      const enemies = spawnEncounter(rng, stepsTaken);
+      const livingLevels = party
+        .filter((member) => member.alive)
+        .map((member) => ({
+          level: levelForXp(member.className, member.xp),
+        }));
+      const enemies = spawnEncounter(
+        rng,
+        stepsTaken,
+        livingLevels.length > 0 ? livingLevels : partyLevels,
+      );
       log.push({
         event: "encounter_start",
         pos: { ...pos },
@@ -108,7 +121,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
           loot: pickLoot(rng),
         });
       }
-      stepsUntilEncounter = d(rng, 6) + d(rng, 6) + d(rng, 6);
+      stepsUntilEncounter = dice(rng, 6, 8);
       log.push({ event: "next_encounter_in", steps: stepsUntilEncounter });
     }
 

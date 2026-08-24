@@ -135,6 +135,8 @@ export type SrdCharacter = {
   tool_proficiencies?: string[];
   languages?: string[];
   hit_points: { value: number; hit_die?: string; note?: string | null };
+  /** Raw hit-die rolls for levels after 1st. */
+  hit_point_rolls?: number[];
   armor_class: { value: number; calculation?: string };
   speed?: string;
   racial_traits?: string[];

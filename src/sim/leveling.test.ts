@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  applyProgression,
-  computeMaxHp,
-  levelForXp,
-} from "./leveling";
+import { applyProgression, hitDieSides, levelForXp } from "./leveling";
+import { createRng } from "./rng";
 import type { SrdCharacter } from "./types";
 
 const fighter: SrdCharacter = {
@@ -38,18 +35,32 @@ describe("levelForXp", () => {
   });
 });
 
-describe("computeMaxHp", () => {
-  it("increases with level", () => {
-    expect(computeMaxHp(fighter, 2)).toBeGreaterThan(computeMaxHp(fighter, 1));
+describe("hitDieSides", () => {
+  it("reads the class hit die from leveling data", () => {
+    expect(hitDieSides("Fighter")).toBe(10);
+    expect(hitDieSides("Barbarian")).toBe(12);
+    expect(hitDieSides("Wizard")).toBe(6);
   });
 });
 
 describe("applyProgression", () => {
-  it("sets full hp and level from xp", () => {
-    const next = applyProgression(fighter, 300);
+  it("rolls 1d10 + CON for a fighter level, at least 1 hp", () => {
+    const next = applyProgression(fighter, 300, createRng(1));
     expect(next.meta?.level).toBe(2);
     expect(next.xp).toBe(300);
-    expect(next.hit_points.value).toBe(computeMaxHp(fighter, 2));
+    expect(next.hit_point_rolls).toHaveLength(1);
+    const roll = next.hit_point_rolls![0]!;
+    expect(roll).toBeGreaterThanOrEqual(1);
+    expect(roll).toBeLessThanOrEqual(10);
+    expect(next.hit_points.value).toBe(12 + Math.max(1, roll + 2));
+    expect(next.hit_points.hit_die).toBe("2d10");
     expect(next.class_features?.length).toBeGreaterThan(0);
+  });
+
+  it("does not reroll existing levels", () => {
+    const first = applyProgression(fighter, 300, createRng(1));
+    const again = applyProgression(first, 300, createRng(99));
+    expect(again.hit_points.value).toBe(first.hit_points.value);
+    expect(again.hit_point_rolls).toEqual(first.hit_point_rolls);
   });
 });

@@ -55,14 +55,14 @@ describe("sortPatrons", () => {
 describe("applyTavernReturn", () => {
   it("keeps wiped party members in the roster", () => {
     const patrons = [base, { ...base, name: "Bryn" }];
-    const next = applyTavernReturn(patrons, ["Aldric", "Bryn"], party, true);
+    const next = applyTavernReturn(patrons, ["Aldric", "Bryn"], party, true, 99);
     expect(next).toHaveLength(2);
     expect(next.map(characterLabel)).toEqual(["Aldric", "Bryn"]);
   });
 
   it("applies xp and full healing to survivors", () => {
     const patrons = [base, { ...base, name: "Bryn" }];
-    const next = applyTavernReturn(patrons, ["Aldric"], party, false);
+    const next = applyTavernReturn(patrons, ["Aldric"], party, false, 99);
     expect(next[0]?.xp).toBe(300);
     expect(next[0]?.meta?.level).toBe(2);
     expect(next[0]?.hit_points.value).toBeGreaterThan(12);

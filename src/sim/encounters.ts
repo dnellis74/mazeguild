@@ -1,4 +1,8 @@
 import { makeMonster } from "./adapter";
+import {
+  generateEncounter,
+  type EncounterMonsterGroup,
+} from "./encounterScaling";
 import type { Rng } from "./rng";
 import type { Combatant, Weapon } from "./types";
 
@@ -54,35 +58,81 @@ export const LOOT = [
   "a moth-eaten cloak",
 ] as const;
 
-/** 1–2 goblins; 10% chance each is a hobgoblin. SRD 5.1 stats. */
-export function spawnEncounter(rng: Rng, step: number): Combatant[] {
-  const count = 1 + Math.floor(rng() * 2);
+const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin"] as const;
+
+type MonsterBlueprint = {
+  ac: number;
+  hp: number;
+  abilities: Record<"STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA", number>;
+  weapon: Weapon;
+  xpValue: number;
+};
+
+const MONSTER_STATS: Record<string, MonsterBlueprint> = {
+  Goblin: {
+    ac: 15,
+    hp: 7,
+    abilities: GOBLIN,
+    weapon: SCIMITAR,
+    xpValue: 50,
+  },
+  Hobgoblin: {
+    ac: 18,
+    hp: 11,
+    abilities: HOBGOBLIN,
+    weapon: LONGSWORD,
+    xpValue: 100,
+  },
+};
+
+function expandGroups(
+  groups: EncounterMonsterGroup[],
+  step: number,
+): Combatant[] {
   const enemies: Combatant[] = [];
-  for (let i = 0; i < count; i++) {
-    const hob = rng() < 0.1;
-    enemies.push(
-      hob
-        ? makeMonster({
-            id: `mon-${step}-${i}`,
-            name: `Hobgoblin ${i + 1}`,
-            ac: 18,
-            hp: 11,
-            abilities: HOBGOBLIN,
-            weapon: LONGSWORD,
-            xpValue: 100,
-          })
-        : makeMonster({
-            id: `mon-${step}-${i}`,
-            name: `Goblin ${i + 1}`,
-            ac: 15,
-            hp: 7,
-            abilities: GOBLIN,
-            weapon: SCIMITAR,
-            xpValue: 50,
-          }),
-    );
+  let index = 0;
+  for (const group of groups) {
+    const stats = MONSTER_STATS[group.type];
+    if (!stats) continue;
+    for (let n = 0; n < group.count; n++) {
+      index += 1;
+      enemies.push(
+        makeMonster({
+          id: `mon-${step}-${index}`,
+          name: `${group.type} ${index}`,
+          ac: stats.ac,
+          hp: stats.hp,
+          abilities: stats.abilities,
+          weapon: stats.weapon,
+          xpValue: stats.xpValue,
+        }),
+      );
+    }
   }
   return enemies;
+}
+
+/**
+ * Build combatants for one maze encounter.
+ * Difficulty is fixed to easy for now; the generator is already parameterized.
+ */
+export function spawnEncounter(
+  rng: Rng,
+  step: number,
+  party: { level: number }[],
+): Combatant[] {
+  const seed = Math.floor(rng() * 0x100000000) >>> 0;
+  const plan = generateEncounter(
+    party,
+    "easy",
+    seed,
+    [...AVAILABLE_MONSTERS],
+  );
+  const enemies = expandGroups(plan.monsters, step);
+  if (enemies.length > 0) return enemies;
+
+  // Last resort if the tables somehow yield an empty mix.
+  return expandGroups([{ type: "Goblin", count: 1 }], step);
 }
 
 export function pickLoot(rng: Rng): string {

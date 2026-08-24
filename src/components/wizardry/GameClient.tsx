@@ -142,7 +142,7 @@ export function GameClient() {
     const wiped = finalFrame.outcome === "wipe";
 
     setPatrons((current) =>
-      applyTavernReturn(current, runParty, finalFrame.party, wiped),
+      applyTavernReturn(current, runParty, finalFrame.party, wiped, seed),
     );
 
     if (wiped) {
@@ -164,7 +164,7 @@ export function GameClient() {
         ? "The party was wiped. Those adventurers are gone."
         : null,
     );
-  }, [result, runParty]);
+  }, [result, runParty, seed]);
 
   const frame = useMemo(
     () => (result ? projectFrame(result, cursor) : null),

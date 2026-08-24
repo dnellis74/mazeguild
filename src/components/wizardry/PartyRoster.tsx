@@ -1,7 +1,6 @@
 import type { PartySnapshot } from "@/sim/types";
 import type { SrdCharacter } from "@/sim/types";
 import { characterLabel } from "@/campaign/tavern";
-import { computeMaxHp } from "@/sim/leveling";
 
 type HireProps = {
   mode: "hire";
@@ -31,7 +30,6 @@ export function PartyRoster(props: HireProps | PartyProps) {
             const dead = disabledSet.has(label);
             const full = selected.length >= 6 && !on;
             const hp = ch.hit_points.value;
-            const maxHp = computeMaxHp(ch, ch.meta?.level ?? 1);
             const level = ch.meta?.level ?? 1;
             const xp = ch.xp ?? 0;
             return (
@@ -54,7 +52,7 @@ export function PartyRoster(props: HireProps | PartyProps) {
                 <div className="flex justify-between gap-2">
                   <span className="truncate">{label}</span>
                   <span className="shrink-0 tabular-nums">
-                    {dead ? "FALLEN" : `${hp}/${maxHp}`}
+                    {dead ? "FALLEN" : `${hp}/${hp}`}
                   </span>
                 </div>
                 <div className="flex justify-between gap-2 text-amber-600/80">

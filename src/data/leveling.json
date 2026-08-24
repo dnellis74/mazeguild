@@ -1,5 +1,11 @@
 {
-    "Barbarian": [
+  "Barbarian": {
+    "hit_dice": {
+      "die": "d12",
+      "hp_at_1st_level": "12 + Constitution modifier",
+      "hp_at_higher_levels": "1d12 (or 7) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -160,8 +166,15 @@
         "Rages": "Unlimited",
         "Rage Damage": "+4"
       }
-    ],
-    "Bard": [
+    ]
+  },
+  "Bard": {
+    "hit_dice": {
+      "die": "d8",
+      "hp_at_1st_level": "8 + Constitution modifier",
+      "hp_at_higher_levels": "1d8 (or 5) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -502,8 +515,15 @@
         "8th": "1",
         "9th": "1"
       }
-    ],
-    "Cleric": [
+    ]
+  },
+  "Cleric": {
+    "hit_dice": {
+      "die": "d8",
+      "hp_at_1st_level": "8 + Constitution modifier",
+      "hp_at_higher_levels": "1d8 (or 5) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -824,8 +844,15 @@
         "8th": "1",
         "9th": "1"
       }
-    ],
-    "Druid": [
+    ]
+  },
+  "Druid": {
+    "hit_dice": {
+      "die": "d8",
+      "hp_at_1st_level": "8 + Constitution modifier",
+      "hp_at_higher_levels": "1d8 (or 5) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -1146,8 +1173,15 @@
         "8th": "1",
         "9th": "1"
       }
-    ],
-    "Fighter": [
+    ]
+  },
+  "Fighter": {
+    "hit_dice": {
+      "die": "d10",
+      "hp_at_1st_level": "10 + Constitution modifier",
+      "hp_at_higher_levels": "1d10 (or 6) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -1268,8 +1302,15 @@
         "Proficiency Bonus": "+6",
         "Features": "Extra Attack (3)"
       }
-    ],
-    "Monk": [
+    ]
+  },
+  "Monk": {
+    "hit_dice": {
+      "die": "d8",
+      "hp_at_1st_level": "8 + Constitution modifier",
+      "hp_at_higher_levels": "1d8 (or 5) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -1450,8 +1491,15 @@
         "Unarmored Movement": "+30 ft.",
         "Features": "Perfect Self"
       }
-    ],
-    "Paladin": [
+    ]
+  },
+  "Paladin": {
+    "hit_dice": {
+      "die": "d10",
+      "hp_at_1st_level": "10 + Constitution modifier",
+      "hp_at_higher_levels": "1d10 (or 6) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -1672,8 +1720,15 @@
         "4th": "3",
         "5th": "2"
       }
-    ],
-    "Ranger": [
+    ]
+  },
+  "Ranger": {
+    "hit_dice": {
+      "die": "d10",
+      "hp_at_1st_level": "10 + Constitution modifier",
+      "hp_at_higher_levels": "1d10 (or 6) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -1914,8 +1969,15 @@
         "4th": "3",
         "5th": "2"
       }
-    ],
-    "Rogue": [
+    ]
+  },
+  "Rogue": {
+    "hit_dice": {
+      "die": "d8",
+      "hp_at_1st_level": "8 + Constitution modifier",
+      "hp_at_higher_levels": "1d8 (or 5) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -2056,8 +2118,15 @@
         "Sneak Attack": "10d6",
         "Features": "Stroke of Luck"
       }
-    ],
-    "Sorcerer": [
+    ]
+  },
+  "Sorcerer": {
+    "hit_dice": {
+      "die": "d6",
+      "hp_at_1st_level": "6 + Constitution modifier",
+      "hp_at_higher_levels": "1d6 (or 4) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -2418,8 +2487,15 @@
         "8th": "1",
         "9th": "1"
       }
-    ],
-    "Warlock": [
+    ]
+  },
+  "Warlock": {
+    "hit_dice": {
+      "die": "d8",
+      "hp_at_1st_level": "8 + Constitution modifier",
+      "hp_at_higher_levels": "1d8 (or 5) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -2640,8 +2716,15 @@
         "Slot Level": "5th",
         "Invocations Known": "8"
       }
-    ],
-    "Wizard": [
+    ]
+  },
+  "Wizard": {
+    "hit_dice": {
+      "die": "d6",
+      "hp_at_1st_level": "6 + Constitution modifier",
+      "hp_at_higher_levels": "1d6 (or 4) + Constitution modifier per level"
+    },
+    "levels": [
       {
         "Level": "1st",
         "XP Required": "0",
@@ -2964,4 +3047,4 @@
       }
     ]
   }
-  
+}

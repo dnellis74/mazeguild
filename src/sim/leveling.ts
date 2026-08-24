@@ -1,10 +1,23 @@
 import levelingData from "@/data/leveling.json";
 import { CLASSES } from "@/gen/data";
+import { d, type Rng } from "./rng";
 import { abilityMod } from "./rules";
 import type { Ability, SrdCharacter } from "./types";
 
-type LevelRow = Record<string, string>;
-type LevelingTable = Record<string, LevelRow[]>;
+export type LevelRow = Record<string, string>;
+
+export type HitDiceInfo = {
+  die: string;
+  hp_at_1st_level: string;
+  hp_at_higher_levels: string;
+};
+
+export type ClassProgression = {
+  hit_dice: HitDiceInfo;
+  levels: LevelRow[];
+};
+
+type LevelingTable = Record<string, ClassProgression>;
 
 const TABLES = levelingData as LevelingTable;
 
@@ -61,13 +74,28 @@ function hasDwarvenToughness(character: SrdCharacter): boolean {
   );
 }
 
-function hitDieAverage(hitDie: number): number {
-  return Math.floor(hitDie / 2) + 1;
+export function hitDieSides(className: string): number {
+  const die = TABLES[className]?.hit_dice.die;
+  const match = die?.match(/(\d+)/);
+  if (match) return Number.parseInt(match[1]!, 10);
+  return CLASSES[className]?.hit_die ?? 8;
+}
+
+function classLevels(className: string): LevelRow[] {
+  return TABLES[className]?.levels ?? [];
+}
+
+function hpGainFromRoll(
+  roll: number,
+  conMod: number,
+  dwarvenToughness: boolean,
+): number {
+  return Math.max(1, roll + conMod) + (dwarvenToughness ? 1 : 0);
 }
 
 export function levelForXp(className: string, xp: number): number {
-  const rows = TABLES[className];
-  if (!rows) return 1;
+  const rows = classLevels(className);
+  if (rows.length === 0) return 1;
 
   let level = 1;
   for (const row of rows) {
@@ -78,16 +106,8 @@ export function levelForXp(className: string, xp: number): number {
   return level;
 }
 
-export function computeMaxHp(character: SrdCharacter, level: number): number {
-  const hitDie = CLASSES[character.class]?.hit_die ?? 8;
-  const conMod = abilityMod(character.ability_scores.CON?.score ?? 10);
-  const perLevel = Math.max(1, hitDieAverage(hitDie) + conMod);
-  const dwarfBonus = hasDwarvenToughness(character) ? level : 0;
-  return hitDie + conMod + dwarfBonus + (level - 1) * perLevel;
-}
-
 function featuresThroughLevel(className: string, level: number): string[] {
-  const rows = TABLES[className] ?? [];
+  const rows = classLevels(className);
   const features: string[] = [];
   for (let i = 0; i < Math.min(level, rows.length); i++) {
     const feature = rows[i]?.Features;
@@ -96,7 +116,10 @@ function featuresThroughLevel(className: string, level: number): string[] {
   return features;
 }
 
-function parseSpellSlots(row: LevelRow, className: string): Record<string, number> {
+function parseSpellSlots(
+  row: LevelRow,
+  className: string,
+): Record<string, number> {
   if (className === "Warlock") {
     const count = Number.parseInt(row["Spell Slots"] ?? "0", 10);
     return count > 0 ? { "1": count } : {};
@@ -165,31 +188,45 @@ function updateSpellcasting(
   return next;
 }
 
-/** Apply XP, level thresholds, and full healing from leveling.json. */
+/** Apply XP, roll hit dice for new levels, and restore HP to the new maximum. */
 export function applyProgression(
   character: SrdCharacter,
   xp: number,
+  rng: Rng,
 ): SrdCharacter {
   const className = character.class;
-  const rows = TABLES[className];
-  const level = levelForXp(className, xp);
-  const maxHp = computeMaxHp(character, level);
-  const row = rows?.[level - 1];
+  const rows = classLevels(className);
+  const fromLevel = character.meta?.level ?? 1;
+  const toLevel = levelForXp(className, xp);
+  const row = rows[toLevel - 1];
   const prof = row ? parseProfBonus(profBonus(row)) : 2;
+  const sides = hitDieSides(className);
+  const conMod = abilityMod(character.ability_scores.CON?.score ?? 10);
+  const dwarf = hasDwarvenToughness(character);
+  const rolls = [...(character.hit_point_rolls ?? [])];
+  let hp = character.hit_points.value;
+
+  for (let level = fromLevel + 1; level <= toLevel; level++) {
+    const roll = d(rng, sides);
+    rolls.push(roll);
+    hp += hpGainFromRoll(roll, conMod, dwarf);
+  }
 
   const next: SrdCharacter = {
     ...character,
     xp,
     meta: {
       ...character.meta,
-      level,
+      level: toLevel,
     },
     proficiency_bonus: row ? profBonus(row) : character.proficiency_bonus,
     hit_points: {
       ...character.hit_points,
-      value: maxHp,
+      value: hp,
+      hit_die: `${toLevel}d${sides}`,
     },
-    class_features: featuresThroughLevel(className, level),
+    hit_point_rolls: rolls,
+    class_features: featuresThroughLevel(className, toLevel),
     saving_throws: updateSavingThrows(character, prof),
   };
 
