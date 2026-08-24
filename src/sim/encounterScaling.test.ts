@@ -52,20 +52,47 @@ describe("DMG worked example", () => {
   });
 });
 
+const GOBLINOIDS = ["Goblin", "Hobgoblin", "Bugbear"];
+
 describe("generateEncounter", () => {
   it("is deterministic for the same seed", () => {
-    const party = Array.from({ length: 6 }, () => ({ level: 1 }));
-    const a = generateEncounter(party, "easy", 42, ["Goblin", "Hobgoblin"]);
-    const b = generateEncounter(party, "easy", 42, ["Goblin", "Hobgoblin"]);
+    const party = Array.from({ length: 4 }, () => ({ level: 1 }));
+    const a = generateEncounter(party, "easy", 42, GOBLINOIDS);
+    const b = generateEncounter(party, "easy", 42, GOBLINOIDS);
     expect(a).toEqual(b);
   });
 
-  it("lands easy encounters in the easy band for a level-1 party of six", () => {
-    const party = Array.from({ length: 6 }, () => ({ level: 1 }));
-    const plan = generateEncounter(party, "easy", 7, ["Goblin", "Hobgoblin"]);
+  it("lands easy encounters in the easy band for a level-1 party of four", () => {
+    const party = Array.from({ length: 4 }, () => ({ level: 1 }));
+    const plan = generateEncounter(party, "easy", 7, GOBLINOIDS);
     expect(plan.monsters.length).toBeGreaterThan(0);
     expect(plan.adjustedXP).toBeGreaterThanOrEqual(partyThreshold(party, "easy"));
     expect(plan.adjustedXP).toBeLessThan(partyThreshold(party, "medium"));
     expect(plan.difficultyAchieved).toBe("easy");
+  });
+
+  it("never fields more than three monsters", () => {
+    const party = Array.from({ length: 4 }, () => ({ level: 1 }));
+    for (const difficulty of ["easy", "medium", "hard", "deadly"] as const) {
+      for (let seed = 0; seed < 40; seed++) {
+        const plan = generateEncounter(party, difficulty, seed, GOBLINOIDS);
+        const count = plan.monsters.reduce((sum, g) => sum + g.count, 0);
+        expect(count).toBeLessThanOrEqual(3);
+        expect(count).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("scales harder bands with tougher monsters under the three-enemy cap", () => {
+    const party = Array.from({ length: 4 }, () => ({ level: 1 }));
+    const hard = generateEncounter(party, "hard", 11, GOBLINOIDS);
+    const easy = generateEncounter(party, "easy", 11, GOBLINOIDS);
+    expect(hard.adjustedXP).toBeGreaterThanOrEqual(partyThreshold(party, "hard"));
+    expect(easy.adjustedXP).toBeLessThan(partyThreshold(party, "medium"));
+    expect(hard.adjustedXP).toBeGreaterThan(easy.adjustedXP);
+    const hardTypes = new Set(hard.monsters.map((g) => g.type));
+    expect(
+      hardTypes.has("Hobgoblin") || hardTypes.has("Bugbear"),
+    ).toBe(true);
   });
 });

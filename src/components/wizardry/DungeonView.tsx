@@ -5,7 +5,11 @@ import type { Dir, DungeonResult, Pos } from "@/sim/types";
 
 const AMBER = "#e4b45a";
 const DIM = "#6a4a1a";
-const GOBLIN_SRC = "/monsters/goblin.png";
+const MONSTER_SPRITES: Record<string, string> = {
+  Goblin: "/monsters/goblin.png",
+  Hobgoblin: "/monsters/hobgoblin.png",
+  Bugbear: "/monsters/bugbear.png",
+};
 const TAVERN_SRC = "/places/tavern.jpg";
 
 function hasWall(
@@ -44,8 +48,12 @@ function rect(depth: number, w: number, h: number) {
   return { x: ix, y: iy, w: w - ix * 2, h: h - iy * 2 };
 }
 
-function isGoblinoid(name: string): boolean {
-  return /goblin/i.test(name);
+function monsterSpriteKey(name: string): string | null {
+  // Longer names first so "Hobgoblin" is not matched as "Goblin".
+  const keys = Object.keys(MONSTER_SPRITES).sort(
+    (a, b) => b.length - a.length,
+  );
+  return keys.find((k) => new RegExp(`\\b${k}\\b`, "i").test(name)) ?? null;
 }
 
 function drawDeadEnd(
@@ -115,7 +123,7 @@ export function DungeonView({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const goblinRef = useRef<HTMLImageElement | null>(null);
+  const monsterRefs = useRef<Record<string, HTMLImageElement>>({});
   const tavernRef = useRef<HTMLImageElement | null>(null);
   const [assets, setAssets] = useState(0);
 
@@ -125,16 +133,19 @@ export function DungeonView({
       if (alive) setAssets((n) => n + 1);
     };
 
-    const goblin = new Image();
-    goblin.src = GOBLIN_SRC;
-    goblin.onload = () => {
-      goblinRef.current = goblin;
-      mark();
-    };
-    if (goblin.complete && goblin.naturalWidth > 0) {
-      goblinRef.current = goblin;
-      mark();
-    }
+    const monsterImgs = Object.entries(MONSTER_SPRITES).map(([key, src]) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        monsterRefs.current[key] = img;
+        mark();
+      };
+      if (img.complete && img.naturalWidth > 0) {
+        monsterRefs.current[key] = img;
+        mark();
+      }
+      return img;
+    });
 
     const tavern = new Image();
     tavern.src = TAVERN_SRC;
@@ -149,7 +160,7 @@ export function DungeonView({
 
     return () => {
       alive = false;
-      goblin.onload = null;
+      for (const img of monsterImgs) img.onload = null;
       tavern.onload = null;
     };
   }, []);
@@ -238,27 +249,39 @@ export function DungeonView({
 
       if (inCombat) {
         const foes = enemies ?? [];
-        const sprite = goblinRef.current;
-        const count = Math.min(
-          2,
-          Math.max(1, foes.filter(isGoblinoid).length || foes.length),
-        );
-        if (sprite && sprite.naturalWidth > 0) {
-          const maxH = cssH * (count === 1 ? 0.82 : 0.64);
-          const maxW = cssW * (count === 1 ? 0.5 : 0.36);
-          const scale = Math.min(
-            maxW / sprite.naturalWidth,
-            maxH / sprite.naturalHeight,
+        const toDraw = foes
+          .map((name) => {
+            const key = monsterSpriteKey(name);
+            return key ? monsterRefs.current[key] : undefined;
+          })
+          .filter((img): img is HTMLImageElement =>
+            Boolean(img && img.naturalWidth > 0),
           );
-          const w = sprite.naturalWidth * scale;
-          const h = sprite.naturalHeight * scale;
-          const gap = Math.max(6, cssW * 0.02);
-          const total = count * w + (count - 1) * gap;
+        if (toDraw.length > 0) {
+          const count = toDraw.length;
+          const maxH =
+            cssH * (count === 1 ? 0.82 : count === 2 ? 0.64 : 0.52);
+          const maxW =
+            cssW * (count === 1 ? 0.5 : count === 2 ? 0.36 : 0.28);
+          const sizes = toDraw.map((sprite) => {
+            const scale = Math.min(
+              maxW / sprite.naturalWidth,
+              maxH / sprite.naturalHeight,
+            );
+            return {
+              sprite,
+              w: sprite.naturalWidth * scale,
+              h: sprite.naturalHeight * scale,
+            };
+          });
+          const gap = Math.max(4, cssW * 0.015);
+          const total =
+            sizes.reduce((sum, s) => sum + s.w, 0) + (count - 1) * gap;
           const floorY = cssH * 0.94;
           let x = (cssW - total) / 2;
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = "high";
-          for (let i = 0; i < count; i++) {
+          for (const { sprite, w, h } of sizes) {
             ctx.drawImage(sprite, x, floorY - h, w, h);
             x += w + gap;
           }

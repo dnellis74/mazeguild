@@ -4,7 +4,7 @@
       "encounter_multipliers": "DMG Chapter 13, republished in Wizards of the Coast Basic Rules (2014), via D&D Beyond. Not present in the project SRD 5.1 file.",
       "adventuring_day_xp": "DMG Chapter 13, republished in Wizards of the Coast Basic Rules (2014), via D&D Beyond. Not present in the project SRD 5.1 file.",
       "xp_by_challenge_rating": "Confirmed directly from the project SRD 5.1 file (Experience Points by Challenge Rating table).",
-      "monster_xp_reference": "CR and XP confirmed directly from the project SRD 5.1 stat blocks for Goblin and Hobgoblin."
+      "monster_xp_reference": "CR and XP confirmed directly from the project SRD 5.1 stat blocks for Goblin, Hobgoblin, and Bugbear."
     },
   
     "xp_thresholds_by_character_level": {

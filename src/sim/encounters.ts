@@ -24,6 +24,15 @@ const LONGSWORD: Weapon = {
   ranged: false,
 };
 
+const MORNINGSTAR: Weapon = {
+  name: "Morningstar",
+  damage: { count: 1, sides: 8 },
+  damageType: "piercing",
+  properties: [],
+  finesse: false,
+  ranged: false,
+};
+
 const GOBLIN = {
   STR: 8,
   DEX: 14,
@@ -39,6 +48,15 @@ const HOBGOBLIN = {
   CON: 12,
   INT: 10,
   WIS: 10,
+  CHA: 9,
+};
+
+const BUGBEAR = {
+  STR: 15,
+  DEX: 14,
+  CON: 13,
+  INT: 8,
+  WIS: 11,
   CHA: 9,
 };
 
@@ -58,7 +76,7 @@ export const LOOT = [
   "a moth-eaten cloak",
 ] as const;
 
-const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin"] as const;
+const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin", "Bugbear"] as const;
 
 type MonsterBlueprint = {
   ac: number;
@@ -82,6 +100,13 @@ const MONSTER_STATS: Record<string, MonsterBlueprint> = {
     abilities: HOBGOBLIN,
     weapon: LONGSWORD,
     xpValue: 100,
+  },
+  Bugbear: {
+    ac: 16,
+    hp: 27,
+    abilities: BUGBEAR,
+    weapon: MORNINGSTAR,
+    xpValue: 200,
   },
 };
 

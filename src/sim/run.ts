@@ -5,10 +5,10 @@ import { levelForXp } from "./leveling";
 import { applyXp } from "./rules";
 import { aStarPath, dirBetween, generateMaze } from "./maze";
 import { createRng, dice } from "./rng";
+import { PARTY_CAP } from "@/gen/data";
 import type { DungeonInput, DungeonResult, LogEvent } from "./types";
 
 const STEP_CAP = 5000;
-const PARTY_CAP = 6;
 
 /**
  * Headless dungeon run. JSON in, JSON out.

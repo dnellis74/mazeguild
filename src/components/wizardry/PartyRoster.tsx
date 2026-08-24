@@ -1,6 +1,7 @@
 import type { PartySnapshot } from "@/sim/types";
 import type { SrdCharacter } from "@/sim/types";
 import { characterLabel } from "@/campaign/tavern";
+import { PARTY_CAP } from "@/gen/data";
 
 type HireProps = {
   mode: "hire";
@@ -22,13 +23,15 @@ export function PartyRoster(props: HireProps | PartyProps) {
     const disabledSet = new Set(disabled);
     return (
       <div className="flex h-full min-h-0 flex-col gap-1 font-mono text-[10px] uppercase leading-tight tracking-wide sm:gap-1.5 sm:text-xs sm:leading-normal">
-        <p className="shrink-0 text-amber-500">{selected.length}/6 HIRED</p>
+        <p className="shrink-0 text-amber-500">
+          {selected.length}/{PARTY_CAP} HIRED
+        </p>
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain sm:gap-1.5">
           {patrons.map((ch) => {
             const label = characterLabel(ch);
             const on = selected.includes(label);
             const dead = disabledSet.has(label);
-            const full = selected.length >= 6 && !on;
+            const full = selected.length >= PARTY_CAP && !on;
             const hp = ch.hit_points.value;
             const level = ch.meta?.level ?? 1;
             const xp = ch.xp ?? 0;

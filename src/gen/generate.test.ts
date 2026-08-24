@@ -19,7 +19,7 @@ describe("parsePartyInput", () => {
     expect(parsed.value).toMatchObject({
       seed: 99,
       partySeed: 99,
-      count: 6,
+      count: 4,
       balanced: true,
       names: true,
     });
@@ -59,8 +59,8 @@ describe("generateParty", () => {
     expect(
       party.some((p) => HEALER_CLASSES.includes(p.class as (typeof HEALER_CLASSES)[number])),
     ).toBe(true);
-    expect(party).toHaveLength(6);
-    expect(new Set(party.map((p) => p.name)).size).toBe(6);
+    expect(party).toHaveLength(4);
+    expect(new Set(party.map((p) => p.name)).size).toBe(4);
   });
 
   it("honors a forced class even when balanced", () => {

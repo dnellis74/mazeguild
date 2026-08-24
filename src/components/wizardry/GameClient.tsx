@@ -9,6 +9,7 @@ import { DungeonView } from "./DungeonView";
 import { EventLog } from "./EventLog";
 import { MiniMap } from "./MiniMap";
 import { PartyRoster } from "./PartyRoster";
+import { PARTY_CAP } from "@/gen/data";
 
 const tap =
   "inline-flex min-h-11 min-w-11 items-center justify-center border px-3 font-mono text-sm tracking-wide select-none touch-manipulation disabled:opacity-40";
@@ -16,12 +17,12 @@ const tap =
 /** Walk pace at 1x. Combat events keep a faster cadence. */
 const STEP_MS = 500;
 const BATTLE_MS = 160;
-const PARTY_SIZE = 6;
+const PARTY_SIZE = PARTY_CAP;
 const TAVERN_SIZE = 12;
 
 const TOWN_LINES = [
   "A busy town. Adventurers linger by the tavern door.",
-  "Hire six companions, then press ENTER MAZE.",
+  "Hire four companions, then press ENTER MAZE.",
 ];
 
 export function GameClient() {
@@ -102,14 +103,14 @@ export function GameClient() {
 
   const enterMaze = useCallback(async () => {
     if (selected.length !== PARTY_SIZE || selected.some((label) => disabled.includes(label))) {
-      setError("Hire 6 companions first.");
+      setError("Hire 4 companions first.");
       return;
     }
     const party = selected
       .map((label) => patrons.find((ch) => characterLabel(ch) === label))
       .filter((ch): ch is SrdCharacter => ch !== undefined);
     if (party.length !== PARTY_SIZE) {
-      setError("Hire 6 companions first.");
+      setError("Hire 4 companions first.");
       return;
     }
     setError(null);

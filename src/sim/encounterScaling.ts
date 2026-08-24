@@ -56,8 +56,8 @@ const MULTIPLIER_BUCKETS = [
   { key: "15+", min: 15, max: Infinity },
 ] as const;
 
-const MAX_MONSTERS = 15;
-const PARTY_SIZE = 6;
+/** Prefer tougher monsters over larger packs for harder bands. */
+const MAX_MONSTERS = 3;
 
 export function monsterCountBucket(monsterCount: number): string {
   const count = Math.max(1, monsterCount);
@@ -216,16 +216,16 @@ function planFromMonsters(
 
 /**
  * Build an encounter whose adjusted XP lands in the target difficulty band.
- * Party size for multipliers defaults to 6 (this game's fixed hire size).
+ * Party size for multipliers comes from `party.length`; thresholds from levels.
  */
 export function generateEncounter(
   party: { level: number }[],
   targetDifficulty: EncounterDifficulty,
   seed: number,
   availableMonsters: string[],
-  partySize: number = PARTY_SIZE,
 ): EncounterPlan {
   const rng = createRng(seed >>> 0);
+  const partySize = party.length;
   const { lower, upper } = partyThresholdBounds(party, targetDifficulty);
   const mixes = enumerateMixes(availableMonsters, MAX_MONSTERS);
 
