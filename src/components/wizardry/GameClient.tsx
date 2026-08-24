@@ -211,7 +211,6 @@ export function GameClient() {
     URL.revokeObjectURL(url);
   }
 
-  const atEnd = !result || cursor >= result.log.length - 1;
   const sheet =
     inspecting !== null && !inMaze
       ? patrons.find((ch) => characterLabel(ch) === inspecting)
@@ -327,17 +326,25 @@ export function GameClient() {
                 </p>
               ) : null}
               {inMaze && result ? (
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(0, result.log.length - 1)}
-                  value={cursor}
-                  onChange={(e) => {
+                <ReplayDeck
+                  cursor={cursor}
+                  length={result.log.length}
+                  playing={playing}
+                  speed={speed}
+                  onPlayPause={() => setPlaying((p) => !p)}
+                  onStepBack={() => {
                     setPlaying(false);
-                    setCursor(Number(e.target.value));
+                    setCursor((c) => Math.max(0, c - 1));
                   }}
-                  className="w-full"
-                  aria-label="Replay position"
+                  onStepForward={() => {
+                    setPlaying(false);
+                    setCursor((c) => c + 1);
+                  }}
+                  onSeek={(n) => {
+                    setPlaying(false);
+                    setCursor(n);
+                  }}
+                  onSpeed={setSpeed}
                 />
               ) : null}
               {inMaze && result ? (
@@ -361,57 +368,11 @@ export function GameClient() {
           <>
             <button
               type="button"
-              onClick={() => setPlaying((p) => !p)}
-              className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
-            >
-              {playing ? "PAUSE" : "PLAY"}
-            </button>
-            <button
-              type="button"
               onClick={returnToTavern}
-              className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
+              className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
             >
               RETURN TO TAVERN
             </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => void enterMaze()}
-            disabled={busy || running || selected.length !== PARTY_SIZE}
-            className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
-          >
-            {running ? "…" : "ENTER MAZE"}
-          </button>
-        )}
-        {inMaze ? (
-          <>
-            <button
-              type="button"
-              disabled={atEnd}
-              onClick={() => {
-                setPlaying(false);
-                setCursor((c) => c + 1);
-              }}
-              className={`${tap} border-amber-700 phone-land:flex-1 sm:flex-1`}
-            >
-              STEP
-            </button>
-            <label
-              className={`${tap} col-span-2 gap-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
-            >
-              SPD
-              <select
-                value={speed}
-                onChange={(e) => setSpeed(Number(e.target.value))}
-                className="min-h-0 border-0 bg-transparent py-0"
-                aria-label="Playback speed"
-              >
-                <option value={1}>1x</option>
-                <option value={2}>2x</option>
-                <option value={4}>4x</option>
-              </select>
-            </label>
             <button
               type="button"
               disabled={!result}
@@ -421,8 +382,108 @@ export function GameClient() {
               JSON
             </button>
           </>
-        ) : null}
+        ) : (
+          <button
+            type="button"
+            onClick={() => void enterMaze()}
+            disabled={busy || running || selected.length !== PARTY_SIZE}
+            className={`${tap} col-span-4 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
+          >
+            {running ? "…" : "ENTER MAZE"}
+          </button>
+        )}
       </nav>
+    </div>
+  );
+}
+
+const SPEEDS = [1, 2, 4] as const;
+
+const vcr =
+  "inline-flex min-h-11 min-w-11 items-center justify-center border font-mono text-sm tracking-wide select-none touch-manipulation disabled:opacity-40";
+
+function ReplayDeck({
+  cursor,
+  length,
+  playing,
+  speed,
+  onPlayPause,
+  onStepBack,
+  onStepForward,
+  onSeek,
+  onSpeed,
+}: {
+  cursor: number;
+  length: number;
+  playing: boolean;
+  speed: number;
+  onPlayPause: () => void;
+  onStepBack: () => void;
+  onStepForward: () => void;
+  onSeek: (n: number) => void;
+  onSpeed: (n: number) => void;
+}) {
+  const last = Math.max(0, length - 1);
+  return (
+    <div className="border border-amber-800/70 bg-black/70 px-2 py-1.5">
+      <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center" role="group" aria-label="Transport">
+          <button
+            type="button"
+            disabled={cursor <= 0}
+            onClick={onStepBack}
+            className={`${vcr} flex-1 border-amber-700 text-amber-200`}
+            aria-label="Step back"
+            title="Step back"
+          >
+            ◀
+          </button>
+          <button
+            type="button"
+            onClick={onPlayPause}
+            className={`${vcr} flex-[1.6] border-amber-400 bg-amber-900/50 text-amber-100`}
+            aria-label={playing ? "Pause" : "Play"}
+          >
+            {playing ? "❚❚" : "▶"}
+          </button>
+          <button
+            type="button"
+            disabled={cursor >= last}
+            onClick={onStepForward}
+            className={`${vcr} flex-1 border-amber-700 text-amber-200`}
+            aria-label="Step forward"
+            title="Step"
+          >
+            ▶
+          </button>
+        </div>
+        <div className="flex shrink-0" role="group" aria-label="Playback speed">
+          {SPEEDS.map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onSpeed(n)}
+              aria-pressed={speed === n}
+              className={`${vcr} min-w-12 px-2 ${
+                speed === n
+                  ? "border-amber-400 bg-amber-900/50 text-amber-100"
+                  : "border-amber-800 text-amber-500"
+              }`}
+            >
+              {n}x
+            </button>
+          ))}
+        </div>
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={last}
+        value={cursor}
+        onChange={(e) => onSeek(Number(e.target.value))}
+        className="w-full"
+        aria-label="Replay position"
+      />
     </div>
   );
 }
