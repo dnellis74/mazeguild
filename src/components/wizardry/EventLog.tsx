@@ -15,8 +15,7 @@ export function EventLog({
   const endRef = useRef<HTMLLIElement>(null);
   const lines = log
     .map((e, i) => ({ e, i, text: describeEvent(e) }))
-    .filter((x) => x.text && isNarrative(x.e) && x.i <= cursor)
-    .slice(-24);
+    .filter((x) => x.text && isNarrative(x.e) && x.i <= cursor);
 
   useEffect(() => {
     const list = listRef.current;
@@ -28,7 +27,7 @@ export function EventLog({
   return (
     <ol
       ref={listRef}
-      className="relative max-h-[22dvh] min-h-24 flex-1 overflow-y-auto overscroll-contain border border-amber-800/60 bg-black/60 p-2 font-mono text-xs leading-5 text-amber-300 md:max-h-48"
+      className="h-[22dvh] shrink-0 overflow-y-auto overscroll-contain border border-amber-800/60 bg-black/60 p-2 font-mono text-xs leading-5 text-amber-300 sm:h-48"
     >
       {lines.map((x, idx) => (
         <li

@@ -166,7 +166,7 @@ export function GameClient() {
               onClick={backToTavern}
               className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500 underline-offset-2 hover:text-amber-300"
             >
-              THE TAVERN
+              THE MAZE
             </button>
           ) : null}
         </div>
@@ -250,7 +250,7 @@ export function GameClient() {
           disabled={busy || selected.length !== PARTY_SIZE}
           className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
         >
-          RUN
+          ENTER MAZE
         </button>
         <button
           type="button"
