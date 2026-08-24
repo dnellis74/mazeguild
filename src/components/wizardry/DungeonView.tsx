@@ -6,6 +6,7 @@ import type { Dir, DungeonResult, Pos } from "@/sim/types";
 const AMBER = "#e4b45a";
 const DIM = "#6a4a1a";
 const GOBLIN_SRC = "/monsters/goblin.png";
+const TAVERN_SRC = "/places/tavern.jpg";
 
 function hasWall(
   maze: DungeonResult["maze"],
@@ -47,38 +48,109 @@ function isGoblinoid(name: string): boolean {
   return /goblin/i.test(name);
 }
 
+function drawDeadEnd(
+  ctx: CanvasRenderingContext2D,
+  cssW: number,
+  cssH: number,
+  mural: HTMLImageElement | null,
+) {
+  ctx.fillStyle = "#050301";
+  ctx.fillRect(0, 0, cssW, cssH);
+  ctx.strokeStyle = AMBER;
+  ctx.lineWidth = Math.max(1.25, cssW / 280);
+
+  const near = rect(0, cssW, cssH);
+  const far = rect(1.15, cssW, cssH);
+
+  ctx.beginPath();
+  ctx.moveTo(near.x, near.y);
+  ctx.lineTo(far.x, far.y);
+  ctx.moveTo(near.x, near.y + near.h);
+  ctx.lineTo(far.x, far.y + far.h);
+  ctx.moveTo(near.x + near.w, near.y);
+  ctx.lineTo(far.x + far.w, far.y);
+  ctx.moveTo(near.x + near.w, near.y + near.h);
+  ctx.lineTo(far.x + far.w, far.y + far.h);
+  ctx.stroke();
+  ctx.strokeRect(far.x, far.y, far.w, far.h);
+
+  if (mural && mural.naturalWidth > 0) {
+    const pad = Math.max(2, cssW * 0.01);
+    const box = {
+      x: far.x + pad,
+      y: far.y + pad,
+      w: far.w - pad * 2,
+      h: far.h - pad * 2,
+    };
+    const scale = Math.max(
+      box.w / mural.naturalWidth,
+      box.h / mural.naturalHeight,
+    );
+    const sw = box.w / scale;
+    const sh = box.h / scale;
+    const sx = (mural.naturalWidth - sw) / 2;
+    const sy = (mural.naturalHeight - sh) / 2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(mural, sx, sy, sw, sh, box.x, box.y, box.w, box.h);
+    ctx.strokeStyle = AMBER;
+    ctx.strokeRect(far.x, far.y, far.w, far.h);
+  }
+}
+
 export function DungeonView({
   maze,
   pos,
   facing,
   inCombat,
   enemies,
+  scene = "maze",
 }: {
-  maze: DungeonResult["maze"];
-  pos: Pos;
-  facing: Dir;
-  inCombat: boolean;
-  enemies: string[];
+  maze?: DungeonResult["maze"];
+  pos?: Pos;
+  facing?: Dir;
+  inCombat?: boolean;
+  enemies?: string[];
+  scene?: "maze" | "town";
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const spriteRef = useRef<HTMLImageElement | null>(null);
-  const [spriteReady, setSpriteReady] = useState(false);
+  const goblinRef = useRef<HTMLImageElement | null>(null);
+  const tavernRef = useRef<HTMLImageElement | null>(null);
+  const [assets, setAssets] = useState(0);
 
   useEffect(() => {
-    const img = new Image();
-    img.src = GOBLIN_SRC;
-    const markReady = () => {
-      spriteRef.current = img;
-      setSpriteReady(true);
+    let alive = true;
+    const mark = () => {
+      if (alive) setAssets((n) => n + 1);
     };
-    if (img.complete && img.naturalWidth > 0) {
-      markReady();
-      return;
+
+    const goblin = new Image();
+    goblin.src = GOBLIN_SRC;
+    goblin.onload = () => {
+      goblinRef.current = goblin;
+      mark();
+    };
+    if (goblin.complete && goblin.naturalWidth > 0) {
+      goblinRef.current = goblin;
+      mark();
     }
-    img.onload = markReady;
+
+    const tavern = new Image();
+    tavern.src = TAVERN_SRC;
+    tavern.onload = () => {
+      tavernRef.current = tavern;
+      mark();
+    };
+    if (tavern.complete && tavern.naturalWidth > 0) {
+      tavernRef.current = tavern;
+      mark();
+    }
+
     return () => {
-      img.onload = null;
+      alive = false;
+      goblin.onload = null;
+      tavern.onload = null;
     };
   }, []);
 
@@ -97,6 +169,13 @@ export function DungeonView({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (scene === "town") {
+        drawDeadEnd(ctx, cssW, cssH, tavernRef.current);
+        return;
+      }
+
+      if (!maze || !pos || !facing) return;
 
       ctx.fillStyle = "#050301";
       ctx.fillRect(0, 0, cssW, cssH);
@@ -158,8 +237,12 @@ export function DungeonView({
       }
 
       if (inCombat) {
-        const sprite = spriteRef.current;
-        const count = Math.min(2, Math.max(1, enemies.filter(isGoblinoid).length || enemies.length));
+        const foes = enemies ?? [];
+        const sprite = goblinRef.current;
+        const count = Math.min(
+          2,
+          Math.max(1, foes.filter(isGoblinoid).length || foes.length),
+        );
         if (sprite && sprite.naturalWidth > 0) {
           const maxH = cssH * (count === 1 ? 0.82 : 0.64);
           const maxW = cssW * (count === 1 ? 0.5 : 0.36);
@@ -192,7 +275,7 @@ export function DungeonView({
     ro.observe(wrap);
     draw();
     return () => ro.disconnect();
-  }, [maze, pos, facing, inCombat, spriteReady, enemies.join("\0")]);
+  }, [scene, maze, pos, facing, inCombat, assets, (enemies ?? []).join("\0")]);
 
   return (
     <div
@@ -203,9 +286,11 @@ export function DungeonView({
         ref={canvasRef}
         className="block h-full w-full touch-none"
         aria-label={
-          inCombat
-            ? `First-person dungeon view, fighting ${enemies.join(", ") || "monsters"}`
-            : "First-person dungeon view"
+          scene === "town"
+            ? "First-person view of a tavern at the end of the street"
+            : inCombat
+              ? `First-person dungeon view, fighting ${(enemies ?? []).join(", ") || "monsters"}`
+              : "First-person dungeon view"
         }
       />
     </div>
