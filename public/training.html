@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/character-creation.css">
+</head>
+<body>
+<div class="stage">
+  <div class="app" id="app"></div>
+</div>
+<script>
+
+
+const STORAGE_KEY = 'mazeguild.character';
+
+function esc(s){
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+
+async function loadJson(path){
+  const res = await fetch(path);
+  if(!res.ok) throw new Error('Failed to load '+path+' ('+res.status+')');
+  return res.json();
+}
+
+
+
+
+let FEATURES = [];
+let WORLD = [];
+let RACES = [];
+let ALIGNMENTS = [];
+let TRACKS = [];
+let FAVORED_ENEMY = {};
+const FAVORED_ENEMY_SKILL_ID = 'f_15m9q5';
+let TIMING = {
+  unlock: { fills: 6, fillMsSec: 0.5 },
+  featureDefault: { fills: 6, fillMsSec: 1 },
+};
+
+function timingSpec(fills, fillMsSec){
+  const f = Number(fills);
+  const ms = Number(fillMsSec);
+  return {
+    fills: f,
+    fillMsSec: ms,
+    durationMs: f * ms * 1000,
+  };
+}
+
+function unlockTiming(){
+  const u = TIMING.unlock || {};
+  return timingSpec(u.fills ?? 6, u.fillMsSec ?? 0.5);
+}
+
+function featureTiming(skill){
+  const d = TIMING.featureDefault || {};
+  return timingSpec(
+    skill?.fills ?? d.fills ?? 6,
+    skill?.fillMsSec ?? d.fillMsSec ?? 1,
+  );
+}
+
+function formatDuration(spec){
+  const secs = spec.fills * spec.fillMsSec;
+  // Avoid ugly 3.000s — trim trailing zeros
+  const label = Number.isInteger(secs) ? String(secs) : String(Math.round(secs * 10) / 10);
+  return label + 's';
+}
+
+function formatFillNote(spec){
+  const tick = Number.isInteger(spec.fillMsSec)
+    ? String(spec.fillMsSec)
+    : String(Math.round(spec.fillMsSec * 10) / 10);
+  return `${spec.fills} fills of ${tick}s`;
+}
+
+function skillById(id){
+  return FEATURES.find(s=>s.id===id);
+}
+
+function hasSkill(ch, id){
+  if(!id) return false;
+  return (ch.features || []).some(f=>f.id===id);
+}
+
+/** prerequisite may be null, a skill id string, or an array of ids */
+function prereqMet(ch, skill){
+  const p = skill && skill.prerequisite;
+  if(p == null || p === '') return true;
+  if(Array.isArray(p)) return p.every(id=>hasSkill(ch, id));
+  return hasSkill(ch, p);
+}
+
+function availableActivities(room, ch){
+  return (room.activities || []).filter(act=>prereqMet(ch, act));
+}
+
+function buildWorld(){
+  const areas = {};
+  for(const f of FEATURES){
+    if(!f.id) continue;
+    if(!areas[f.area]) areas[f.area] = { name:f.area, buildings:{} };
+    const a = areas[f.area];
+    if(!a.buildings[f.building]) a.buildings[f.building] = { name:f.building, rooms:{} };
+    const b = a.buildings[f.building];
+    if(!b.rooms[f.room]) b.rooms[f.room] = { name:f.room, activities:[] };
+    const r = b.rooms[f.room];
+    if(!r.activities.some(x=>x.id===f.id)){
+      r.activities.push({
+        id:f.id,
+        activity:f.activity,
+        feature:f.feature,
+        archetype:f.archetype,
+        detail:f.detail,
+        description:f.description,
+        prerequisite:f.prerequisite ?? null,
+        fills:f.fills,
+        fillMsSec:f.fillMsSec,
+      });
+    }
+  }
+  return Object.values(areas).map(a=>({
+    name:a.name,
+    buildings:Object.values(a.buildings).map(b=>({
+      name:b.name,
+      rooms:Object.values(b.rooms).map(r=>({
+        name:r.name,
+        activities:r.activities,
+      })),
+    })),
+  }));
+}
+
+
+function rebuildWorld(){
+  WORLD = buildWorld();
+}
+
+
+function jobDurationLabel(kind){
+  if(kind==='activity') return formatDuration(featureTiming(null));
+  return formatDuration(unlockTiming());
+}
+
+
+function areaKey(area){ return area; }
+
+
+function buildingKey(area, building){ return area+'::'+building; }
+
+
+function roomKey(area, building, room){ return area+'::'+building+'::'+room; }
+
+
+function activityKey(skillId){
+  return skillId;
+}
+
+
+
+const state = {
+  ui:{
+    hubTab:'sheet',
+    worldView:'areas',
+    worldArea:null,
+    worldBuilding:null,
+    worldRoom:null,
+    pendingChoice:null,
+  },
+  character:null,
+};
+
+const app = document.getElementById('app');
+
+function raceById(id){ return RACES.find(r=>r.id===id); }
+
+
+function alignmentById(id){ return ALIGNMENTS.find(a=>a.id===id); }
+
+
+function allFavoredEnemyLabels(){
+  const set = new Set();
+  for(const entry of Object.values(FAVORED_ENEMY)){
+    if(entry.enemy) set.add(entry.enemy);
+    if(entry.hunted) set.add(entry.hunted);
+  }
+  return [...set];
+}
+
+
+function shuffleInPlace(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+
+/** Two options from the character's race table, plus one random from the rest. */
+function favoredEnemyChoicesFor(ch){
+  const race = raceById(ch.raceId);
+  const entry = race ? FAVORED_ENEMY[race.name] : null;
+  const fromRace = [];
+  if(entry){
+    if(entry.enemy) fromRace.push(entry.enemy);
+    if(entry.hunted && !fromRace.includes(entry.hunted)) fromRace.push(entry.hunted);
+  }
+  const picks = fromRace.slice(0, 2);
+  const pool = allFavoredEnemyLabels().filter(x => !picks.includes(x));
+  shuffleInPlace(pool);
+  while(picks.length < 3 && pool.length){
+    picks.push(pool.shift());
+  }
+  return shuffleInPlace(picks);
+}
+
+
+function renderPendingChoice(){
+  const pending = state.ui.pendingChoice;
+  if(!pending) return '';
+  if(pending.type === 'favored-enemy'){
+    return `
+      <div class="feature-choice">
+        <button type="button" class="back" data-action="cancel-choice">← Back</button>
+        <p class="kicker">Favored Enemy</p>
+        <h2>Choose your quarry</h2>
+        <p class="lede" style="margin-top:8px">Three quarries offer themselves. Two come from ${esc(raceById(state.character.raceId)?.name || 'your people')}; one from farther afield.</p>
+        <div class="choice-list">
+          ${pending.options.map(enemy=>`
+            <button type="button" class="choice-card" data-action="confirm-favored-enemy" data-enemy="${esc(enemy)}">
+              <span class="choice-title">${esc(enemy)}</span>
+              <span class="choice-sub">Study this as your favored enemy</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+  return '';
+}
+
+
+
+function render(){
+  let html = '';
+  try {
+    html = renderHub();
+  } catch (err) {
+    console.error(err);
+    html = `<div class="screen"><p class="lede">Something broke rendering this screen.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
+  }
+  app.innerHTML = html + '<div class="toast" id="toast"></div>';
+  bindEvents();
+  syncJobTicker();
+}
+
+function earnedArchetypes(){
+  const seen = [];
+  for(const f of state.character.features){
+    if(!seen.includes(f.archetype)) seen.push(f.archetype);
+  }
+  return seen;
+}
+
+/** Lines that used to sit under each feature — shown once in Archetypes drawn from. */
+function archetypeSourceLines(){
+  return state.character.features.map(f=>{
+    const skill = skillById(f.id);
+    const detail = f.detail || (skill && skill.detail);
+    const parts = [f.archetype, f.activity].filter(Boolean);
+    if(detail) parts.push(detail);
+    return parts.join(' · ');
+  });
+}
+
+function jobProgress(job){
+  if(!job) return { filled:0, partial:0, remainingMs:0, done:true, fills:0 };
+  const durationMs = job.durationMs || unlockTiming().durationMs;
+  const fills = job.fills || unlockTiming().fills;
+  const elapsed = Date.now() - job.startedAt;
+  const pct = Math.min(1, elapsed / durationMs);
+  const exact = pct * fills;
+  const filled = Math.floor(exact);
+  const partial = Math.min(1, exact - filled);
+  return {
+    filled: Math.min(fills, filled),
+    partial: filled >= fills ? 0 : partial,
+    remainingMs: Math.max(0, durationMs - elapsed),
+    done: elapsed >= durationMs,
+    fills,
+  };
+}
+
+function renderJobPanel(){
+  const job = state.character.activeJob;
+  if(!job) return '';
+  const p = jobProgress(job);
+  const segs = Array.from({length:p.fills}, (_,i)=>{
+    if(i < p.filled) return '<span class="seg filled"></span>';
+    if(i === p.filled && p.partial > 0){
+      return `<span class="seg partial" style="--pct:${Math.round(p.partial*100)}%"></span>`;
+    }
+    return '<span class="seg"></span>';
+  }).join('');
+  const secs = Math.ceil(p.remainingMs / 1000);
+  const title = job.kind==='activity'
+    ? (job.detail ? `${job.activity} · ${job.detail}` : job.activity)
+    : job.kind==='room' ? job.room
+    : job.kind==='building' ? job.building
+    : job.area;
+  const label = job.kind==='activity' ? 'Participating'
+    : job.kind==='room' ? 'Exploring room'
+    : job.kind==='building' ? 'Surveying building'
+    : 'Scouting area';
+  const fillNote = formatFillNote({
+    fills: job.fills,
+    fillMsSec: job.fillMsSec,
+  });
+  return `
+    <div class="job-panel">
+      <div class="job-label">${label}</div>
+      <div class="job-title">${title}</div>
+      <div class="ticks-bar">${segs}</div>
+      <div class="job-eta">${secs}s remaining · ${fillNote}</div>
+    </div>`;
+}
+
+function renderHub(){
+  const ui = state.ui;
+  const ch = state.character;
+  const race = raceById(ch.raceId);
+  const align = alignmentById(ch.alignment.alignmentId);
+  const tab = ui.hubTab;
+  let body = '';
+  if(ui.pendingChoice) body = renderPendingChoice();
+  else if(tab==='sheet') body = renderSheet();
+  else if(tab==='world') body = renderWorld();
+  else body = renderQuestStub();
+  return `
+  <div class="hub">
+    <div class="hub-header">
+      <p class="kicker">Your record</p>
+      <h1>${align.name} ${race.name}</h1>
+      <p class="hub-meta">${ch.featurePoints} feature point${ch.featurePoints===1?'':'s'} left · <button data-action="restart-init" style="text-decoration:underline;color:var(--ink-soft)">New character</button></p>
+    </div>
+    <div class="hub-tabs" role="tablist">
+      <button class="hub-tab ${tab==='sheet'?'is-active':''}" data-action="hub-tab" data-tab="sheet" role="tab" aria-selected="${tab==='sheet'}">Sheet</button>
+      <button class="hub-tab ${tab==='world'?'is-active':''}" data-action="hub-tab" data-tab="world" role="tab" aria-selected="${tab==='world'}">World</button>
+      <button class="hub-tab ${tab==='quest'?'is-active':''}" data-action="hub-tab" data-tab="quest" role="tab" aria-selected="${tab==='quest'}">Quest</button>
+    </div>
+    <div class="hub-body">${body}</div>
+  </div>`;
+}
+
+function renderSheet(){
+  const ch = state.character;
+  const race = raceById(ch.raceId);
+  const align = alignmentById(ch.alignment.alignmentId);
+  const archetypes = earnedArchetypes();
+  const abilities = ['STR','DEX','CON','INT','WIS','CHA'].map(ab=>`
+    <div class="ability-cell"><div class="ab">${ab}</div><div class="sc">10</div></div>
+  `).join('');
+  const features = ch.features.length
+    ? `<div class="feature-list">${ch.features.map(f=>{
+        const skill = skillById(f.id);
+        const detail = f.detail || (skill && skill.detail);
+        return `
+        <div class="feature-card">
+          <div class="name">${esc(f.feature)}${detail ? `: ${esc(detail)}` : ''}</div>
+        </div>`;
+      }).join('')}</div>`
+    : `<p class="empty-note">No features yet. Spend time in the World to earn them.</p>`;
+  const arch = archetypes.length
+    ? `<div class="archetype-summary">
+        <div class="from">${archetypeSourceLines().map(line=>esc(line)).join('<br>')}</div>
+      </div>`
+    : `<p class="empty-note">Archetypes appear from the features you earn — up to two draws.</p>`;
+  return `
+    <div class="sheet-block">
+      <div class="sheet-label">Identity</div>
+      <div class="sheet-value">${align.name} ${race.name}</div>
+      <div class="sheet-sub">${ch.subrace ? ch.subrace.label+' · ' : ''}No class — features come from the World.</div>
+    </div>
+    <div class="sheet-block">
+      <div class="sheet-label">Feature points</div>
+      <div class="points-pill"><strong>${ch.featurePoints}</strong> of 2 remaining</div>
+    </div>
+    <div class="sheet-block">
+      <div class="sheet-label">Abilities</div>
+      <div class="ability-grid">${abilities}</div>
+      <p class="mechanic-note" style="margin-top:10px">Scores stay flat for now. Race and training will shape them later.</p>
+    </div>
+    ${ch.alignment.definingExperience?`
+    <div class="sheet-block">
+      <div class="sheet-label">Defining experience</div>
+      <div class="sheet-sub">${ch.alignment.definingExperience.label}</div>
+    </div>`:''}
+    <div class="sheet-block">
+      <div class="sheet-label">Features</div>
+      ${features}
+    </div>
+    <div class="sheet-block">
+      <div class="sheet-label">Archetypes drawn from</div>
+      ${arch}
+    </div>`;
+}
+
+function renderQuestStub(){
+  return `
+    <div class="quest-stub">
+      <h2>Quest</h2>
+      <p class="lede" style="margin:0 auto">Not open yet. The sheet and the world come first.</p>
+    </div>`;
+}
+
+function renderWorld(){
+  const ui = state.ui;
+  const ch = state.character;
+  const job = ch.activeJob;
+  let crumb = '';
+  let cards = '';
+
+  if(ui.worldView==='areas'){
+    crumb = `<div class="world-crumb">Areas of the realm</div>`;
+    cards = WORLD.map(area=>{
+      const unlocked = !!ch.unlocked.areas[areaKey(area.name)];
+      const working = job && job.kind==='area' && job.area===area.name;
+      const nBuild = area.buildings.length;
+      return `
+        <button class="world-card ${unlocked?'is-unlocked':''} ${working?'is-active':''}"
+                data-action="world-select-area" data-area="${esc(area.name)}" ${job && !working?'disabled':''}>
+          <span class="wc-title">${area.name}</span>
+          <span class="wc-sub">${nBuild} building${nBuild===1?'':'s'}</span>
+          <span class="wc-status">${working?'Scouting…':unlocked?'Unlocked':`Locked · ${jobDurationLabel('unlock')} to open`}</span>
+        </button>`;
+    }).join('');
+  } else if(ui.worldView==='buildings'){
+    const area = WORLD.find(a=>a.name===ui.worldArea);
+    crumb = `<div class="world-crumb"><button data-action="world-nav" data-view="areas">Areas</button> / ${ui.worldArea}</div>`;
+    cards = area.buildings.map(b=>{
+      const key = buildingKey(ui.worldArea, b.name);
+      const unlocked = !!ch.unlocked.buildings[key];
+      const working = job && job.kind==='building' && job.area===ui.worldArea && job.building===b.name;
+      return `
+        <button class="world-card ${unlocked?'is-unlocked':''} ${working?'is-active':''}"
+                data-action="world-select-building" data-building="${esc(b.name)}" ${job && !working?'disabled':''}>
+          <span class="wc-title">${b.name}</span>
+          <span class="wc-sub">${b.rooms.length} room${b.rooms.length===1?'':'s'}</span>
+          <span class="wc-status">${working?'Surveying…':unlocked?'Unlocked':`Locked · ${jobDurationLabel('unlock')} to open`}</span>
+        </button>`;
+    }).join('');
+  } else if(ui.worldView==='rooms'){
+    const area = WORLD.find(a=>a.name===ui.worldArea);
+    const building = area.buildings.find(b=>b.name===ui.worldBuilding);
+    crumb = `<div class="world-crumb"><button data-action="world-nav" data-view="areas">Areas</button> / <button data-action="world-nav" data-view="buildings">${ui.worldArea}</button> / ${ui.worldBuilding}</div>`;
+    cards = building.rooms.map(r=>{
+      const key = roomKey(ui.worldArea, ui.worldBuilding, r.name);
+      const unlocked = !!ch.unlocked.rooms[key];
+      const working = job && job.kind==='room' && job.room===r.name && job.building===ui.worldBuilding;
+      const nAct = availableActivities(r, ch).length;
+      return `
+        <button class="world-card ${unlocked?'is-unlocked':''} ${working?'is-active':''}"
+                data-action="world-select-room" data-room="${esc(r.name)}" ${job && !working?'disabled':''}>
+          <span class="wc-title">${r.name}</span>
+          <span class="wc-sub">${nAct} activit${nAct===1?'y':'ies'}</span>
+          <span class="wc-status">${working?'Exploring…':unlocked?'Unlocked':`Locked · ${jobDurationLabel('unlock')} to open`}</span>
+        </button>`;
+    }).join('');
+  } else {
+    const area = WORLD.find(a=>a.name===ui.worldArea);
+    const building = area.buildings.find(b=>b.name===ui.worldBuilding);
+    const room = building.rooms.find(r=>r.name===ui.worldRoom);
+    const acts = availableActivities(room, ch);
+    crumb = `<div class="world-crumb"><button data-action="world-nav" data-view="areas">Areas</button> / <button data-action="world-nav" data-view="buildings">${ui.worldArea}</button> / <button data-action="world-nav" data-view="rooms">${ui.worldBuilding}</button> / ${ui.worldRoom}</div>`;
+    cards = acts.length
+      ? acts.map(act=>{
+          const owned = hasSkill(ch, act.id);
+          const working = job && job.kind==='activity' && job.skillId===act.id;
+          const timing = featureTiming(act);
+          return `
+            <button class="world-card ${owned?'is-unlocked':''} ${working?'is-active':''}"
+                    data-action="world-select-activity"
+                    data-skill-id="${esc(act.id)}"
+                    data-fills="${timing.fills}" data-fill-ms-sec="${timing.fillMsSec}"
+                    ${owned || (job && !working) || ch.featurePoints<=0 && !working ? 'disabled':''}>
+              <span class="wc-title">${act.activity}</span>
+              <span class="wc-sub">Earns <strong>${act.feature}</strong> · ${act.archetype} · 1 point · ${formatDuration(timing)}${act.description ? `<br>${esc(act.description)}` : ''}</span>
+              <span class="wc-status">${owned?'Earned':working?'Participating…':ch.featurePoints<=0?'No points left':`${formatDuration(timing)} to complete`}</span>
+            </button>`;
+        }).join('')
+      : `<p class="empty-note">Nothing open here yet. Earn a prerequisite feature elsewhere first.</p>`;
+  }
+
+  const unlock = unlockTiming();
+  const feature = featureTiming(null);
+  return `
+    ${crumb}
+    <div class="world-grid">${cards}</div>
+    ${renderJobPanel()}
+    <p class="mechanic-note">${formatFillNote(unlock)} unlock each place. Features take ${formatFillNote(feature)} (from skills data). Each feature costs one point.</p>`;
+}
+
+let jobTicker = null;
+function syncJobTicker(){
+  const job = state.character && state.character.activeJob;
+  if(!job){
+    if(jobTicker){ clearInterval(jobTicker); jobTicker=null; }
+    return;
+  }
+  if(jobTicker) return;
+  jobTicker = setInterval(()=>{
+    if(!state.character || !state.character.activeJob){
+      if(jobTicker){ clearInterval(jobTicker); jobTicker=null; }
+      return;
+    }
+    const p = jobProgress(state.character.activeJob);
+    if(p.done){
+      completeJob();
+    } else if(state.ui.hubTab==='world'){
+      // Soft-update the job panel without restarting the ticker.
+      const panel = document.querySelector('.job-panel');
+      if(panel){
+        const wrap = document.createElement('div');
+        wrap.innerHTML = renderJobPanel();
+        panel.replaceWith(wrap.firstElementChild);
+      }
+    }
+  }, 250);
+}
+
+function completeJob(){
+  const job = state.character.activeJob;
+  if(!job) return;
+  const ch = state.character;
+  if(job.kind==='area'){
+    ch.unlocked.areas[areaKey(job.area)] = true;
+    state.ui.worldView = 'buildings';
+    state.ui.worldArea = job.area;
+    showToast(`${job.area} open.`);
+  } else if(job.kind==='building'){
+    ch.unlocked.buildings[buildingKey(job.area, job.building)] = true;
+    state.ui.worldView = 'rooms';
+    state.ui.worldBuilding = job.building;
+    showToast(`${job.building} unlocked.`);
+  } else if(job.kind==='room'){
+    ch.unlocked.rooms[roomKey(job.area, job.building, job.room)] = true;
+    state.ui.worldView = 'activities';
+    state.ui.worldRoom = job.room;
+    showToast(`${job.room} unlocked.`);
+  } else if(job.kind==='activity'){
+    const skill = skillById(job.skillId) || job;
+    if(ch.featurePoints > 0 && skill.id && !hasSkill(ch, skill.id) && prereqMet(ch, skill)){
+      ch.featurePoints -= 1;
+      ch.features.push({
+        id: skill.id,
+        feature: skill.feature,
+        archetype: skill.archetype,
+        detail: job.detail || skill.detail || null,
+        description: skill.description || null,
+        area: skill.area || job.area,
+        building: skill.building || job.building,
+        room: skill.room || job.room,
+        activity: skill.activity || job.activity,
+      });
+      showToast(job.detail ? `Learned ${skill.feature}: ${job.detail}.` : `Learned ${skill.feature}.`);
+    }
+  }
+  ch.activeJob = null;
+  if(jobTicker){ clearInterval(jobTicker); jobTicker=null; }
+  render();
+}
+
+function startJob(job){
+  if(state.character.activeJob){
+    showToast('Already at work.');
+    return;
+  }
+  const timing = job.kind === 'activity'
+    ? featureTiming(job)
+    : unlockTiming();
+  state.character.activeJob = {
+    ...job,
+    fills: timing.fills,
+    fillMsSec: timing.fillMsSec,
+    durationMs: timing.durationMs,
+    startedAt: Date.now(),
+  };
+  state.ui.hubTab = 'world';
+  render();
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+function bindEvents(){
+  app.querySelectorAll('[data-action]').forEach(el=>{
+    el.addEventListener('click', onAction);
+  });
+}
+
+
+
+function persistCharacter(){
+  if(!state.character) return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.character));
+}
+
+const _completeJob = completeJob;
+completeJob = function(){
+  _completeJob();
+  persistCharacter();
+};
+
+function onAction(e){
+  const action = e.currentTarget.dataset.action;
+  const ui = state.ui, ch = state.character;
+
+  if(action==='hub-tab'){
+    if(ui.pendingChoice) return;
+    ui.hubTab = e.currentTarget.dataset.tab;
+    render();
+  }
+  else if(action==='cancel-choice'){
+    ui.pendingChoice = null;
+    render();
+  }
+  else if(action==='confirm-favored-enemy'){
+    const pending = ui.pendingChoice;
+    if(!pending || pending.type !== 'favored-enemy') return;
+    const enemy = e.currentTarget.dataset.enemy;
+    if(!pending.options.includes(enemy)){
+      showToast('Invalid choice.');
+      return;
+    }
+    const job = { ...pending.job, detail: enemy };
+    ui.pendingChoice = null;
+    startJob(job);
+  }
+  else if(action==='world-nav'){
+    const view = e.currentTarget.dataset.view;
+    ui.worldView = view;
+    if(view==='areas'){ ui.worldArea=null; ui.worldBuilding=null; ui.worldRoom=null; }
+    if(view==='buildings'){ ui.worldBuilding=null; ui.worldRoom=null; }
+    if(view==='rooms'){ ui.worldRoom=null; }
+    render();
+  }
+  else if(action==='world-select-area'){
+    const area = e.currentTarget.dataset.area;
+    if(ch.unlocked.areas[areaKey(area)]){
+      ui.worldArea = area;
+      ui.worldView = 'buildings';
+      render();
+      return;
+    }
+    startJob({ kind:'area', area });
+  }
+  else if(action==='world-select-building'){
+    const building = e.currentTarget.dataset.building;
+    const key = buildingKey(ui.worldArea, building);
+    if(ch.unlocked.buildings[key]){
+      ui.worldBuilding = building;
+      ui.worldView = 'rooms';
+      render();
+      return;
+    }
+    startJob({ kind:'building', area:ui.worldArea, building });
+  }
+  else if(action==='world-select-room'){
+    const room = e.currentTarget.dataset.room;
+    const key = roomKey(ui.worldArea, ui.worldBuilding, room);
+    if(ch.unlocked.rooms[key]){
+      ui.worldRoom = room;
+      ui.worldView = 'activities';
+      render();
+      return;
+    }
+    startJob({ kind:'room', area:ui.worldArea, building:ui.worldBuilding, room });
+  }
+  else if(action==='world-select-activity'){
+    if(ch.activeJob){
+      showToast('Already at work.');
+      return;
+    }
+    if(ch.featurePoints <= 0){
+      showToast('No feature points left.');
+      return;
+    }
+    const skillId = e.currentTarget.dataset.skillId;
+    const skill = skillById(skillId);
+    if(!skill){
+      showToast('Unknown skill.');
+      return;
+    }
+    if(hasSkill(ch, skill.id)){
+      showToast('Already learned.');
+      return;
+    }
+    if(!prereqMet(ch, skill)){
+      showToast('Prerequisite not met.');
+      return;
+    }
+    const job = {
+      kind:'activity',
+      skillId: skill.id,
+      area:ui.worldArea,
+      building:ui.worldBuilding,
+      room:ui.worldRoom,
+      activity: skill.activity,
+      feature: skill.feature,
+      archetype: skill.archetype,
+      fills: Number(e.currentTarget.dataset.fills),
+      fillMsSec: Number(e.currentTarget.dataset.fillMsSec),
+    };
+    if(skill.id === FAVORED_ENEMY_SKILL_ID){
+      ui.hubTab = 'world';
+      ui.pendingChoice = {
+        type: 'favored-enemy',
+        options: favoredEnemyChoicesFor(ch),
+        job,
+      };
+      render();
+      return;
+    }
+    startJob(job);
+  }
+  else if(action==='restart-init'){
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.href = '/character-initialization.html';
+  }
+}
+
+// Patch startJob to persist after starting
+const _startJob = startJob;
+startJob = function(job){
+  _startJob(job);
+  persistCharacter();
+};
+
+async function boot(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){
+      window.location.href = '/character-initialization.html';
+      return;
+    }
+    state.character = JSON.parse(raw);
+    if(!state.character.raceId || !state.character.alignment || !state.character.alignment.alignmentId){
+      window.location.href = '/character-initialization.html';
+      return;
+    }
+    // Ensure training fields exist for older saves
+    if(state.character.featurePoints == null) state.character.featurePoints = 2;
+    if(!state.character.features) state.character.features = [];
+    if(!state.character.unlocked) state.character.unlocked = { areas:{}, buildings:{}, rooms:{} };
+    if(!('activeJob' in state.character)) state.character.activeJob = null;
+
+    const [skills, tracks, races, alignments, timing, favoredEnemy] = await Promise.all([
+      loadJson('/data/skills.json'),
+      loadJson('/data/tracks.json'),
+      loadJson('/data/races.json'),
+      loadJson('/data/alignments.json'),
+      loadJson('/data/training-timing.json'),
+      loadJson('/data/favored-enemy.json'),
+    ]);
+    FEATURES = skills;
+    TRACKS = tracks;
+    RACES = races;
+    ALIGNMENTS = alignments;
+    TIMING = timing;
+    FAVORED_ENEMY = favoredEnemy;
+    // Backfill skill ids on older earned features / jobs
+    state.character.features = state.character.features.map(f=>{
+      if(f.id) return f;
+      const match = FEATURES.find(s=>s.feature===f.feature && s.activity===f.activity);
+      return match ? { ...f, id: match.id } : f;
+    });
+    if(state.character.activeJob && state.character.activeJob.kind==='activity' && !state.character.activeJob.skillId){
+      const job = state.character.activeJob;
+      const match = FEATURES.find(s=>s.feature===job.feature && s.activity===job.activity);
+      if(match) job.skillId = match.id;
+      else state.character.activeJob = null;
+    }
+    rebuildWorld();
+    render();
+  } catch (err) {
+    console.error(err);
+    app.innerHTML = `<div class="screen"><p class="lede">Could not load training.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre><p class="mechanic-note"><button data-action="restart-init">Start over</button></p></div><div class="toast" id="toast"></div>`;
+    bindEvents();
+  }
+}
+
+boot();
+
+</script>
+</body>
+</html>

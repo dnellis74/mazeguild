@@ -1,0 +1,12 @@
+{
+  "unlock": {
+    "fills": 6,
+    "fillMsSec": 0.5,
+    "_note": "Areas, buildings, and rooms: 6 fills × 0.5s = 3s"
+  },
+  "featureDefault": {
+    "fills": 6,
+    "fillMsSec": 1,
+    "_note": "Feature activities default to twice unlock duration (6s). Per-skill fills/fillMsSec on skills.json override this."
+  }
+}

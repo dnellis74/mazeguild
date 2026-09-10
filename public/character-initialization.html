@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Character Initialization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/character-creation.css">
+</head>
+<body>
+<div class="stage">
+  <div class="app" id="app"></div>
+</div>
+<script>
+
+
+const STORAGE_KEY = 'mazeguild.character';
+
+/** Debug: show quiz option weights under each answer. Flip to false to hide. */
+const DEBUG_SHOW_WEIGHTS = true;
+
+function esc(s){
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+
+async function loadJson(path){
+  const res = await fetch(path);
+  if(!res.ok) throw new Error('Failed to load '+path+' ('+res.status+')');
+  return res.json();
+}
+
+
+
+
+let TRACKS = [];
+let RACES = [];
+let RACE_QUESTIONS = [];
+let ALIGNMENTS = [];
+let ALIGNMENT_QUESTIONS = [];
+let RACE_QUESTION_OVERRIDES = {};
+let RACE_ALIGNMENT_EXTRAS = {};
+let RACE_QUESTION_SKIPS = {};
+let RACE_AXIS_BIAS = {};
+
+function alignmentQuestionsFor(raceId){
+  const skips = RACE_QUESTION_SKIPS[raceId] || [];
+  const overrides = RACE_QUESTION_OVERRIDES[raceId] || {};
+  const base = ALIGNMENT_QUESTIONS
+    .filter(q=> !skips.includes(q.id))
+    .map(q=> overrides[q.id] ? { ...q, ...overrides[q.id] } : q);
+  return base.concat(RACE_ALIGNMENT_EXTRAS[raceId] || []);
+}
+
+
+const AXIS_THRESHOLD = 0.4;
+
+
+function bracket(ratio){
+  if(ratio >= AXIS_THRESHOLD) return 1;
+  if(ratio <= -AXIS_THRESHOLD) return -1;
+  return 0;
+}
+
+
+function resolveAlignment(){
+  const raceId = state.character.raceId;
+  const questions = alignmentQuestionsFor(raceId);
+  const bias = RACE_AXIS_BIAS[raceId] || { law:0, good:0 };
+
+  let lawSum = bias.law, goodSum = bias.good;
+  let lawMax = 0, goodMax = 0;
+
+  state.character.alignment.answers.forEach((ans, i)=>{
+    if(!ans) return;
+    const q = questions[i];
+    const opt = q.options.find(o=>o.id===ans.optionId);
+    lawSum  += opt.law;
+    goodSum += opt.good;
+    lawMax  += Math.max(...q.options.map(o=>Math.abs(o.law)));
+    goodMax += Math.max(...q.options.map(o=>Math.abs(o.good)));
+  });
+
+  const lawRatio  = lawMax  ? lawSum  / lawMax  : 0;
+  const goodRatio = goodMax ? goodSum / goodMax : 0;
+  const law = bracket(lawRatio), good = bracket(goodRatio);
+  const cell = ALIGNMENTS.find(a=> a.law===law && a.good===good );
+
+  return { law, good, lawSum, goodSum, lawRatio, goodRatio, alignmentId:cell.id };
+}
+
+
+function definingExperience(){
+  const questions = alignmentQuestionsFor(state.character.raceId);
+  let best = null, bestWeight = -1;
+  state.character.alignment.answers.forEach((ans, i)=>{
+    if(!ans) return;
+    const q = questions[i];
+    const opt = q.options.find(o=>o.id===ans.optionId);
+    const weight = Math.abs(opt.law) + Math.abs(opt.good);
+    if(weight > bestWeight){
+      bestWeight = weight;
+      best = { questionId:q.id, scenario:q.text, optionId:opt.id, label:opt.label };
+    }
+  });
+  return best;
+}
+
+
+
+const state = {
+  ui:{
+    screen:'entry',
+    quizStep:0,
+    alignStep:0,
+    expandedId:null,
+    showWeights:true,
+  },
+  character:{
+    raceId:null,
+    tookQuiz:false,
+    suggestedId:null,
+    quizAnswers:[],
+    subrace:null,
+    racialChoice:null,
+    alignment:{
+      tookQuiz:false,
+      answers:[],
+      resolved:null,
+      alignmentId:null,
+      definingExperience:null,
+    },
+  },
+};
+
+const app = document.getElementById('app');
+
+function raceById(id){ return RACES.find(r=>r.id===id); }
+
+/** Quiz weight keys use compacted ids (halforc); race records use half-orc. */
+function normalizeRaceWeightId(id){
+  if(id === 'halforc') return 'half-orc';
+  if(id === 'halfelf') return 'half-elf';
+  return id;
+}
+
+function computeRaceTotals(){
+  const totals = {};
+  RACES.forEach(r=> totals[r.id]=0 );
+  state.character.quizAnswers.forEach((ans, i)=>{
+    if(!ans) return;
+    const w = RACE_QUESTIONS[i].options[ans.optionIndex].w;
+    Object.keys(w).forEach(id=>{
+      const raceId = normalizeRaceWeightId(id);
+      if(raceId in totals) totals[raceId] += w[id];
+    });
+  });
+  return totals;
+}
+
+function computeSuggestion(){
+  const totals = computeRaceTotals();
+  const ranked = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  const top = ranked[0], second = ranked[1];
+  if(!top || top[1]===0) return 'human';
+  if(second && top[1]-second[1] < 1) return 'human';
+  return top[0];
+}
+
+
+
+function render(){
+  let html = '';
+  const screen = state.ui.screen;
+  try {
+    if(screen==='entry') html = renderEntry();
+    else if(screen==='quiz') html = renderQuiz();
+    else if(screen==='pick') html = renderPick();
+    else if(screen==='confirm') html = renderConfirm();
+    else if(screen==='subrace') html = renderSubrace();
+    else if(screen==='racial') html = renderRacial();
+    else if(screen==='align-entry') html = renderAlignEntry();
+    else if(screen==='align-quiz') html = renderAlignQuiz();
+    else if(screen==='align-pick') html = renderAlignPick();
+    else if(screen==='align-confirm') html = renderAlignConfirm();
+  } catch (err) {
+    console.error(err);
+    html = `<div class="screen"><p class="lede">Something broke rendering this screen.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
+  }
+  app.innerHTML = html + '<div class="toast" id="toast"></div>';
+  bindEvents();
+}
+
+function renderEntry(){
+  return `
+  <div class="screen entry">
+    <p class="kicker">Character creation</p>
+    <h1>Tell us who you are.</h1>
+    <p class="lede">Answer a few questions, or go straight to the list. Nothing is final until you confirm it.</p>
+    <div class="choice-list">
+      <button class="choice-card" data-action="start-quiz">
+        <span class="choice-title">Answer a few questions</span>
+        <span class="choice-sub">A handful of instinct calls. We'll suggest a race, you still choose.</span>
+      </button>
+      <button class="choice-card" data-action="start-pick">
+        <span class="choice-title">Choose your race</span>
+        <span class="choice-sub">Skip ahead to the full list.</span>
+      </button>
+      <button class="choice-card is-locked" disabled>
+        <span class="choice-title">Describe your character</span>
+        <span class="choice-sub">Free text intake. Not open yet.</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+function formatSigned(n){
+  const v = Number(n) || 0;
+  return (v > 0 ? '+' : '') + v;
+}
+
+function formatRaceWeights(w){
+  if(!w || typeof w !== 'object') return '';
+  return Object.entries(w)
+    .map(([k,v])=>`${k} ${formatSigned(v)}`)
+    .join(' · ');
+}
+
+function formatAlignWeights(o){
+  const parts = [];
+  if(o.law != null) parts.push(`law ${formatSigned(o.law)}`);
+  if(o.good != null) parts.push(`good ${formatSigned(o.good)}`);
+  if(o.track) parts.push(`track ${o.track}`);
+  return parts.join(' · ');
+}
+
+function weightLine(text){
+  if(!DEBUG_SHOW_WEIGHTS || !text) return '';
+  return `<span class="option-weights">${esc(text)}</span>`;
+}
+
+function renderQuiz(){
+  const step = state.ui.quizStep;
+  const q = RACE_QUESTIONS[step];
+  const answered = state.character.quizAnswers[step];
+  const chosen = answered ? answered.optionIndex : null;
+  const ticks = RACE_QUESTIONS.map((_,i)=>`<span class="tick ${i<=step?'filled':''}"></span>`).join('');
+  const options = q.options.map((o,i)=>
+    `<button class="option ${chosen===i?'chosen':''}" data-action="answer" data-index="${i}">
+      <span class="option-main">${esc(o.label)}</span>
+      ${weightLine(formatRaceWeights(o.w))}
+    </button>`
+  ).join('');
+  return `
+  <div class="screen quiz">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${step+1} of ${RACE_QUESTIONS.length}</span>
+    </div>
+    <div class="ticks">${ticks}</div>
+    <h2>${q.text}</h2>
+    <div class="option-list">${options}</div>
+  </div>`;
+}
+
+function renderPick(){
+  const suggestedId = state.character.suggestedId;
+  const suggestedName = suggestedId ? raceById(suggestedId).name : null;
+  const totals = computeRaceTotals();
+  const rows = RACES.map(r=>{
+    const open = state.ui.expandedId===r.id;
+    const total = totals[r.id] || 0;
+    const weightHtml = (DEBUG_SHOW_WEIGHTS && total !== 0)
+      ? `<span class="option-weights">${formatSigned(total)}</span>`
+      : '';
+    return `
+    <div class="race-row ${open?'is-open':''}">
+      <button class="race-head" data-action="toggle" data-id="${r.id}">
+        <span class="race-name-wrap">
+          <span class="race-name">${r.name}</span>
+          ${weightHtml}
+        </span>
+        ${suggestedId===r.id?'<span class="tag">Suggested</span>':''}
+        <span class="chev">${open?'&minus;':'+'}</span>
+      </button>
+      <div class="race-body">
+        <div class="race-body-inner">
+          <p>${r.flavor}</p>
+          <button class="confirm-btn" data-action="confirm" data-id="${r.id}">Choose ${r.name}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+  <div class="screen pick">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">Choose your race</span>
+    </div>
+    ${suggestedName?`<p class="suggestion">Based on your answers: <strong>${suggestedName}</strong>. Still your call.</p>`:''}
+    <div class="race-list">${rows}</div>
+  </div>`;
+}
+
+function renderConfirm(){
+  const r = raceById(state.character.raceId);
+  return `
+  <div class="screen confirm">
+    <div class="seal-wrap"><div class="seal">Enlisted</div></div>
+    <p class="kicker">Race confirmed</p>
+    <h1>${r.name}</h1>
+    <p class="lede">${r.flavor}</p>
+    <p class="note">Whatever this choice leans you toward on Defense, Attack, Divine, or Arcane will show up at the training ground, once there are points to spend.</p>
+    <div class="confirm-actions">
+      <button data-action="change">Change race</button>
+      <button class="primary" data-action="proceed">Continue</button>
+    </div>
+  </div>`;
+}
+
+function renderSubrace(){
+  const r = raceById(state.character.raceId);
+  const picked = state.character.subrace;
+  const options = r.subraces.map(s=>
+    `<button class="option ${picked && picked.subraceId===s.id ? 'chosen':''}" data-action="pick-subrace" data-id="${s.id}">
+       <span class="option-main">${s.label}${s.sourced?'':' <span class="unsourced-mark">*</span>'}</span>
+       <span class="option-blurb">${s.blurb}</span>
+     </button>`
+  ).join('');
+  const anyUnsourced = r.subraces.some(s=>!s.sourced);
+  return `
+  <div class="screen racial">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${r.name}</span>
+    </div>
+    <h2>What kind of ${r.name.toLowerCase()} were you raised as?</h2>
+    <div class="option-list">${options}</div>
+    ${anyUnsourced?'<p class="mechanic-note">* invented for this build, not from the SRD.</p>':''}
+    <div class="confirm-actions">
+      <button class="primary" data-action="continue-subrace" ${picked?'':'disabled'}>Continue</button>
+    </div>
+  </div>`;
+}
+
+function renderRacial(){
+  const r = raceById(state.character.raceId);
+  const d = r.racialDetail;
+
+  if(d.type==='reveal'){
+    return `
+    <div class="screen racial">
+      <div class="topbar">
+        <button class="back" data-action="back">&#8249; Back</button>
+        <span class="progress">${r.name}</span>
+      </div>
+      <h2>${d.prompt}</h2>
+      <p class="lede">${d.text}</p>
+      <p class="mechanic-note">${d.mechanicNote}</p>
+      <div class="confirm-actions">
+        <button class="primary" data-action="continue-racial">Continue</button>
+      </div>
+    </div>`;
+  }
+
+  const picked = state.character.racialChoice;
+  const options = d.options.map(o=>
+    `<button class="option ${picked && picked.optionId===o.id ? 'chosen':''}" data-action="pick-racial" data-id="${o.id}">
+       <span class="option-main">${o.label}</span>
+       <span class="option-blurb">${o.blurb}</span>
+     </button>`
+  ).join('');
+  return `
+  <div class="screen racial">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${r.name}</span>
+    </div>
+    <h2>${d.prompt}</h2>
+    <div class="option-list">${options}</div>
+    <p class="mechanic-note">${d.mechanicNote}</p>
+    <div class="confirm-actions">
+      <button class="primary" data-action="continue-racial" ${picked?'':'disabled'}>Continue</button>
+    </div>
+  </div>`;
+}
+
+function alignmentById(id){ return ALIGNMENTS.find(a=>a.id===id); }
+
+function renderAlignEntry(){
+  return `
+  <div class="screen entry">
+    <p class="kicker">What you grew up into</p>
+    <h1>Some of it was decided before you had a say.</h1>
+    <p class="lede">Six things that happened to you as a child, and what you did about them. Or skip ahead and say plainly who you turned out to be.</p>
+    <div class="choice-list">
+      <button class="choice-card" data-action="start-align-quiz">
+        <span class="choice-title">Walk through your childhood</span>
+        <span class="choice-sub">Six scenes. One becomes the thing you're still carrying.</span>
+      </button>
+      <button class="choice-card" data-action="start-align-pick">
+        <span class="choice-title">Choose your alignment</span>
+        <span class="choice-sub">Straight to the nine.</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderAlignQuiz(){
+  const questions = alignmentQuestionsFor(state.character.raceId);
+  const step = state.ui.alignStep;
+  const q = questions[step];
+  const answered = state.character.alignment.answers[step];
+  const ticks = questions.map((_,i)=>`<span class="tick ${i<=step?'filled':''}"></span>`).join('');
+  const options = q.options.map(o=>
+    `<button class="option ${answered && answered.optionId===o.id ? 'chosen':''}" data-action="align-answer" data-id="${o.id}">
+      <span class="option-main">${esc(o.label)}</span>
+      ${weightLine(formatAlignWeights(o))}
+    </button>`
+  ).join('');
+  return `
+  <div class="screen quiz">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${step+1} of ${questions.length}</span>
+    </div>
+    <div class="ticks">${ticks}</div>
+    <h2>${q.text}</h2>
+    <div class="option-list">${options}</div>
+  </div>`;
+}
+
+function renderAlignPick(){
+  const resolved = state.character.alignment.resolved;
+  const suggestedId = resolved ? resolved.alignmentId : null;
+  const cells = ALIGNMENTS.map(a=>
+    `<button class="align-cell ${suggestedId===a.id?'is-suggested':''} ${state.ui.expandedId===a.id?'is-open':''}"
+             data-action="align-expand" data-id="${a.id}">
+       <span class="align-name">${a.name}</span>
+     </button>`
+  ).join('');
+  const open = state.ui.expandedId ? alignmentById(state.ui.expandedId) : null;
+  return `
+  <div class="screen pick">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">Choose your alignment</span>
+    </div>
+    ${suggestedId?`<p class="suggestion">Where your childhood put you: <strong>${alignmentById(suggestedId).name}</strong>. Still your call.</p>`:''}
+    <div class="align-grid">${cells}</div>
+    ${open?`
+      <div class="align-detail">
+        <p>${open.flavor}</p>
+        <button class="confirm-btn" data-action="align-confirm" data-id="${open.id}">Choose ${open.name}</button>
+      </div>`:'<p class="mechanic-note">Tap any of the nine to read it.</p>'}
+  </div>`;
+}
+
+function renderAlignConfirm(){
+  const a = alignmentById(state.character.alignment.alignmentId);
+  const exp = state.character.alignment.definingExperience;
+  const r = raceById(state.character.raceId);
+  return `
+  <div class="screen confirm">
+    <p class="kicker">Who you turned out to be</p>
+    <h1>${a.name} ${r.name}</h1>
+    <p class="lede">${a.flavor}</p>
+    ${exp?`
+      <div class="experience">
+        <p class="experience-scene">${exp.scenario}</p>
+        <p class="experience-answer">${exp.label}</p>
+      </div>
+      <p class="mechanic-note">That one stayed with you. It follows you into training.</p>
+    `:''}
+    <div class="confirm-actions">
+      <button data-action="align-change">Change</button>
+      <button class="primary" data-action="finish">Enter training</button>
+    </div>
+  </div>`;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+function bindEvents(){
+  app.querySelectorAll('[data-action]').forEach(el=>{
+    el.addEventListener('click', onAction);
+  });
+}
+
+
+
+function onAction(e){
+  const action = e.currentTarget.dataset.action;
+  const ui = state.ui, ch = state.character;
+
+  if(action==='start-quiz'){
+    ui.screen='quiz'; ui.quizStep=0;
+    ch.tookQuiz=true; ch.quizAnswers=[]; ch.suggestedId=null;
+    render();
+  }
+  else if(action==='start-pick'){
+    ch.tookQuiz=false; ch.quizAnswers=[]; ch.suggestedId=null;
+    ui.expandedId=null;
+    ui.screen='pick';
+    render();
+  }
+  else if(action==='answer'){
+    const idx = parseInt(e.currentTarget.dataset.index,10);
+    const q = RACE_QUESTIONS[ui.quizStep];
+    ch.quizAnswers[ui.quizStep] = { question:q.text, optionIndex:idx, optionLabel:q.options[idx].label };
+    if(ui.quizStep < RACE_QUESTIONS.length-1){
+      ui.quizStep++;
+      render();
+    } else {
+      ch.suggestedId = computeSuggestion();
+      ui.expandedId=null;
+      ui.screen='pick';
+      render();
+    }
+  }
+  else if(action==='back'){
+    if(ui.screen==='quiz'){
+      if(ui.quizStep>0){ ui.quizStep--; render(); }
+      else { ui.screen='entry'; render(); }
+    } else if(ui.screen==='pick'){
+      ui.screen='entry'; render();
+    } else if(ui.screen==='racial'){
+      const r = raceById(ch.raceId);
+      ui.screen = r.subraces ? 'subrace' : 'confirm';
+      render();
+    } else if(ui.screen==='subrace'){
+      ui.screen='confirm'; render();
+    } else if(ui.screen==='align-quiz'){
+      if(ui.alignStep>0){ ui.alignStep--; render(); }
+      else { ui.screen='align-entry'; render(); }
+    } else if(ui.screen==='align-pick'){
+      ui.screen='align-entry'; ui.expandedId=null; render();
+    }
+  }
+  else if(action==='toggle'){
+    const id = e.currentTarget.dataset.id;
+    ui.expandedId = ui.expandedId===id ? null : id;
+    render();
+  }
+  else if(action==='confirm'){
+    ch.raceId = e.currentTarget.dataset.id;
+    ch.subrace = null;
+    ch.racialChoice = null;
+    ui.screen='confirm';
+    render();
+  }
+  else if(action==='change'){
+    ui.screen='pick';
+    render();
+  }
+  else if(action==='proceed'){
+    const r = raceById(ch.raceId);
+    ui.screen = r.subraces ? 'subrace' : 'racial';
+    render();
+  }
+  else if(action==='pick-subrace'){
+    const r = raceById(ch.raceId);
+    const subId = e.currentTarget.dataset.id;
+    const sub = r.subraces.find(s=>s.id===subId);
+    ch.subrace = { subraceId:sub.id, label:sub.label };
+    render();
+  }
+  else if(action==='continue-subrace'){
+    ui.screen='racial';
+    render();
+  }
+  else if(action==='pick-racial'){
+    const r = raceById(ch.raceId);
+    const optId = e.currentTarget.dataset.id;
+    const opt = r.racialDetail.options.find(o=>o.id===optId);
+    ch.racialChoice = { prompt:r.racialDetail.prompt, optionId:opt.id, label:opt.label };
+    render();
+  }
+  else if(action==='continue-racial'){
+    ui.screen='align-entry';
+    render();
+  }
+  else if(action==='start-align-quiz'){
+    ui.screen='align-quiz'; ui.alignStep=0;
+    ch.alignment.tookQuiz=true;
+    ch.alignment.answers=[]; ch.alignment.resolved=null;
+    render();
+  }
+  else if(action==='start-align-pick'){
+    ch.alignment.tookQuiz=false;
+    ch.alignment.answers=[]; ch.alignment.resolved=null;
+    ch.alignment.definingExperience=null;
+    ui.expandedId=null;
+    ui.screen='align-pick';
+    render();
+  }
+  else if(action==='align-answer'){
+    const questions = alignmentQuestionsFor(ch.raceId);
+    const q = questions[ui.alignStep];
+    const opt = q.options.find(o=>o.id===e.currentTarget.dataset.id);
+    ch.alignment.answers[ui.alignStep] = { questionId:q.id, optionId:opt.id, label:opt.label };
+    if(ui.alignStep < questions.length-1){
+      ui.alignStep++;
+      render();
+    } else {
+      ch.alignment.resolved = resolveAlignment();
+      ch.alignment.definingExperience = definingExperience();
+      ui.expandedId = ch.alignment.resolved.alignmentId;
+      ui.screen='align-pick';
+      render();
+    }
+  }
+  else if(action==='align-expand'){
+    const id = e.currentTarget.dataset.id;
+    ui.expandedId = ui.expandedId===id ? null : id;
+    render();
+  }
+  else if(action==='align-confirm'){
+    ch.alignment.alignmentId = e.currentTarget.dataset.id;
+    ui.screen='align-confirm';
+    render();
+  }
+  else if(action==='align-change'){
+    ui.expandedId = ch.alignment.alignmentId;
+    ui.screen='align-pick';
+    render();
+  }
+  else if(action==='finish'){
+    const payload = {
+      ...structuredClone(ch),
+      featurePoints: 2,
+      features: [],
+      unlocked: { areas:{}, buildings:{}, rooms:{} },
+      activeJob: null,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    window.location.href = '/training.html';
+  }
+}
+
+async function boot(){
+  try {
+    const [
+      tracks, races, raceQuestions, alignments, alignmentQuestions, raceAlignment,
+    ] = await Promise.all([
+      loadJson('/data/tracks.json'),
+      loadJson('/data/races.json'),
+      loadJson('/data/race-questions.json'),
+      loadJson('/data/alignments.json'),
+      loadJson('/data/alignment-questions.json'),
+      loadJson('/data/race-alignment.json'),
+    ]);
+    TRACKS = tracks;
+    RACES = races;
+    RACE_QUESTIONS = raceQuestions;
+    ALIGNMENTS = alignments;
+    ALIGNMENT_QUESTIONS = alignmentQuestions;
+    RACE_ALIGNMENT_EXTRAS = raceAlignment.extras || {};
+    RACE_QUESTION_OVERRIDES = raceAlignment.overrides || {};
+    RACE_QUESTION_SKIPS = raceAlignment.skips || {};
+    RACE_AXIS_BIAS = raceAlignment.axisBias || {};
+    render();
+  } catch (err) {
+    console.error(err);
+    app.innerHTML = `<div class="screen"><p class="lede">Could not load creation data.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
+  }
+}
+
+boot();
+
+</script>
+</body>
+</html>

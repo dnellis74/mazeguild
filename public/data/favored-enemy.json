@@ -1,0 +1,38 @@
+{
+  "Dwarf": {
+    "enemy": "Orcs",
+    "hunted": "Cave Bears"
+  },
+  "Elf": {
+    "enemy": "Drow",
+    "hunted": "Giant Spiders"
+  },
+  "Halfling": {
+    "enemy": "Goblins",
+    "hunted": "Wild Boar"
+  },
+  "Human": {
+    "enemy": "Bandits",
+    "hunted": "Deer"
+  },
+  "Dragonborn": {
+    "enemy": "Kobolds",
+    "hunted": "Giant Lizards"
+  },
+  "Gnome": {
+    "enemy": "Kobolds",
+    "hunted": "Giant Rats"
+  },
+  "Half-Elf": {
+    "enemy": "Drow",
+    "hunted": "Stags"
+  },
+  "Half-Orc": {
+    "enemy": "Dwarves",
+    "hunted": "Mountain Goats"
+  },
+  "Tiefling": {
+    "enemy": "Devils",
+    "hunted": "Cultists"
+  }
+}

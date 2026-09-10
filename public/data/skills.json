@@ -1,205 +1,371 @@
 [
   {
+    "id": "f_01r8k4",
     "archetype": "Barbarian",
     "feature": "Rage",
+    "prerequisite": null,
     "area": "The Wilds",
     "building": "Hunting Lodge",
     "room": "Campfire",
-    "activity": "Endure the Hunt"
+    "activity": "Endure the Hunt",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_02m7q9",
     "archetype": "Barbarian",
     "feature": "Unarmored Defense",
+    "prerequisite": null,
     "area": "The Wilds",
     "building": "Hunting Lodge",
     "room": "Sparring Yard",
-    "activity": "Toughen the Hide"
+    "activity": "Toughen the Hide",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_03x5n2",
     "archetype": "Bard",
     "feature": "Bardic Inspiration",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Tavern",
     "room": "Stage",
-    "activity": "Perform for the Crowd"
+    "activity": "Perform for the Crowd",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_04p6t8",
     "archetype": "Bard",
     "feature": "Bardic Spellcasting",
+    "prerequisite": "f_03x5n2",
     "area": "Walled City",
     "building": "Tavern",
     "room": "Stage",
-    "activity": "Study the Old Songs"
+    "activity": "Study the Old Songs",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_05k2v7",
     "archetype": "Cleric",
     "feature": "Spellcasting",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Cathedral",
     "room": "Scriptorium",
-    "activity": "Study Sacred Texts"
+    "activity": "Study Sacred Texts",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_06q9m3",
     "archetype": "Cleric",
     "feature": "Divine Domain",
     "detail": "Life Domain",
+    "prerequisite": "f_05k2v7",
     "area": "Walled City",
     "building": "Cathedral",
     "room": "Chapel",
-    "activity": "Choose a Doctrine"
+    "activity": "Choose a Doctrine",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_07n4r6",
     "archetype": "Druid",
     "feature": "Druidic",
+    "prerequisite": null,
     "area": "The Wilds",
     "building": "Pagan Temple",
     "room": "Grove",
-    "activity": "Learn the Old Tongue"
+    "activity": "Learn the Old Tongue",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_08t1x5",
     "archetype": "Druid",
     "feature": "Spellcasting",
+    "prerequisite": "f_07n4r6",
     "area": "The Wilds",
     "building": "Pagan Temple",
     "room": "Grove",
-    "activity": "Commune with Nature"
+    "activity": "Commune with Nature",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_09a1r3",
     "archetype": "Fighter",
-    "feature": "Fighting Style",
+    "feature": "Archery",
+    "description": "You gain a +2 bonus to attack rolls you make with ranged weapons.",
+    "prerequisite": null,
     "area": "The Keep",
     "building": "Training Ground",
     "room": "Drill Yard",
-    "activity": "Drill with Weapons"
+    "activity": "Practice Ranged Fire",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_09b2s4",
+    "archetype": "Fighter",
+    "feature": "Defense",
+    "description": "While you are wearing armor, you gain a +1 bonus to AC.",
+    "prerequisite": null,
+    "area": "The Keep",
+    "building": "Training Ground",
+    "room": "Drill Yard",
+    "activity": "Drill in Armor",
+    "fills": 6,
+    "fillMsSec": 1
+  },
+  {
+    "id": "f_09c3t5",
+    "archetype": "Fighter",
+    "feature": "Dueling",
+    "description": "When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.",
+    "prerequisite": null,
+    "area": "The Keep",
+    "building": "Training Ground",
+    "room": "Drill Yard",
+    "activity": "Spar One-Handed",
+    "fills": 6,
+    "fillMsSec": 1
+  },
+  {
+    "id": "f_09d4u6",
+    "archetype": "Fighter",
+    "feature": "Great Weapon Fighting",
+    "description": "When you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll, even if the new roll is a 1 or a 2. The weapon must have the two-handed or versatile property for you to gain this benefit.",
+    "prerequisite": null,
+    "area": "The Keep",
+    "building": "Training Ground",
+    "room": "Drill Yard",
+    "activity": "Swing Two-Handed",
+    "fills": 6,
+    "fillMsSec": 1
+  },
+  {
+    "id": "f_09e5v7",
+    "archetype": "Fighter",
+    "feature": "Protection",
+    "description": "When a creature you can see attacks a target other than you that is within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield.",
+    "prerequisite": null,
+    "area": "The Keep",
+    "building": "Training Ground",
+    "room": "Drill Yard",
+    "activity": "Guard with Shield",
+    "fills": 6,
+    "fillMsSec": 1
+  },
+  {
+    "id": "f_09f6w8",
+    "archetype": "Fighter",
+    "feature": "Two-Weapon Fighting",
+    "description": "When you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack.",
+    "prerequisite": null,
+    "area": "The Keep",
+    "building": "Training Ground",
+    "room": "Drill Yard",
+    "activity": "Train Dual Wield",
+    "fills": 6,
+    "fillMsSec": 1
+  },
+  {
+    "id": "f_10q5k7",
     "archetype": "Fighter",
     "feature": "Second Wind",
+    "prerequisite": null,
     "area": "The Keep",
     "building": "Gym",
     "room": "Training Hall",
-    "activity": "Push Beyond Exhaustion"
+    "activity": "Push Beyond Exhaustion",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_11x3n9",
     "archetype": "Monk",
     "feature": "Unarmored Defense",
+    "prerequisite": null,
     "area": "The Wilds",
     "building": "Hunting Lodge",
     "room": "Sparring Yard",
-    "activity": "Condition the Body"
+    "activity": "Condition the Body",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_12r6m4",
     "archetype": "Monk",
     "feature": "Martial Arts",
+    "prerequisite": "f_11x3n9",
     "area": "The Keep",
     "building": "Gym",
     "room": "Practice Hall",
-    "activity": "Practice Martial Forms"
+    "activity": "Practice Martial Forms",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_13k8t2",
     "archetype": "Paladin",
     "feature": "Divine Sense",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Cathedral",
     "room": "Sanctuary",
-    "activity": "Attend to the Faithful"
+    "activity": "Attend to the Faithful",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_14p3x7",
     "archetype": "Paladin",
     "feature": "Lay on Hands",
+    "prerequisite": "f_13k8t2",
     "area": "Walled City",
     "building": "Cathedral",
     "room": "Infirmary",
-    "activity": "Practice Healing"
+    "activity": "Practice Healing",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_15m9q5",
     "archetype": "Ranger",
     "feature": "Favored Enemy",
+    "prerequisite": null,
     "area": "The Wilds",
     "building": "Hunting Lodge",
     "room": "Trophy Room",
-    "activity": "Study a Quarry"
+    "activity": "Study a Quarry",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_16n4k8",
     "archetype": "Ranger",
     "feature": "Natural Explorer",
+    "prerequisite": "f_15m9q5",
     "area": "The Wilds",
     "building": "Hunting Lodge",
     "room": "Map Room",
-    "activity": "Map the Wilderness"
+    "activity": "Map the Wilderness",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_17x7r3",
     "archetype": "Rogue",
     "feature": "Expertise",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Tavern",
     "room": "Card Room",
-    "activity": "Hone a Skill"
+    "activity": "Hone a Skill",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_18q2m6",
     "archetype": "Rogue",
     "feature": "Sneak Attack",
+    "prerequisite": "f_17x7r3",
     "area": "Walled City",
     "building": "Tavern",
     "room": "Card Room",
-    "activity": "Practice Dirty Fighting"
+    "activity": "Practice Dirty Fighting",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_19t5p9",
     "archetype": "Rogue",
     "feature": "Thieves' Cant",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Tavern",
     "room": "Card Room",
-    "activity": "Learn the Cant"
+    "activity": "Learn the Cant",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_20k4n7",
     "archetype": "Sorcerer",
     "feature": "Spellcasting",
+    "prerequisite": "f_21m6q3",
     "area": "Walled City",
     "building": "Library",
     "room": "Archive",
-    "activity": "Awaken the Blood"
+    "activity": "Awaken the Blood",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_21r8x2",
     "archetype": "Sorcerer",
     "feature": "Sorcerous Origin",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Library",
     "room": "Archive",
-    "activity": "Discover Your Heritage"
+    "activity": "Discover Your Heritage",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_22p5t7",
     "archetype": "Warlock",
     "feature": "Otherworldly Patron",
     "detail": "The Great Old One",
+    "prerequisite": null,
     "area": "The Wilds",
     "building": "Cult Compound",
     "room": "Inner Sanctum",
-    "activity": "Seek a Patron"
+    "activity": "Seek a Patron",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_23m3k9",
     "archetype": "Warlock",
     "feature": "Pact Magic",
     "detail": "The Great Old One",
+    "prerequisite": "f_22p5t7",
     "area": "The Wilds",
     "building": "Cult Compound",
     "room": "Inner Sanctum",
-    "activity": "Enter the Pact"
+    "activity": "Enter the Pact",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_24q7n4",
     "archetype": "Wizard",
     "feature": "Spellcasting",
+    "prerequisite": null,
     "area": "Walled City",
     "building": "Library",
     "room": "Study",
-    "activity": "Study Arcane Theory"
+    "activity": "Study Arcane Theory",
+    "fills": 6,
+    "fillMsSec": 1
   },
   {
+    "id": "f_25x2r8",
     "archetype": "Wizard",
     "feature": "Arcane Recovery",
+    "prerequisite": "f_24q7n4",
     "area": "Walled City",
     "building": "Library",
     "room": "Laboratory",
-    "activity": "Practice Magical Conservation"
+    "activity": "Practice Magical Conservation",
+    "fills": 6,
+    "fillMsSec": 1
   }
 ]
