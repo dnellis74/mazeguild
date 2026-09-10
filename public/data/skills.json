@@ -1,0 +1,205 @@
+[
+  {
+    "archetype": "Barbarian",
+    "feature": "Rage",
+    "area": "The Wilds",
+    "building": "Hunting Lodge",
+    "room": "Campfire",
+    "activity": "Endure the Hunt"
+  },
+  {
+    "archetype": "Barbarian",
+    "feature": "Unarmored Defense",
+    "area": "The Wilds",
+    "building": "Hunting Lodge",
+    "room": "Sparring Yard",
+    "activity": "Toughen the Hide"
+  },
+  {
+    "archetype": "Bard",
+    "feature": "Bardic Inspiration",
+    "area": "Walled City",
+    "building": "Tavern",
+    "room": "Stage",
+    "activity": "Perform for the Crowd"
+  },
+  {
+    "archetype": "Bard",
+    "feature": "Bardic Spellcasting",
+    "area": "Walled City",
+    "building": "Tavern",
+    "room": "Stage",
+    "activity": "Study the Old Songs"
+  },
+  {
+    "archetype": "Cleric",
+    "feature": "Spellcasting",
+    "area": "Walled City",
+    "building": "Cathedral",
+    "room": "Scriptorium",
+    "activity": "Study Sacred Texts"
+  },
+  {
+    "archetype": "Cleric",
+    "feature": "Divine Domain",
+    "detail": "Life Domain",
+    "area": "Walled City",
+    "building": "Cathedral",
+    "room": "Chapel",
+    "activity": "Choose a Doctrine"
+  },
+  {
+    "archetype": "Druid",
+    "feature": "Druidic",
+    "area": "The Wilds",
+    "building": "Pagan Temple",
+    "room": "Grove",
+    "activity": "Learn the Old Tongue"
+  },
+  {
+    "archetype": "Druid",
+    "feature": "Spellcasting",
+    "area": "The Wilds",
+    "building": "Pagan Temple",
+    "room": "Grove",
+    "activity": "Commune with Nature"
+  },
+  {
+    "archetype": "Fighter",
+    "feature": "Fighting Style",
+    "area": "The Keep",
+    "building": "Training Ground",
+    "room": "Drill Yard",
+    "activity": "Drill with Weapons"
+  },
+  {
+    "archetype": "Fighter",
+    "feature": "Second Wind",
+    "area": "The Keep",
+    "building": "Gym",
+    "room": "Training Hall",
+    "activity": "Push Beyond Exhaustion"
+  },
+  {
+    "archetype": "Monk",
+    "feature": "Unarmored Defense",
+    "area": "The Wilds",
+    "building": "Hunting Lodge",
+    "room": "Sparring Yard",
+    "activity": "Condition the Body"
+  },
+  {
+    "archetype": "Monk",
+    "feature": "Martial Arts",
+    "area": "The Keep",
+    "building": "Gym",
+    "room": "Practice Hall",
+    "activity": "Practice Martial Forms"
+  },
+  {
+    "archetype": "Paladin",
+    "feature": "Divine Sense",
+    "area": "Walled City",
+    "building": "Cathedral",
+    "room": "Sanctuary",
+    "activity": "Attend to the Faithful"
+  },
+  {
+    "archetype": "Paladin",
+    "feature": "Lay on Hands",
+    "area": "Walled City",
+    "building": "Cathedral",
+    "room": "Infirmary",
+    "activity": "Practice Healing"
+  },
+  {
+    "archetype": "Ranger",
+    "feature": "Favored Enemy",
+    "area": "The Wilds",
+    "building": "Hunting Lodge",
+    "room": "Trophy Room",
+    "activity": "Study a Quarry"
+  },
+  {
+    "archetype": "Ranger",
+    "feature": "Natural Explorer",
+    "area": "The Wilds",
+    "building": "Hunting Lodge",
+    "room": "Map Room",
+    "activity": "Map the Wilderness"
+  },
+  {
+    "archetype": "Rogue",
+    "feature": "Expertise",
+    "area": "Walled City",
+    "building": "Tavern",
+    "room": "Card Room",
+    "activity": "Hone a Skill"
+  },
+  {
+    "archetype": "Rogue",
+    "feature": "Sneak Attack",
+    "area": "Walled City",
+    "building": "Tavern",
+    "room": "Card Room",
+    "activity": "Practice Dirty Fighting"
+  },
+  {
+    "archetype": "Rogue",
+    "feature": "Thieves' Cant",
+    "area": "Walled City",
+    "building": "Tavern",
+    "room": "Card Room",
+    "activity": "Learn the Cant"
+  },
+  {
+    "archetype": "Sorcerer",
+    "feature": "Spellcasting",
+    "area": "Walled City",
+    "building": "Library",
+    "room": "Archive",
+    "activity": "Awaken the Blood"
+  },
+  {
+    "archetype": "Sorcerer",
+    "feature": "Sorcerous Origin",
+    "area": "Walled City",
+    "building": "Library",
+    "room": "Archive",
+    "activity": "Discover Your Heritage"
+  },
+  {
+    "archetype": "Warlock",
+    "feature": "Otherworldly Patron",
+    "detail": "The Great Old One",
+    "area": "The Wilds",
+    "building": "Cult Compound",
+    "room": "Inner Sanctum",
+    "activity": "Seek a Patron"
+  },
+  {
+    "archetype": "Warlock",
+    "feature": "Pact Magic",
+    "detail": "The Great Old One",
+    "area": "The Wilds",
+    "building": "Cult Compound",
+    "room": "Inner Sanctum",
+    "activity": "Enter the Pact"
+  },
+  {
+    "archetype": "Wizard",
+    "feature": "Spellcasting",
+    "area": "Walled City",
+    "building": "Library",
+    "room": "Study",
+    "activity": "Study Arcane Theory"
+  },
+  {
+    "archetype": "Wizard",
+    "feature": "Arcane Recovery",
+    "area": "Walled City",
+    "building": "Library",
+    "room": "Laboratory",
+    "activity": "Practice Magical Conservation"
+  }
+]
