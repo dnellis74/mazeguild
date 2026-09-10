@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Race Selection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EDE6D3;
+    --paper-dim: #E2D8C0;
+    --ink: #2A2620;
+    --ink-soft: #6B6355;
+    --navy: #182428;
+    --navy-deep: #0F1719;
+    --seal: #4C7A63;
+    --seal-dark: #35594A;
+    --rule: #C9BC9C;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{
+    font-family: var(--font-body);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  button{ font-family:inherit; color:inherit; background:none; border:none; padding:0; cursor:pointer; text-align:left; }
+  button:disabled{ cursor:not-allowed; }
+  h1,h2,p{ margin:0; }
+  ::selection{ background: var(--seal); color:#fff; }
+
+  :focus-visible{ outline: 2px solid var(--seal); outline-offset: 3px; border-radius:2px; }
+
+  .stage{
+    min-height:100vh;
+    min-height:100dvh;
+    background: radial-gradient(ellipse at 50% 0%, #223339 0%, var(--navy) 55%, var(--navy-deep) 100%);
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+  }
+
+  .app{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--paper);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  @media (min-width:560px){
+    .stage{ padding:56px 16px; align-items:center; }
+    .app{
+      min-height:0;
+      height:min(820px, 92vh);
+      border-radius:16px;
+      box-shadow: 0 40px 70px -24px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.08);
+    }
+  }
+
+  .screen{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding: 28px 24px 32px;
+    overflow-y:auto;
+    animation: fadeIn .28s ease both;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .screen{ animation:none; }
+  }
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .kicker{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+
+  h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(26px,7vw,32px);
+    line-height:1.18;
+    letter-spacing:-0.01em;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:22px;
+    line-height:1.3;
+  }
+  .lede{
+    margin-top:14px;
+    font-size:16px;
+    line-height:1.55;
+    color: #45403A;
+    max-width:36ch;
+  }
+
+  /* ---- Entry screen ---- */
+  .choice-list{
+    margin-top:28px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .choice-card{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding:18px 18px;
+    background:var(--paper-dim);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--seal);
+    border-radius:6px;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .choice-card:active{ transform:scale(.99); }
+  .choice-card:hover{ background:#DCD1B4; }
+  .choice-card.is-locked{
+    border-left-color:var(--rule);
+    opacity:.55;
+  }
+  .choice-title{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:18px;
+  }
+  .choice-sub{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.4;
+  }
+
+  /* ---- Topbar (quiz + pick) ---- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:20px;
+  }
+  .back{
+    font-size:14px;
+    color:var(--ink-soft);
+    padding:6px 2px;
+  }
+  .back:hover{ color:var(--ink); }
+  .progress{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  .ticks{
+    display:flex;
+    gap:5px;
+    margin-bottom:22px;
+  }
+  .tick{
+    width:22px;
+    height:4px;
+    border-radius:2px;
+    background:var(--rule);
+  }
+  .tick.filled{ background:var(--seal); }
+
+  /* ---- Quiz options ---- */
+  .option-list{
+    margin-top:22px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .option{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    padding:15px 16px;
+    background:var(--paper-dim);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    font-size:15.5px;
+    line-height:1.4;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .option:hover{ background:#DCD1B4; }
+  .option:active{ transform:scale(.99); }
+  .option.chosen{
+    background:var(--seal);
+    border-color:var(--seal-dark);
+    color:#fff;
+  }
+  .option-main{ font-weight:500; }
+  .option-blurb{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.4;
+  }
+  .option.chosen .option-blurb{ color:rgba(255,255,255,.85); }
+  .unsourced-mark{ color:var(--seal-dark); }
+  .option.chosen .unsourced-mark{ color:#fff; }
+
+  .mechanic-note{
+    margin-top:18px;
+    font-size:13px;
+    font-style:italic;
+    color:var(--ink-soft);
+    line-height:1.5;
+    max-width:36ch;
+  }
+
+  /* ---- Alignment grid ---- */
+  .align-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+  }
+  .align-cell{
+    aspect-ratio:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 6px;
+    background:var(--paper-dim);
+    border:1px solid var(--rule);
+    border-radius:5px;
+    text-align:center;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .align-cell:active{ transform:scale(.98); }
+  .align-cell:hover{ background:#DCD1B4; }
+  .align-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:14px;
+    line-height:1.25;
+  }
+  .align-cell.is-suggested{
+    border-color:var(--seal);
+    border-width:2px;
+  }
+  .align-cell.is-open{
+    background:var(--seal);
+    border-color:var(--seal-dark);
+    color:#fff;
+  }
+  .align-detail{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px solid var(--rule);
+  }
+  .align-detail p{
+    font-size:14.5px;
+    line-height:1.55;
+    color:#45403A;
+    max-width:38ch;
+    margin-bottom:14px;
+  }
+  .align-detail .confirm-btn{ margin:0; }
+
+  /* ---- Defining experience ---- */
+  .experience{
+    margin-top:22px;
+    padding:16px 18px;
+    background:var(--paper-dim);
+    border-left:3px solid var(--seal);
+    border-radius:0 5px 5px 0;
+  }
+  .experience-scene{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    margin-bottom:8px;
+  }
+  .experience-answer{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:16px;
+    line-height:1.4;
+  }
+
+  /* ---- Pick screen ---- */
+  .suggestion{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-bottom:16px;
+  }
+  .suggestion strong{ color:var(--ink); }
+
+  .race-list{
+    display:flex;
+    flex-direction:column;
+    border-top:1px solid var(--rule);
+  }
+  .race-row{ border-bottom:1px solid var(--rule); }
+  .race-head{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 2px;
+  }
+  .race-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:17px;
+    flex:1;
+  }
+  .tag{
+    font-size:11.5px;
+    color:var(--seal-dark);
+    border:1px solid var(--seal);
+    border-radius:20px;
+    padding:2px 8px;
+  }
+  .chev{
+    font-size:18px;
+    color:var(--ink-soft);
+    width:16px;
+    text-align:center;
+  }
+  .race-body{
+    display:grid;
+    grid-template-rows:0fr;
+    transition: grid-template-rows .25s ease;
+  }
+  .race-row.is-open .race-body{ grid-template-rows:1fr; }
+  .race-body-inner{ overflow:hidden; }
+  .race-body p{
+    font-size:14.5px;
+    line-height:1.55;
+    color:#45403A;
+    padding: 0 2px 14px;
+    max-width:38ch;
+  }
+  .confirm-btn{
+    margin: 0 2px 18px;
+    padding:11px 18px;
+    background:var(--seal);
+    color:#fff;
+    border-radius:5px;
+    font-size:14.5px;
+    font-weight:500;
+    transition: background .15s ease;
+  }
+  .confirm-btn:hover{ background:var(--seal-dark); }
+
+  /* ---- Confirm screen ---- */
+  .confirm{ align-items:flex-start; padding-top:20px; }
+  .seal-wrap{
+    align-self:center;
+    margin: 10px 0 22px;
+  }
+  .seal{
+    width:104px;
+    height:104px;
+    border-radius:50%;
+    border:2.5px solid var(--seal-dark);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.04em;
+    color:var(--seal-dark);
+    transform:rotate(-8deg);
+    text-align:center;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .seal{ animation: stampIn .5s cubic-bezier(.2,.8,.2,1) both; }
+  }
+  @keyframes stampIn{
+    0%{ opacity:0; transform:scale(1.6) rotate(-16deg); }
+    60%{ opacity:1; transform:scale(.92) rotate(-6deg); }
+    100%{ opacity:1; transform:scale(1) rotate(-8deg); }
+  }
+  .note{
+    margin-top:16px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    max-width:34ch;
+  }
+  .confirm-actions{
+    margin-top:auto;
+    padding-top:24px;
+    display:flex;
+    gap:10px;
+  }
+  .confirm-actions button{
+    flex:1;
+    padding:13px 14px;
+    border-radius:6px;
+    font-size:14.5px;
+    font-weight:500;
+    text-align:center;
+  }
+  .confirm-actions button:not(.primary){
+    background:transparent;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .confirm-actions button.primary{
+    background:var(--seal);
+    color:#fff;
+  }
+  .confirm-actions button.primary:hover{ background:var(--seal-dark); }
+  .confirm-actions button.primary:disabled{
+    background:var(--rule);
+    color:var(--ink-soft);
+  }
+  .confirm-actions button.primary:disabled:hover{ background:var(--rule); }
+
+  /* ---- Toast ---- */
+  .toast{
+    position:absolute;
+    left:20px; right:20px; bottom:20px;
+    background:var(--ink);
+    color:var(--paper);
+    font-size:13.5px;
+    padding:12px 14px;
+    border-radius:6px;
+    opacity:0;
+    transform:translateY(8px);
+    transition: opacity .2s ease, transform .2s ease;
+    pointer-events:none;
+  }
+  .toast.show{ opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="app" id="app"></div>
+</div>
+
+<script>
+// The four training-ground tracks. Single source for ids + display labels
+// so nothing downstream (race data, future training-ground UI) has to
+// repeat these as magic strings.
+const TRACKS = [
+  { id:'defense', label:'Defense' },
+  { id:'attack',  label:'Attack'  },
+  { id:'divine',  label:'Divine'  },
+  { id:'arcane',  label:'Arcane'  },
+];
+
+// Race data. `leans` holds the starting nudge on each track: 2 = primary
+// lean, 1 = secondary lean, 0 = no lean. Human is deliberately all zero.
+// Not rendered on this screen (leans stay hidden until the training
+// ground), but the values live here as the one source of truth, so a
+// later screen can read RACES[i].leans instead of re-deriving it.
+// racialDetail feeds the screen shown right after confirm. type:'choice'
+// means the race has a real SRD pick baked into it (paraphrased, not
+// quoted); type:'reveal' means base SRD gives this race no pick, so the
+// screen just names its passive traits in flavor language and moves on.
+// mechanicNote is the flavor-wrapped aside naming what the pick or
+// passive traits map to. Most of the SRD's actual "choose one" traits
+// live at the subrace level (Rock Gnome's device, High Elf's cantrip,
+// Lightfoot's stealth) - subraces aren't in scope yet, so several races
+// below get a reveal rather than a pick. Flag if that should change.
+const RACES = [
+  { id:'dwarf', name:'Dwarf',
+    flavor:"Raised underground on discipline, ale, and the belief that a well built wall outlasts a clever plan. Comfortable in heavy armor, handy with an axe.",
+    leans:{ defense:2, attack:1, divine:0, arcane:0 },
+    // Hill Dwarf is paraphrased from this SRD's own text. Mountain Dwarf
+    // is a well known D&D subrace name, but its actual PHB traits aren't
+    // Open Game Content, so this option's flavor/note is invented for
+    // this build, not sourced from anywhere.
+    subraces:[
+      { id:'hill', label:"Hill Dwarf", sourced:true,
+        blurb:"Raised with an instinct for omens and a body that shrugs off wounds other people are still nursing. (Extra hit points, and more every level.)" },
+      { id:'mountain', label:"Mountain Dwarf", sourced:false,
+        blurb:"Raised in a hold that measured you by how much steel you could carry and still swing a hammer. (A feel for heavier armor.)" },
+    ],
+    racialDetail:{
+      type:'choice',
+      prompt:"Every dwarf apprentices to something before they ever lift a weapon in anger. What did you learn?",
+      mechanicNote:"This is where your tool proficiency comes from.",
+      options:[
+        { id:'smith', label:"Smith's tools", blurb:"You learned to shape metal before you learned to fight." },
+        { id:'brewer', label:"Brewer's supplies", blurb:"You learned what makes a hall worth coming back to." },
+        { id:'mason', label:"Mason's tools", blurb:"You learned how stone remembers everything built into it." },
+      ]
+    } },
+  { id:'elf', name:'Elf',
+    flavor:"Grew up in a culture that treats swordplay and spellcraft as the same kind of art, one worth centuries of practice. Quick, precise, unhurried.",
+    leans:{ defense:0, attack:2, divine:0, arcane:1 },
+    // High Elf is paraphrased from this SRD's own text. Wood Elf is a
+    // well known name; its flavor/note here is invented for this build.
+    subraces:[
+      { id:'high', label:"High Elf", sourced:true,
+        blurb:"Raised around old books and older magic, the kind who picked up a spell before anyone taught you one on purpose. (A cantrip of your choice, and a second language.)" },
+      { id:'wood', label:"Wood Elf", sourced:false,
+        blurb:"Raised somewhere the trees outnumbered the people, and you learned to move through both without being noticed. (Quicker on your feet, harder to spot in the open.)" },
+    ],
+    racialDetail:{
+      type:'reveal',
+      prompt:"What being an elf already means",
+      text:"You don't sleep, not really. Four hours of trance does what a human needs eight for, and you've spent the extra hours of every night of your life half dreaming, half watching. Charm magic slides off you more easily than it should, and your eyes find what others miss in a dim room.",
+      mechanicNote:"Trance, Fey Ancestry, Darkvision, Keen Senses, if you're keeping score."
+    } },
+  { id:'halfling', name:'Halfling',
+    flavor:"Small, stubborn, and loyal to hearth and neighbor above all else. Luckier than they have any right to be.",
+    leans:{ defense:1, attack:0, divine:2, arcane:0 },
+    // Lightfoot is paraphrased from this SRD's own text. Stout is a
+    // well known name; its flavor/note here is invented for this build.
+    subraces:[
+      { id:'lightfoot', label:"Lightfoot Halfling", sourced:true,
+        blurb:"Raised to be underestimated, and to use that. You slip past notice even standing right next to someone. (You can hide behind almost anyone bigger than you.)" },
+      { id:'stout', label:"Stout Halfling", sourced:false,
+        blurb:"Raised on the idea that the road is safer than it looks, provided you're too stubborn to be poisoned by it. (Better odds against poison.)" },
+    ],
+    racialDetail:{
+      type:'reveal',
+      prompt:"What being a halfling already means",
+      text:"You've had narrower misses than you can explain, and less fear than makes sense for someone your size. People underestimate you right up until it costs them.",
+      mechanicNote:"Lucky, Brave, Halfling Nimbleness."
+    } },
+  { id:'human', name:'Human',
+    flavor:"No particular gift, no particular curse. What you become is entirely up to how you train.",
+    leans:{ defense:0, attack:0, divine:0, arcane:0 },
+    racialDetail:{
+      type:'choice',
+      prompt:"Common was never the only thing you picked up, listening at crossroads and market stalls.",
+      mechanicNote:"This becomes the second language on your record.",
+      options:[
+        { id:'dwarvish', label:"Dwarvish", blurb:"Hard consonants, said like they're meant." },
+        { id:'elvish', label:"Elvish", blurb:"Picked up from travelers, songs more than sentences." },
+        { id:'orc', label:"Orc", blurb:"Blunt and useful, learned somewhere you'd rather not explain." },
+        { id:'draconic', label:"Draconic", blurb:"Old and harsh, mostly found in books nobody else wanted to read." },
+      ]
+    } },
+  { id:'dragonborn', name:'Dragonborn',
+    flavor:"Descended from dragons and raised to prove it. Proud, blunt, and inclined to make a stand rather than a retreat.",
+    leans:{ defense:0, attack:2, divine:1, arcane:0 },
+    racialDetail:{
+      type:'choice',
+      prompt:"Every dragonborn carries the color of one dragon in their blood, whether they've ever breathed fire or not.",
+      mechanicNote:"This sets the damage type of your breath weapon.",
+      options:[
+        { id:'black', label:"Black", blurb:"Corrosive and patient, a color that wears things down slowly. Acid." },
+        { id:'blue', label:"Blue", blurb:"Sharp and sudden, a color that arrives before the sound does. Lightning." },
+        { id:'brass', label:"Brass", blurb:"Talkative ancestry, if the stories about it are true. Fire." },
+        { id:'bronze', label:"Bronze", blurb:"Coastal blood, drawn to open water. Lightning." },
+        { id:'copper', label:"Copper", blurb:"A trickster's color, fond of a long game. Acid." },
+        { id:'gold', label:"Gold", blurb:"The color nobility likes to claim for itself. Fire." },
+        { id:'green', label:"Green", blurb:"Quiet and cunning, patient in a different way than black. Poison." },
+        { id:'red', label:"Red", blurb:"The color everyone already has an opinion about. Fire." },
+        { id:'silver', label:"Silver", blurb:"Cold and clear, the color of a line that holds. Cold." },
+        { id:'white', label:"White", blurb:"The color of somewhere nobody chooses to live. Cold." },
+      ]
+    } },
+  { id:'gnome', name:'Gnome',
+    flavor:"Curious to a fault, half convinced every locked door hides a puzzle worth solving. Magic bounces off a gnome's mind more than it should.",
+    leans:{ defense:1, attack:0, divine:0, arcane:2 },
+    // Rock Gnome is paraphrased from this SRD's own text. Forest Gnome is
+    // a well known name; its flavor/note here is invented for this build.
+    subraces:[
+      { id:'rock', label:"Rock Gnome", sourced:true,
+        blurb:"Raised with a workbench instead of a crib, more or less. You'd built something small and clever before you'd built anything that mattered. (Comes with a tiny clockwork device of your choosing.)" },
+      { id:'forest', label:"Forest Gnome", sourced:false,
+        blurb:"Raised on the edge of the woods, close enough to talk to whatever was living in them. (A knack for small illusions and small animals.)" },
+    ],
+    racialDetail:{
+      type:'reveal',
+      prompt:"What being a gnome already means",
+      text:"Enchantments that would flatten a bigger mind tend to slide right past yours. You see fine in the dark, and you've never met a locked mechanism you didn't want to take apart.",
+      mechanicNote:"Gnome Cunning, Darkvision."
+    } },
+  { id:'halfelf', name:'Half-Elf',
+    flavor:"Belongs fully to neither human nor elven society, and made peace with that by getting good at reading a room and holding a group together.",
+    leans:{ defense:0, attack:0, divine:2, arcane:1 },
+    racialDetail:{
+      type:'choice',
+      prompt:"Which world mistakes you for one of its own, first?",
+      mechanicNote:"Flavor only, the two-skills-of-your-choice trait this echoes isn't tracked in this build.",
+      options:[
+        { id:'human-world', label:"Human towns", blurb:"You pass, mostly, until someone asks the wrong question." },
+        { id:'elven-world', label:"Elven circles", blurb:"Tolerated there, in a way that never quite becomes belonging." },
+      ]
+    } },
+  { id:'halforc', name:'Half-Orc',
+    flavor:"Built to take a hit and keep coming. Orcish blood runs hot, but the will not to let it run the show runs hotter.",
+    leans:{ defense:1, attack:2, divine:0, arcane:0 },
+    racialDetail:{
+      type:'reveal',
+      prompt:"What being a half-orc already means",
+      text:"You've been left for dead before and gotten back up anyway. When you hit something hard it tends to stay hit, and most people decide not to test that twice.",
+      mechanicNote:"Relentless Endurance, Savage Attacks, Menacing."
+    } },
+  { id:'tiefling', name:'Tiefling',
+    flavor:"Carries an infernal bloodline whether it's wanted or not, and learned early to rely on wit and will rather than anyone else's good opinion.",
+    leans:{ defense:0, attack:1, divine:0, arcane:2 },
+    racialDetail:{
+      type:'reveal',
+      prompt:"What being a tiefling already means",
+      text:"Fire has never bothered you the way it bothers everyone else, and your eyes do fine in the dark your blood came from. People decided what you were before you said a word, most of your life. You stopped waiting for them to change their minds.",
+      mechanicNote:"Hellish Resistance, Darkvision."
+    } },
+];
+
+const RACE_QUESTIONS = [
+  {
+    text:"What did your hands know how to do before anyone taught you?",
+    options:[
+      { label:"Hold still and take a hit", w:{dwarf:2, halforc:1} },
+      { label:"Move quiet and get there first", w:{elf:2, halfling:1} },
+      { label:"Take things apart to see how they worked", w:{gnome:2, tiefling:1} },
+      { label:"Talk your way past a problem", w:{halfelf:2, human:1} },
+    ]
+  },
+  {
+    text:"Who did you trust most, growing up?",
+    options:[
+      { label:"Family, full stop", w:{dwarf:1, dragonborn:2} },
+      { label:"Whoever was useful that week", w:{tiefling:2, halforc:1} },
+      { label:"A small circle of close friends", w:{halfling:2, gnome:1} },
+      { label:"Nobody in particular, you figured it out yourself", w:{human:2, elf:1} },
+    ]
+  },
+  {
+    text:"What's the first thing you reach for when things go wrong?",
+    options:[
+      { label:"A weapon", w:{dragonborn:2, halforc:1} },
+      { label:"A plan", w:{halfelf:2, gnome:1} },
+      { label:"A door", w:{halfling:2, tiefling:1} },
+      { label:"Whatever's nearby, magical or not", w:{elf:1, gnome:1, human:1} },
+    ]
+  },
+  {
+    text:"How do strangers react to you, before you've said a word?",
+    options:[
+      { label:"Wary", w:{dragonborn:2, tiefling:2} },
+      { label:"Unbothered, you blend in", w:{human:2, halfling:1} },
+      { label:"A little too interested", w:{halfelf:1, elf:1, tiefling:1} },
+      { label:"Reassured, you look like you know what you're doing", w:{dwarf:2, halforc:1} },
+    ]
+  },
+  {
+    text:"What do you actually want, underneath everything else?",
+    options:[
+      { label:"To be left alone to do the work", w:{dwarf:1, gnome:2} },
+      { label:"To matter to the people around you", w:{halfling:1, halfelf:2} },
+      { label:"To prove something, to somebody", w:{dragonborn:2, halforc:1} },
+      { label:"To understand the thing nobody else bothered to look at", w:{elf:1, tiefling:2, gnome:1} },
+    ]
+  },
+];
+
+// ---------------------------------------------------------------------
+// Alignment
+// ---------------------------------------------------------------------
+
+// The nine SRD 5.1 alignment cells. law/good are the axis brackets the
+// scoring resolves to. Flavor text is written for this game, the
+// alignment definitions behind it are SRD 5.1's.
+const ALIGNMENTS = [
+  { id:'lg', name:'Lawful Good',     law:1,  good:1,
+    flavor:"You do the right thing, and you do it the way it's supposed to be done." },
+  { id:'ng', name:'Neutral Good',    law:0,  good:1,
+    flavor:"You help where help is needed. The rulebook is somebody else's problem." },
+  { id:'cg', name:'Chaotic Good',    law:-1, good:1,
+    flavor:"Your conscience gives the orders, and it doesn't much care who disagrees." },
+  { id:'ln', name:'Lawful Neutral',  law:1,  good:0,
+    flavor:"You keep to the code. Whether the code is kind isn't the point." },
+  { id:'n',  name:'Neutral',         law:0,  good:0,
+    flavor:"You take each thing as it comes and don't pretend to a side you don't hold." },
+  { id:'cn', name:'Chaotic Neutral', law:-1, good:0,
+    flavor:"Your own freedom comes first. Everything else is negotiable." },
+  { id:'le', name:'Lawful Evil',     law:1,  good:-1,
+    flavor:"You take what you want, in order, within the limits you've agreed to." },
+  { id:'ne', name:'Neutral Evil',    law:0,  good:-1,
+    flavor:"You do what you can get away with, and you're honest with yourself about it." },
+  { id:'ce', name:'Chaotic Evil',    law:-1, good:-1,
+    flavor:"You answer to appetite. Restraint was never the interesting part." },
+];
+
+// Shared alignment questions, all framed as childhood experiences.
+// law/good each run -2..+2. `track` is the same soft four-track bias
+// the race data uses. `id` is stable so per-race overrides can target it.
+const ALIGNMENT_QUESTIONS = [
+  { id:'purse',
+    text:"A traveling merchant dropped his purse in the road, and you were the only one who saw it.",
+    options:[
+      { id:'return',  label:"Ran it back to him before you'd thought about it",              law:1,  good:2,  track:'divine'  },
+      { id:'author',  label:"Took it to whoever kept order in town and let them sort it out", law:2,  good:1,  track:'defense' },
+      { id:'need',    label:"Kept it. Your family needed it more than he did",                law:-1, good:-1, track:'attack'  },
+      { id:'silent',  label:"Kept it, and never told anyone, ever",                           law:-1, good:-2, track:'arcane'  },
+    ] },
+  { id:'broke',
+    text:"You broke something in the house that mattered, and nobody knew it was you.",
+    options:[
+      { id:'mend',    label:"Fixed it yourself in secret and never brought it up",            law:-1, good:1,  track:'arcane'  },
+      { id:'own',     label:"Said so straight away and took what came",                       law:2,  good:1,  track:'defense' },
+      { id:'wait',    label:"Waited to see whether anyone would even notice",                 law:0,  good:-1, track:'arcane'  },
+      { id:'blame',   label:"Let it stand. Someone else took the blame",                      law:-1, good:-2, track:'attack'  },
+    ] },
+  { id:'beating',
+    text:"Another child was getting beaten by the older ones, most days, and everyone knew.",
+    options:[
+      { id:'tell',    label:"Told an adult who could actually stop it",                       law:2,  good:1,  track:'divine'  },
+      { id:'fight',   label:"Fought them. Lost, mostly",                                      law:-1, good:2,  track:'attack'  },
+      { id:'away',    label:"Walked the other way. It wasn't yours to fix",                   law:0,  good:-1, track:'defense' },
+      { id:'join',    label:"Joined in enough not to be next",                                law:-1, good:-2, track:'attack'  },
+    ] },
+  { id:'rule',
+    text:"Whoever raised you had one rule you never understood the reason for.",
+    options:[
+      { id:'break',   label:"Broke it once, just to see",                                     law:-2, good:-1, track:'attack'  },
+      { id:'keep',    label:"Kept it anyway. They'd earned that much",                         law:2,  good:0,  track:'defense' },
+      { id:'ask',     label:"Asked, and kept asking, until you got a real answer",            law:1,  good:1,  track:'arcane'  },
+      { id:'evade',   label:"Kept it in front of them and broke it everywhere else",          law:-2, good:0,  track:'arcane'  },
+    ] },
+  { id:'winter',
+    text:"A hard winter. There wasn't enough.",
+    options:[
+      { id:'ledger',  label:"Kept exact count of who owed what, and collected later",         law:2,  good:-1, track:'arcane'  },
+      { id:'give',    label:"Gave up your share more than once",                              law:0,  good:2,  track:'divine'  },
+      { id:'take',    label:"Took what you could from people slower than you",                law:-2, good:-2, track:'attack'  },
+      { id:'ownfirst',label:"Made sure your own ate first, whatever that cost anyone else",   law:1,  good:-1, track:'defense' },
+    ] },
+  { id:'lied',
+    text:"Someone you looked up to had been lying to you the whole time, and you found out.",
+    options:[
+      { id:'watch',   label:"Kept them close and stopped believing a word",                   law:-1, good:-1, track:'arcane'  },
+      { id:'forgive', label:"Forgave them, mostly",                                           law:0,  good:2,  track:'divine'  },
+      { id:'cut',     label:"Cut them off. No argument, no second conversation",              law:1,  good:-1, track:'defense' },
+      { id:'cost',    label:"Made sure they understood exactly what it had cost them",        law:-1, good:-2, track:'attack'  },
+    ] },
+];
+
+// --- Per-race customization hooks. All inert by default. ---
+
+// Swap the wording and/or options of a shared question for one race,
+// keeping the question count and scoring math unchanged.
+// e.g. { dwarf: { winter: { text:"...", options:[...] } } }
+const RACE_QUESTION_OVERRIDES = {};
+
+// Extra race-only questions, appended after the shared pool, so the
+// race-specific scene closes the sequence. The normalization handles a
+// changed question count on its own.
+//
+// Each option set is skewed toward that race's SRD alignment tendency
+// by weighting the OPTIONS, not by biasing the player's score: a dwarf
+// gets more lawful things to have plausibly done, but every race's
+// question keeps at least one strong against-type answer that scores
+// fully. The SRD says racial tendencies aren't binding on player
+// characters, and this preserves that - the lean is in what the world
+// offered you, not in the arithmetic.
+const RACE_ALIGNMENT_EXTRAS = {
+
+  // SRD: most dwarves are lawful, and tend toward good.
+  dwarf:[{ id:'hold',
+    text:"The hold had a way of doing everything, and a name for whoever had done it first.",
+    options:[
+      { id:'names',  label:"Learned the names, all of them, in order",           law:2,  good:0,  track:'defense' },
+      { id:'work',   label:"Learned the work and let others keep the names",     law:1,  good:1,  track:'defense' },
+      { id:'enough', label:"Learned enough to be useful and not one word more",  law:0,  good:0,  track:'attack'  },
+      { id:'left',   label:"Left the first chance you got",                      law:-2, good:0,  track:'arcane'  },
+    ] }],
+
+  // SRD: elves lean toward the gentler aspects of chaos, more often good.
+  elf:[{ id:'longchild',
+    text:"You were a child for longer than most people are alive, and the adults were in no hurry about you.",
+    options:[
+      { id:'onething', label:"Spent it on one thing until you were good at it",              law:0,  good:0,  track:'arcane'  },
+      { id:'wander',   label:"Spent it wandering, and nobody worried",                       law:-2, good:1,  track:'attack'  },
+      { id:'drift',    label:"Spent it with whoever would have you, moving on when they wouldn't", law:-1, good:0, track:'divine' },
+      { id:'told',     label:"Spent it wishing someone would just tell you what to do",      law:2,  good:0,  track:'defense' },
+    ] }],
+
+  // SRD: most halflings are lawful good, leaning on community and old ways.
+  halfling:[{ id:'table',
+    text:"Every meal you ate as a child, you ate with other people.",
+    options:[
+      { id:'empty',   label:"And you'd have noticed if a chair was empty",          law:1,  good:2,  track:'divine'  },
+      { id:'kept',    label:"And you kept the table yourself once you were tall enough", law:2, good:1, track:'defense' },
+      { id:'alone',   label:"And you'd have preferred to eat alone",                law:-1, good:-1, track:'arcane'  },
+      { id:'served',  label:"And you learned early who got served first",           law:0,  good:-1, track:'arcane'  },
+    ] }],
+
+  // SRD: humans tend toward no particular alignment; the best and worst
+  // are found among them. So this option set is spread deliberately wide
+  // rather than skewed - the spread IS the stereotype.
+  human:[{ id:'handschanged',
+    text:"You grew up somewhere that changed hands more than once.",
+    options:[
+      { id:'headdown', label:"Kept your head down and got on with whoever was in charge", law:0,  good:0,  track:'defense' },
+      { id:'learn',    label:"Learned each new set of rules faster than anyone",          law:2,  good:0,  track:'arcane'  },
+      { id:'scavenge', label:"Took what the changeovers left lying around",               law:-2, good:-2, track:'attack'  },
+      { id:'worst',    label:"Helped whoever was worst off that year, whoever that was",  law:0,  good:2,  track:'divine'  },
+    ] }],
+
+  // SRD: dragonborn tend to extremes, making a conscious choice for one
+  // side or the other. The two committed answers score hard; the one
+  // that refuses to choose scores zero on both axes, which pulls the
+  // ratio toward Neutral rather than nudging it anywhere.
+  dragonborn:[{ id:'blood',
+    text:"You were told, young, that your blood meant you'd amount to something. Nobody said what.",
+    options:[
+      { id:'trusted', label:"Decided it meant you'd be worth trusting, and never wavered", law:2,  good:2,  track:'divine'  },
+      { id:'feared',  label:"Decided it meant you'd be feared, and never wavered",         law:1,  good:-2, track:'attack'  },
+      { id:'nothing', label:"Decided nothing, and let people assume",                      law:0,  good:0,  track:'defense' },
+      { id:'mine',    label:"Decided it was your business alone what it meant",            law:-2, good:0,  track:'arcane'  },
+    ] }],
+
+  // SRD: gnomes are most often good; the lawful ones are scholars and
+  // researchers, the chaotic ones tricksters and wanderers. Both of the
+  // strong options here are good, split across the law axis.
+  gnome:[{ id:'unexplained',
+    text:"There was one thing in your village nobody had ever managed to explain.",
+    options:[
+      { id:'wrote',   label:"Spent years on it, properly, and wrote down what you found", law:2,  good:1,  track:'arcane'  },
+      { id:'fun',     label:"Spent years on it and told everyone a different answer for fun", law:-2, good:1, track:'arcane' },
+      { id:'lost',    label:"Asked once, got nothing, lost interest",                     law:0,  good:0,  track:'defense' },
+      { id:'sold',    label:"Worked it out and sold the answer",                          law:0,  good:-1, track:'attack'  },
+    ] }],
+
+  // SRD: half-elves share the chaotic bent of their elven heritage,
+  // with neither love of leaders nor desire for followers.
+  halfelf:[{ id:'noplace',
+    text:"Neither side of your family had a place already set for you.",
+    options:[
+      { id:'ownplace', label:"Made your own, somewhere else entirely",                 law:-2, good:0,  track:'arcane'  },
+      { id:'useful',   label:"Made yourself useful to both until they needed you",     law:0,  good:1,  track:'divine'  },
+      { id:'offered',  label:"Took the place one of them offered and stopped asking questions", law:2, good:0, track:'defense' },
+      { id:'guilt',    label:"Made sure they both felt bad about it",                  law:-1, good:-2, track:'attack'  },
+    ] }],
+
+  // SRD: half-orcs inherit a tendency toward chaos and are not strongly
+  // inclined toward good.
+  halforc:[{ id:'decided',
+    text:"People had decided what you'd grow into before you'd grown into anything.",
+    options:[
+      { id:'wrong',   label:"Proved them wrong, slowly, to nobody's applause",  law:1,  good:2,  track:'defense' },
+      { id:'right',   label:"Proved them right when it was useful",             law:-1, good:-2, track:'attack'  },
+      { id:'stopped', label:"Stopped caring what they'd decided",               law:-2, good:0,  track:'attack'  },
+      { id:'near',    label:"Found the ones who hadn't decided, and stayed near them", law:0, good:0, track:'divine' },
+    ] }],
+
+  // SRD: an independent nature inclines many tieflings toward chaotic,
+  // and many end up evil whether or not they started that way.
+  tiefling:[{ id:'lookaway',
+    text:"There was always someone who'd look at you and then look away.",
+    options:[
+      { id:'afraid',  label:"Gave them something to actually be afraid of",        law:-1, good:-2, track:'arcane'  },
+      { id:'leave',   label:"Left before anyone could look twice",                 law:-2, good:0,  track:'attack'  },
+      { id:'decent',  label:"Kept being decent at them until some of them stopped", law:0, good:2,  track:'divine'  },
+      { id:'useful',  label:"Learned exactly which of them could be useful",       law:1,  good:-1, track:'arcane'  },
+    ] }],
+};
+
+// Drop a shared question for one race, by question id.
+// e.g. { elf: ['rule'] }
+const RACE_QUESTION_SKIPS = {};
+
+// A small starting offset on the axes, before any answers.
+// Deliberately all-zero: SRD 5.1 says racial alignment tendencies are
+// not binding on player characters, so biasing a player's own answers
+// by race would contradict the source. The hook exists to be overridden
+// on purpose, not by default.
+// e.g. { dwarf: { law:1, good:0 } }
+const RACE_AXIS_BIAS = {};
+
+// Assembles the question list a given race actually sees.
+function alignmentQuestionsFor(raceId){
+  const skips = RACE_QUESTION_SKIPS[raceId] || [];
+  const overrides = RACE_QUESTION_OVERRIDES[raceId] || {};
+  const base = ALIGNMENT_QUESTIONS
+    .filter(q=> !skips.includes(q.id))
+    .map(q=> overrides[q.id] ? { ...q, ...overrides[q.id] } : q);
+  return base.concat(RACE_ALIGNMENT_EXTRAS[raceId] || []);
+}
+
+// Normalized bracketing: sum each axis over ANSWERED questions, divide
+// by the largest magnitude that was available across those same
+// questions. Partial answers therefore still land somewhere real
+// instead of decaying toward Neutral for lack of data.
+const AXIS_THRESHOLD = 0.4;
+
+function bracket(ratio){
+  if(ratio >= AXIS_THRESHOLD) return 1;
+  if(ratio <= -AXIS_THRESHOLD) return -1;
+  return 0;
+}
+
+function resolveAlignment(){
+  const raceId = state.character.raceId;
+  const questions = alignmentQuestionsFor(raceId);
+  const bias = RACE_AXIS_BIAS[raceId] || { law:0, good:0 };
+
+  let lawSum = bias.law, goodSum = bias.good;
+  let lawMax = 0, goodMax = 0;
+
+  state.character.alignment.answers.forEach((ans, i)=>{
+    if(!ans) return;
+    const q = questions[i];
+    const opt = q.options.find(o=>o.id===ans.optionId);
+    lawSum  += opt.law;
+    goodSum += opt.good;
+    lawMax  += Math.max(...q.options.map(o=>Math.abs(o.law)));
+    goodMax += Math.max(...q.options.map(o=>Math.abs(o.good)));
+  });
+
+  const lawRatio  = lawMax  ? lawSum  / lawMax  : 0;
+  const goodRatio = goodMax ? goodSum / goodMax : 0;
+  const law = bracket(lawRatio), good = bracket(goodRatio);
+  const cell = ALIGNMENTS.find(a=> a.law===law && a.good===good );
+
+  return { law, good, lawSum, goodSum, lawRatio, goodRatio, alignmentId:cell.id };
+}
+
+// The single answer the player committed to hardest becomes their
+// defining childhood experience. Ties break toward the earliest
+// question, so the result is stable rather than order-of-iteration luck.
+function definingExperience(){
+  const questions = alignmentQuestionsFor(state.character.raceId);
+  let best = null, bestWeight = -1;
+  state.character.alignment.answers.forEach((ans, i)=>{
+    if(!ans) return;
+    const q = questions[i];
+    const opt = q.options.find(o=>o.id===ans.optionId);
+    const weight = Math.abs(opt.law) + Math.abs(opt.good);
+    if(weight > bestWeight){
+      bestWeight = weight;
+      best = { questionId:q.id, scenario:q.text, optionId:opt.id, label:opt.label };
+    }
+  });
+  return best;
+}
+
+// `character` is the persistent record: it survives screen changes and
+// is the shape a later step (alignment, childhood experience, training
+// ground) would read from. `ui` is purely transient screen state that
+// resets freely and nothing downstream should ever depend on.
+const state = {
+  ui:{
+    screen:'entry',
+    quizStep:0,
+    alignStep:0,
+    expandedId:null,
+    // Dev-only: shows each option's underlying weight values in light
+    // text. Toggle lives in the topbar on both quiz screens. Default on
+    // for now, while this is being tuned - fine to flip the default to
+    // false once you're happy with the scoring and want the player-
+    // facing view back.
+    showWeights:true,
+  },
+  character:{
+    raceId:null,
+    tookQuiz:false,
+    suggestedId:null,
+    // one entry per answered question: { question, optionLabel }, in
+    // question order. Stays populated after race/racial-choice screens,
+    // even once quizStep etc. above have moved on.
+    quizAnswers:[],
+    // { subraceId, label } once set, for the four races that have a
+    // subrace screen; stays null for races without one, or before pick.
+    subrace:null,
+    // { prompt, optionId, label } once set, for races with a pick;
+    // stays null for races that only got a flavor reveal.
+    racialChoice:null,
+    alignment:{
+      tookQuiz:false,
+      // one entry per answered question: { questionId, optionId, label }
+      answers:[],
+      // resolved axis scores + suggested cell, set when the quiz ends
+      resolved:null,
+      // the cell the player actually confirmed, which may differ from
+      // resolved.alignmentId if they overrode the suggestion
+      alignmentId:null,
+      // { questionId, scenario, optionId, label } - the answer they
+      // committed to hardest, kept as a named narrative trait
+      definingExperience:null,
+    },
+  },
+};
+
+const app = document.getElementById('app');
+
+function raceById(id){ return RACES.find(r=>r.id===id); }
+
+function computeSuggestion(){
+  const totals = {};
+  RACES.forEach(r=> totals[r.id]=0 );
+  state.character.quizAnswers.forEach((ans, i)=>{
+    if(!ans) return;
+    const w = RACE_QUESTIONS[i].options[ans.optionIndex].w;
+    Object.keys(w).forEach(id=> totals[id]+=w[id] );
+  });
+  const ranked = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  const top = ranked[0], second = ranked[1];
+  if(!top || top[1]===0) return 'human';
+  if(second && top[1]-second[1] < 1) return 'human';
+  return top[0];
+}
+
+function render(){
+  let html = '';
+  const screen = state.ui.screen;
+  if(screen==='entry') html = renderEntry();
+  else if(screen==='quiz') html = renderQuiz();
+  else if(screen==='pick') html = renderPick();
+  else if(screen==='confirm') html = renderConfirm();
+  else if(screen==='subrace') html = renderSubrace();
+  else if(screen==='racial') html = renderRacial();
+  else if(screen==='align-entry') html = renderAlignEntry();
+  else if(screen==='align-quiz') html = renderAlignQuiz();
+  else if(screen==='align-pick') html = renderAlignPick();
+  else if(screen==='align-confirm') html = renderAlignConfirm();
+  app.innerHTML = html + '<div class="toast" id="toast"></div>';
+  bindEvents();
+}
+
+function renderEntry(){
+  return `
+  <div class="screen entry">
+    <p class="kicker">Character creation</p>
+    <h1>Tell us who you are.</h1>
+    <p class="lede">Answer a few questions, or go straight to the list. Nothing is final until you confirm it.</p>
+    <div class="choice-list">
+      <button class="choice-card" data-action="start-quiz">
+        <span class="choice-title">Answer a few questions</span>
+        <span class="choice-sub">A handful of instinct calls. We'll suggest a race, you still choose.</span>
+      </button>
+      <button class="choice-card" data-action="start-pick">
+        <span class="choice-title">Choose your race</span>
+        <span class="choice-sub">Skip ahead to the full list.</span>
+      </button>
+      <button class="choice-card is-locked" disabled>
+        <span class="choice-title">Describe your character</span>
+        <span class="choice-sub">Free text intake. Not open yet.</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderQuiz(){
+  const step = state.ui.quizStep;
+  const q = RACE_QUESTIONS[step];
+  const answered = state.character.quizAnswers[step];
+  const chosen = answered ? answered.optionIndex : null;
+  const ticks = RACE_QUESTIONS.map((_,i)=>`<span class="tick ${i<=step?'filled':''}"></span>`).join('');
+  const options = q.options.map((o,i)=>
+    `<button class="option ${chosen===i?'chosen':''}" data-action="answer" data-index="${i}">${o.label}</button>`
+  ).join('');
+  return `
+  <div class="screen quiz">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${step+1} of ${RACE_QUESTIONS.length}</span>
+    </div>
+    <div class="ticks">${ticks}</div>
+    <h2>${q.text}</h2>
+    <div class="option-list">${options}</div>
+  </div>`;
+}
+
+function renderPick(){
+  const suggestedId = state.character.suggestedId;
+  const suggestedName = suggestedId ? raceById(suggestedId).name : null;
+  const rows = RACES.map(r=>{
+    const open = state.ui.expandedId===r.id;
+    return `
+    <div class="race-row ${open?'is-open':''}">
+      <button class="race-head" data-action="toggle" data-id="${r.id}">
+        <span class="race-name">${r.name}</span>
+        ${suggestedId===r.id?'<span class="tag">Suggested</span>':''}
+        <span class="chev">${open?'&minus;':'+'}</span>
+      </button>
+      <div class="race-body">
+        <div class="race-body-inner">
+          <p>${r.flavor}</p>
+          <button class="confirm-btn" data-action="confirm" data-id="${r.id}">Choose ${r.name}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+  <div class="screen pick">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">Choose your race</span>
+    </div>
+    ${suggestedName?`<p class="suggestion">Based on your answers: <strong>${suggestedName}</strong>. Still your call.</p>`:''}
+    <div class="race-list">${rows}</div>
+  </div>`;
+}
+
+function renderConfirm(){
+  const r = raceById(state.character.raceId);
+  return `
+  <div class="screen confirm">
+    <div class="seal-wrap"><div class="seal">Enlisted</div></div>
+    <p class="kicker">Race confirmed</p>
+    <h1>${r.name}</h1>
+    <p class="lede">${r.flavor}</p>
+    <p class="note">Whatever this choice leans you toward on Defense, Attack, Divine, or Arcane will show up at the training ground, once there are points to spend.</p>
+    <div class="confirm-actions">
+      <button data-action="change">Change race</button>
+      <button class="primary" data-action="proceed">Continue</button>
+    </div>
+  </div>`;
+}
+
+function renderSubrace(){
+  const r = raceById(state.character.raceId);
+  const picked = state.character.subrace;
+  const options = r.subraces.map(s=>
+    `<button class="option ${picked && picked.subraceId===s.id ? 'chosen':''}" data-action="pick-subrace" data-id="${s.id}">
+       <span class="option-main">${s.label}${s.sourced?'':' <span class="unsourced-mark">*</span>'}</span>
+       <span class="option-blurb">${s.blurb}</span>
+     </button>`
+  ).join('');
+  const anyUnsourced = r.subraces.some(s=>!s.sourced);
+  return `
+  <div class="screen racial">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${r.name}</span>
+    </div>
+    <h2>What kind of ${r.name.toLowerCase()} were you raised as?</h2>
+    <div class="option-list">${options}</div>
+    ${anyUnsourced?'<p class="mechanic-note">* invented for this build, not from the SRD.</p>':''}
+    <div class="confirm-actions">
+      <button class="primary" data-action="continue-subrace" ${picked?'':'disabled'}>Continue</button>
+    </div>
+  </div>`;
+}
+
+function renderRacial(){
+  const r = raceById(state.character.raceId);
+  const d = r.racialDetail;
+
+  if(d.type==='reveal'){
+    return `
+    <div class="screen racial">
+      <div class="topbar">
+        <button class="back" data-action="back">&#8249; Back</button>
+        <span class="progress">${r.name}</span>
+      </div>
+      <h2>${d.prompt}</h2>
+      <p class="lede">${d.text}</p>
+      <p class="mechanic-note">${d.mechanicNote}</p>
+      <div class="confirm-actions">
+        <button class="primary" data-action="continue-racial">Continue</button>
+      </div>
+    </div>`;
+  }
+
+  const picked = state.character.racialChoice;
+  const options = d.options.map(o=>
+    `<button class="option ${picked && picked.optionId===o.id ? 'chosen':''}" data-action="pick-racial" data-id="${o.id}">
+       <span class="option-main">${o.label}</span>
+       <span class="option-blurb">${o.blurb}</span>
+     </button>`
+  ).join('');
+  return `
+  <div class="screen racial">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${r.name}</span>
+    </div>
+    <h2>${d.prompt}</h2>
+    <div class="option-list">${options}</div>
+    <p class="mechanic-note">${d.mechanicNote}</p>
+    <div class="confirm-actions">
+      <button class="primary" data-action="continue-racial" ${picked?'':'disabled'}>Continue</button>
+    </div>
+  </div>`;
+}
+
+function alignmentById(id){ return ALIGNMENTS.find(a=>a.id===id); }
+
+function renderAlignEntry(){
+  return `
+  <div class="screen entry">
+    <p class="kicker">What you grew up into</p>
+    <h1>Some of it was decided before you had a say.</h1>
+    <p class="lede">Six things that happened to you as a child, and what you did about them. Or skip ahead and say plainly who you turned out to be.</p>
+    <div class="choice-list">
+      <button class="choice-card" data-action="start-align-quiz">
+        <span class="choice-title">Walk through your childhood</span>
+        <span class="choice-sub">Six scenes. One becomes the thing you're still carrying.</span>
+      </button>
+      <button class="choice-card" data-action="start-align-pick">
+        <span class="choice-title">Choose your alignment</span>
+        <span class="choice-sub">Straight to the nine.</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderAlignQuiz(){
+  const questions = alignmentQuestionsFor(state.character.raceId);
+  const step = state.ui.alignStep;
+  const q = questions[step];
+  const answered = state.character.alignment.answers[step];
+  const ticks = questions.map((_,i)=>`<span class="tick ${i<=step?'filled':''}"></span>`).join('');
+  const options = q.options.map(o=>
+    `<button class="option ${answered && answered.optionId===o.id ? 'chosen':''}" data-action="align-answer" data-id="${o.id}">${o.label}</button>`
+  ).join('');
+  return `
+  <div class="screen quiz">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">${step+1} of ${questions.length}</span>
+    </div>
+    <div class="ticks">${ticks}</div>
+    <h2>${q.text}</h2>
+    <div class="option-list">${options}</div>
+  </div>`;
+}
+
+function renderAlignPick(){
+  const resolved = state.character.alignment.resolved;
+  const suggestedId = resolved ? resolved.alignmentId : null;
+  const cells = ALIGNMENTS.map(a=>
+    `<button class="align-cell ${suggestedId===a.id?'is-suggested':''} ${state.ui.expandedId===a.id?'is-open':''}"
+             data-action="align-expand" data-id="${a.id}">
+       <span class="align-name">${a.name}</span>
+     </button>`
+  ).join('');
+  const open = state.ui.expandedId ? alignmentById(state.ui.expandedId) : null;
+  return `
+  <div class="screen pick">
+    <div class="topbar">
+      <button class="back" data-action="back">&#8249; Back</button>
+      <span class="progress">Choose your alignment</span>
+    </div>
+    ${suggestedId?`<p class="suggestion">Where your childhood put you: <strong>${alignmentById(suggestedId).name}</strong>. Still your call.</p>`:''}
+    <div class="align-grid">${cells}</div>
+    ${open?`
+      <div class="align-detail">
+        <p>${open.flavor}</p>
+        <button class="confirm-btn" data-action="align-confirm" data-id="${open.id}">Choose ${open.name}</button>
+      </div>`:'<p class="mechanic-note">Tap any of the nine to read it.</p>'}
+  </div>`;
+}
+
+function renderAlignConfirm(){
+  const a = alignmentById(state.character.alignment.alignmentId);
+  const exp = state.character.alignment.definingExperience;
+  const r = raceById(state.character.raceId);
+  return `
+  <div class="screen confirm">
+    <p class="kicker">Who you turned out to be</p>
+    <h1>${a.name} ${r.name}</h1>
+    <p class="lede">${a.flavor}</p>
+    ${exp?`
+      <div class="experience">
+        <p class="experience-scene">${exp.scenario}</p>
+        <p class="experience-answer">${exp.label}</p>
+      </div>
+      <p class="mechanic-note">That one stayed with you. It follows you to the training ground.</p>
+    `:''}
+    <div class="confirm-actions">
+      <button data-action="align-change">Change</button>
+      <button class="primary" data-action="finish">Continue</button>
+    </div>
+  </div>`;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+function bindEvents(){
+  app.querySelectorAll('[data-action]').forEach(el=>{
+    el.addEventListener('click', onAction);
+  });
+}
+
+function onAction(e){
+  const action = e.currentTarget.dataset.action;
+  const ui = state.ui, ch = state.character;
+
+  if(action==='start-quiz'){
+    ui.screen='quiz'; ui.quizStep=0;
+    ch.tookQuiz=true; ch.quizAnswers=[]; ch.suggestedId=null;
+    render();
+  }
+  else if(action==='start-pick'){
+    ch.tookQuiz=false; ch.quizAnswers=[]; ch.suggestedId=null;
+    ui.expandedId=null;
+    ui.screen='pick';
+    render();
+  }
+  else if(action==='answer'){
+    const idx = parseInt(e.currentTarget.dataset.index,10);
+    const q = RACE_QUESTIONS[ui.quizStep];
+    // recorded here, and it stays on state.character past this screen -
+    // race pick, confirm, and the racial-choice screen all read the same
+    // object, this is never cleared once the quiz is taken.
+    ch.quizAnswers[ui.quizStep] = { question:q.text, optionIndex:idx, optionLabel:q.options[idx].label };
+    if(ui.quizStep < RACE_QUESTIONS.length-1){
+      ui.quizStep++;
+      render();
+    } else {
+      ch.suggestedId = computeSuggestion();
+      ui.expandedId=null;
+      ui.screen='pick';
+      render();
+    }
+  }
+  else if(action==='back'){
+    if(ui.screen==='quiz'){
+      if(ui.quizStep>0){ ui.quizStep--; render(); }
+      else { ui.screen='entry'; render(); }
+    } else if(ui.screen==='pick'){
+      ui.screen='entry'; render();
+    } else if(ui.screen==='racial'){
+      const r = raceById(ch.raceId);
+      ui.screen = r.subraces ? 'subrace' : 'confirm';
+      render();
+    } else if(ui.screen==='subrace'){
+      ui.screen='confirm'; render();
+    } else if(ui.screen==='align-quiz'){
+      if(ui.alignStep>0){ ui.alignStep--; render(); }
+      else { ui.screen='align-entry'; render(); }
+    } else if(ui.screen==='align-pick'){
+      ui.screen='align-entry'; ui.expandedId=null; render();
+    }
+  }
+  else if(action==='toggle'){
+    const id = e.currentTarget.dataset.id;
+    ui.expandedId = ui.expandedId===id ? null : id;
+    render();
+  }
+  else if(action==='confirm'){
+    ch.raceId = e.currentTarget.dataset.id;
+    ch.subrace = null;       // picking a (possibly new) race clears prior subrace...
+    ch.racialChoice = null;  // ...and prior racial-choice picks
+    ui.screen='confirm';
+    render();
+  }
+  else if(action==='change'){
+    ui.screen='pick';
+    render();
+  }
+  else if(action==='proceed'){
+    const r = raceById(ch.raceId);
+    ui.screen = r.subraces ? 'subrace' : 'racial';
+    render();
+  }
+  else if(action==='pick-subrace'){
+    const r = raceById(ch.raceId);
+    const subId = e.currentTarget.dataset.id;
+    const sub = r.subraces.find(s=>s.id===subId);
+    ch.subrace = { subraceId:sub.id, label:sub.label };
+    render();
+  }
+  else if(action==='continue-subrace'){
+    ui.screen='racial';
+    render();
+  }
+  else if(action==='pick-racial'){
+    const r = raceById(ch.raceId);
+    const optId = e.currentTarget.dataset.id;
+    const opt = r.racialDetail.options.find(o=>o.id===optId);
+    ch.racialChoice = { prompt:r.racialDetail.prompt, optionId:opt.id, label:opt.label };
+    render();
+  }
+  else if(action==='continue-racial'){
+    ui.screen='align-entry';
+    render();
+  }
+  else if(action==='start-align-quiz'){
+    ui.screen='align-quiz'; ui.alignStep=0;
+    ch.alignment.tookQuiz=true;
+    ch.alignment.answers=[]; ch.alignment.resolved=null;
+    render();
+  }
+  else if(action==='start-align-pick'){
+    ch.alignment.tookQuiz=false;
+    ch.alignment.answers=[]; ch.alignment.resolved=null;
+    ch.alignment.definingExperience=null;
+    ui.expandedId=null;
+    ui.screen='align-pick';
+    render();
+  }
+  else if(action==='align-answer'){
+    const questions = alignmentQuestionsFor(ch.raceId);
+    const q = questions[ui.alignStep];
+    const opt = q.options.find(o=>o.id===e.currentTarget.dataset.id);
+    ch.alignment.answers[ui.alignStep] = { questionId:q.id, optionId:opt.id, label:opt.label };
+    if(ui.alignStep < questions.length-1){
+      ui.alignStep++;
+      render();
+    } else {
+      ch.alignment.resolved = resolveAlignment();
+      ch.alignment.definingExperience = definingExperience();
+      ui.expandedId = ch.alignment.resolved.alignmentId;
+      ui.screen='align-pick';
+      render();
+    }
+  }
+  else if(action==='align-expand'){
+    const id = e.currentTarget.dataset.id;
+    ui.expandedId = ui.expandedId===id ? null : id;
+    render();
+  }
+  else if(action==='align-confirm'){
+    ch.alignment.alignmentId = e.currentTarget.dataset.id;
+    ui.screen='align-confirm';
+    render();
+  }
+  else if(action==='align-change'){
+    ui.expandedId = ch.alignment.alignmentId;
+    ui.screen='align-pick';
+    render();
+  }
+  else if(action==='finish'){
+    showToast('The training ground would come next.');
+  }
+}
+
+render();
+</script>
+</body>
+</html>
