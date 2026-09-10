@@ -1,0 +1,331 @@
+{
+  "extras": {
+    "dwarf": [
+      {
+        "id": "hold",
+        "text": "The hold had a way of doing everything, and a name for whoever had done it first.",
+        "options": [
+          {
+            "id": "names",
+            "label": "Learned the names, all of them, in order",
+            "law": 2,
+            "good": 0,
+            "track": "defense"
+          },
+          {
+            "id": "work",
+            "label": "Learned the work and let others keep the names",
+            "law": 1,
+            "good": 1,
+            "track": "defense"
+          },
+          {
+            "id": "enough",
+            "label": "Learned enough to be useful and not one word more",
+            "law": 0,
+            "good": 0,
+            "track": "attack"
+          },
+          {
+            "id": "left",
+            "label": "Left the first chance you got",
+            "law": -2,
+            "good": 0,
+            "track": "arcane"
+          }
+        ]
+      }
+    ],
+    "elf": [
+      {
+        "id": "longchild",
+        "text": "You were a child for longer than most people are alive, and the adults were in no hurry about you.",
+        "options": [
+          {
+            "id": "onething",
+            "label": "Spent it on one thing until you were good at it",
+            "law": 0,
+            "good": 0,
+            "track": "arcane"
+          },
+          {
+            "id": "wander",
+            "label": "Spent it wandering, and nobody worried",
+            "law": -2,
+            "good": 1,
+            "track": "attack"
+          },
+          {
+            "id": "drift",
+            "label": "Spent it with whoever would have you, moving on when they wouldn't",
+            "law": -1,
+            "good": 0,
+            "track": "divine"
+          },
+          {
+            "id": "told",
+            "label": "Spent it wishing someone would just tell you what to do",
+            "law": 2,
+            "good": 0,
+            "track": "defense"
+          }
+        ]
+      }
+    ],
+    "halfling": [
+      {
+        "id": "table",
+        "text": "Every meal you ate as a child, you ate with other people.",
+        "options": [
+          {
+            "id": "empty",
+            "label": "And you'd have noticed if a chair was empty",
+            "law": 1,
+            "good": 2,
+            "track": "divine"
+          },
+          {
+            "id": "kept",
+            "label": "And you kept the table yourself once you were tall enough",
+            "law": 2,
+            "good": 1,
+            "track": "defense"
+          },
+          {
+            "id": "alone",
+            "label": "And you'd have preferred to eat alone",
+            "law": -1,
+            "good": -1,
+            "track": "arcane"
+          },
+          {
+            "id": "served",
+            "label": "And you learned early who got served first",
+            "law": 0,
+            "good": -1,
+            "track": "arcane"
+          }
+        ]
+      }
+    ],
+    "human": [
+      {
+        "id": "handschanged",
+        "text": "You grew up somewhere that changed hands more than once.",
+        "options": [
+          {
+            "id": "headdown",
+            "label": "Kept your head down and got on with whoever was in charge",
+            "law": 0,
+            "good": 0,
+            "track": "defense"
+          },
+          {
+            "id": "learn",
+            "label": "Learned each new set of rules faster than anyone",
+            "law": 2,
+            "good": 0,
+            "track": "arcane"
+          },
+          {
+            "id": "scavenge",
+            "label": "Took what the changeovers left lying around",
+            "law": -2,
+            "good": -2,
+            "track": "attack"
+          },
+          {
+            "id": "worst",
+            "label": "Helped whoever was worst off that year, whoever that was",
+            "law": 0,
+            "good": 2,
+            "track": "divine"
+          }
+        ]
+      }
+    ],
+    "dragonborn": [
+      {
+        "id": "blood",
+        "text": "You were told, young, that your blood meant you'd amount to something. Nobody said what.",
+        "options": [
+          {
+            "id": "trusted",
+            "label": "Decided it meant you'd be worth trusting, and never wavered",
+            "law": 2,
+            "good": 2,
+            "track": "divine"
+          },
+          {
+            "id": "feared",
+            "label": "Decided it meant you'd be feared, and never wavered",
+            "law": 1,
+            "good": -2,
+            "track": "attack"
+          },
+          {
+            "id": "nothing",
+            "label": "Decided nothing, and let people assume",
+            "law": 0,
+            "good": 0,
+            "track": "defense"
+          },
+          {
+            "id": "mine",
+            "label": "Decided it was your business alone what it meant",
+            "law": -2,
+            "good": 0,
+            "track": "arcane"
+          }
+        ]
+      }
+    ],
+    "gnome": [
+      {
+        "id": "unexplained",
+        "text": "There was one thing in your village nobody had ever managed to explain.",
+        "options": [
+          {
+            "id": "wrote",
+            "label": "Spent years on it, properly, and wrote down what you found",
+            "law": 2,
+            "good": 1,
+            "track": "arcane"
+          },
+          {
+            "id": "fun",
+            "label": "Spent years on it and told everyone a different answer for fun",
+            "law": -2,
+            "good": 1,
+            "track": "arcane"
+          },
+          {
+            "id": "lost",
+            "label": "Asked once, got nothing, lost interest",
+            "law": 0,
+            "good": 0,
+            "track": "defense"
+          },
+          {
+            "id": "sold",
+            "label": "Worked it out and sold the answer",
+            "law": 0,
+            "good": -1,
+            "track": "attack"
+          }
+        ]
+      }
+    ],
+    "halfelf": [
+      {
+        "id": "noplace",
+        "text": "Neither side of your family had a place already set for you.",
+        "options": [
+          {
+            "id": "ownplace",
+            "label": "Made your own, somewhere else entirely",
+            "law": -2,
+            "good": 0,
+            "track": "arcane"
+          },
+          {
+            "id": "useful",
+            "label": "Made yourself useful to both until they needed you",
+            "law": 0,
+            "good": 1,
+            "track": "divine"
+          },
+          {
+            "id": "offered",
+            "label": "Took the place one of them offered and stopped asking questions",
+            "law": 2,
+            "good": 0,
+            "track": "defense"
+          },
+          {
+            "id": "guilt",
+            "label": "Made sure they both felt bad about it",
+            "law": -1,
+            "good": -2,
+            "track": "attack"
+          }
+        ]
+      }
+    ],
+    "halforc": [
+      {
+        "id": "decided",
+        "text": "People had decided what you'd grow into before you'd grown into anything.",
+        "options": [
+          {
+            "id": "wrong",
+            "label": "Proved them wrong, slowly, to nobody's applause",
+            "law": 1,
+            "good": 2,
+            "track": "defense"
+          },
+          {
+            "id": "right",
+            "label": "Proved them right when it was useful",
+            "law": -1,
+            "good": -2,
+            "track": "attack"
+          },
+          {
+            "id": "stopped",
+            "label": "Stopped caring what they'd decided",
+            "law": -2,
+            "good": 0,
+            "track": "attack"
+          },
+          {
+            "id": "near",
+            "label": "Found the ones who hadn't decided, and stayed near them",
+            "law": 0,
+            "good": 0,
+            "track": "divine"
+          }
+        ]
+      }
+    ],
+    "tiefling": [
+      {
+        "id": "lookaway",
+        "text": "There was always someone who'd look at you and then look away.",
+        "options": [
+          {
+            "id": "afraid",
+            "label": "Gave them something to actually be afraid of",
+            "law": -1,
+            "good": -2,
+            "track": "arcane"
+          },
+          {
+            "id": "leave",
+            "label": "Left before anyone could look twice",
+            "law": -2,
+            "good": 0,
+            "track": "attack"
+          },
+          {
+            "id": "decent",
+            "label": "Kept being decent at them until some of them stopped",
+            "law": 0,
+            "good": 2,
+            "track": "divine"
+          },
+          {
+            "id": "useful",
+            "label": "Learned exactly which of them could be useful",
+            "law": 1,
+            "good": -1,
+            "track": "arcane"
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": {},
+  "skips": {},
+  "axisBias": {}
+}

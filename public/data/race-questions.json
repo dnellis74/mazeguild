@@ -1,0 +1,170 @@
+[
+  {
+    "text": "What did your hands know how to do before anyone taught you?",
+    "options": [
+      {
+        "label": "Hold still and take a hit",
+        "w": {
+          "dwarf": 2,
+          "halforc": 1
+        }
+      },
+      {
+        "label": "Move quiet and get there first",
+        "w": {
+          "elf": 2,
+          "halfling": 1
+        }
+      },
+      {
+        "label": "Take things apart to see how they worked",
+        "w": {
+          "gnome": 2,
+          "tiefling": 1
+        }
+      },
+      {
+        "label": "Talk your way past a problem",
+        "w": {
+          "halfelf": 2,
+          "human": 1
+        }
+      }
+    ]
+  },
+  {
+    "text": "Who did you trust most, growing up?",
+    "options": [
+      {
+        "label": "Family, full stop",
+        "w": {
+          "dwarf": 1,
+          "dragonborn": 2
+        }
+      },
+      {
+        "label": "Whoever was useful that week",
+        "w": {
+          "tiefling": 2,
+          "halforc": 1
+        }
+      },
+      {
+        "label": "A small circle of close friends",
+        "w": {
+          "halfling": 2,
+          "gnome": 1
+        }
+      },
+      {
+        "label": "Nobody in particular, you figured it out yourself",
+        "w": {
+          "human": 2,
+          "elf": 1
+        }
+      }
+    ]
+  },
+  {
+    "text": "What's the first thing you reach for when things go wrong?",
+    "options": [
+      {
+        "label": "A weapon",
+        "w": {
+          "dragonborn": 2,
+          "halforc": 1
+        }
+      },
+      {
+        "label": "A plan",
+        "w": {
+          "halfelf": 2,
+          "gnome": 1
+        }
+      },
+      {
+        "label": "A door",
+        "w": {
+          "halfling": 2,
+          "tiefling": 1
+        }
+      },
+      {
+        "label": "Whatever's nearby, magical or not",
+        "w": {
+          "elf": 1,
+          "gnome": 1,
+          "human": 1
+        }
+      }
+    ]
+  },
+  {
+    "text": "How do strangers react to you, before you've said a word?",
+    "options": [
+      {
+        "label": "Wary",
+        "w": {
+          "dragonborn": 2,
+          "tiefling": 2
+        }
+      },
+      {
+        "label": "Unbothered, you blend in",
+        "w": {
+          "human": 2,
+          "halfling": 1
+        }
+      },
+      {
+        "label": "A little too interested",
+        "w": {
+          "halfelf": 1,
+          "elf": 1,
+          "tiefling": 1
+        }
+      },
+      {
+        "label": "Reassured, you look like you know what you're doing",
+        "w": {
+          "dwarf": 2,
+          "halforc": 1
+        }
+      }
+    ]
+  },
+  {
+    "text": "What do you actually want, underneath everything else?",
+    "options": [
+      {
+        "label": "To be left alone to do the work",
+        "w": {
+          "dwarf": 1,
+          "gnome": 2
+        }
+      },
+      {
+        "label": "To matter to the people around you",
+        "w": {
+          "halfling": 1,
+          "halfelf": 2
+        }
+      },
+      {
+        "label": "To prove something, to somebody",
+        "w": {
+          "dragonborn": 2,
+          "halforc": 1
+        }
+      },
+      {
+        "label": "To understand the thing nobody else bothered to look at",
+        "w": {
+          "elf": 1,
+          "tiefling": 2,
+          "gnome": 1
+        }
+      }
+    ]
+  }
+]

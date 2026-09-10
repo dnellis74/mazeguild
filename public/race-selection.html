@@ -752,433 +752,16 @@ function activityKey(area, building, room, activity){
   return area+'::'+building+'::'+room+'::'+activity;
 }
 
-// The four training-ground tracks. Single source for ids + display labels
-// so nothing downstream (race data, future training-ground UI) has to
-// repeat these as magic strings.
-const TRACKS = [
-  { id:'defense', label:'Defense' },
-  { id:'attack',  label:'Attack'  },
-  { id:'divine',  label:'Divine'  },
-  { id:'arcane',  label:'Arcane'  },
-];
-
-// Race data. `leans` holds the starting nudge on each track: 2 = primary
-// lean, 1 = secondary lean, 0 = no lean. Human is deliberately all zero.
-// Not rendered on this screen (leans stay hidden until the training
-// ground), but the values live here as the one source of truth, so a
-// later screen can read RACES[i].leans instead of re-deriving it.
-// racialDetail feeds the screen shown right after confirm. type:'choice'
-// means the race has a real SRD pick baked into it (paraphrased, not
-// quoted); type:'reveal' means base SRD gives this race no pick, so the
-// screen just names its passive traits in flavor language and moves on.
-// mechanicNote is the flavor-wrapped aside naming what the pick or
-// passive traits map to. Most of the SRD's actual "choose one" traits
-// live at the subrace level (Rock Gnome's device, High Elf's cantrip,
-// Lightfoot's stealth) - subraces aren't in scope yet, so several races
-// below get a reveal rather than a pick. Flag if that should change.
-const RACES = [
-  { id:'dwarf', name:'Dwarf',
-    flavor:"Raised underground on discipline, ale, and the belief that a well built wall outlasts a clever plan. Comfortable in heavy armor, handy with an axe.",
-    leans:{ defense:2, attack:1, divine:0, arcane:0 },
-    // Hill Dwarf is paraphrased from this SRD's own text. Mountain Dwarf
-    // is a well known D&D subrace name, but its actual PHB traits aren't
-    // Open Game Content, so this option's flavor/note is invented for
-    // this build, not sourced from anywhere.
-    subraces:[
-      { id:'hill', label:"Hill Dwarf", sourced:true,
-        blurb:"Raised with an instinct for omens and a body that shrugs off wounds other people are still nursing. (Extra hit points, and more every level.)" },
-      { id:'mountain', label:"Mountain Dwarf", sourced:false,
-        blurb:"Raised in a hold that measured you by how much steel you could carry and still swing a hammer. (A feel for heavier armor.)" },
-    ],
-    racialDetail:{
-      type:'choice',
-      prompt:"Every dwarf apprentices to something before they ever lift a weapon in anger. What did you learn?",
-      mechanicNote:"This is where your tool proficiency comes from.",
-      options:[
-        { id:'smith', label:"Smith's tools", blurb:"You learned to shape metal before you learned to fight." },
-        { id:'brewer', label:"Brewer's supplies", blurb:"You learned what makes a hall worth coming back to." },
-        { id:'mason', label:"Mason's tools", blurb:"You learned how stone remembers everything built into it." },
-      ]
-    } },
-  { id:'elf', name:'Elf',
-    flavor:"Grew up in a culture that treats swordplay and spellcraft as the same kind of art, one worth centuries of practice. Quick, precise, unhurried.",
-    leans:{ defense:0, attack:2, divine:0, arcane:1 },
-    // High Elf is paraphrased from this SRD's own text. Wood Elf is a
-    // well known name; its flavor/note here is invented for this build.
-    subraces:[
-      { id:'high', label:"High Elf", sourced:true,
-        blurb:"Raised around old books and older magic, the kind who picked up a spell before anyone taught you one on purpose. (A cantrip of your choice, and a second language.)" },
-      { id:'wood', label:"Wood Elf", sourced:false,
-        blurb:"Raised somewhere the trees outnumbered the people, and you learned to move through both without being noticed. (Quicker on your feet, harder to spot in the open.)" },
-    ],
-    racialDetail:{
-      type:'reveal',
-      prompt:"What being an elf already means",
-      text:"You don't sleep, not really. Four hours of trance does what a human needs eight for, and you've spent the extra hours of every night of your life half dreaming, half watching. Charm magic slides off you more easily than it should, and your eyes find what others miss in a dim room.",
-      mechanicNote:"Trance, Fey Ancestry, Darkvision, Keen Senses, if you're keeping score."
-    } },
-  { id:'halfling', name:'Halfling',
-    flavor:"Small, stubborn, and loyal to hearth and neighbor above all else. Luckier than they have any right to be.",
-    leans:{ defense:1, attack:0, divine:2, arcane:0 },
-    // Lightfoot is paraphrased from this SRD's own text. Stout is a
-    // well known name; its flavor/note here is invented for this build.
-    subraces:[
-      { id:'lightfoot', label:"Lightfoot Halfling", sourced:true,
-        blurb:"Raised to be underestimated, and to use that. You slip past notice even standing right next to someone. (You can hide behind almost anyone bigger than you.)" },
-      { id:'stout', label:"Stout Halfling", sourced:false,
-        blurb:"Raised on the idea that the road is safer than it looks, provided you're too stubborn to be poisoned by it. (Better odds against poison.)" },
-    ],
-    racialDetail:{
-      type:'reveal',
-      prompt:"What being a halfling already means",
-      text:"You've had narrower misses than you can explain, and less fear than makes sense for someone your size. People underestimate you right up until it costs them.",
-      mechanicNote:"Lucky, Brave, Halfling Nimbleness."
-    } },
-  { id:'human', name:'Human',
-    flavor:"No particular gift, no particular curse. What you become is entirely up to how you train.",
-    leans:{ defense:0, attack:0, divine:0, arcane:0 },
-    racialDetail:{
-      type:'choice',
-      prompt:"Common was never the only thing you picked up, listening at crossroads and market stalls.",
-      mechanicNote:"This becomes the second language on your record.",
-      options:[
-        { id:'dwarvish', label:"Dwarvish", blurb:"Hard consonants, said like they're meant." },
-        { id:'elvish', label:"Elvish", blurb:"Picked up from travelers, songs more than sentences." },
-        { id:'orc', label:"Orc", blurb:"Blunt and useful, learned somewhere you'd rather not explain." },
-        { id:'draconic', label:"Draconic", blurb:"Old and harsh, mostly found in books nobody else wanted to read." },
-      ]
-    } },
-  { id:'dragonborn', name:'Dragonborn',
-    flavor:"Descended from dragons and raised to prove it. Proud, blunt, and inclined to make a stand rather than a retreat.",
-    leans:{ defense:0, attack:2, divine:1, arcane:0 },
-    racialDetail:{
-      type:'choice',
-      prompt:"Every dragonborn carries the color of one dragon in their blood, whether they've ever breathed fire or not.",
-      mechanicNote:"This sets the damage type of your breath weapon.",
-      options:[
-        { id:'black', label:"Black", blurb:"Corrosive and patient, a color that wears things down slowly. Acid." },
-        { id:'blue', label:"Blue", blurb:"Sharp and sudden, a color that arrives before the sound does. Lightning." },
-        { id:'brass', label:"Brass", blurb:"Talkative ancestry, if the stories about it are true. Fire." },
-        { id:'bronze', label:"Bronze", blurb:"Coastal blood, drawn to open water. Lightning." },
-        { id:'copper', label:"Copper", blurb:"A trickster's color, fond of a long game. Acid." },
-        { id:'gold', label:"Gold", blurb:"The color nobility likes to claim for itself. Fire." },
-        { id:'green', label:"Green", blurb:"Quiet and cunning, patient in a different way than black. Poison." },
-        { id:'red', label:"Red", blurb:"The color everyone already has an opinion about. Fire." },
-        { id:'silver', label:"Silver", blurb:"Cold and clear, the color of a line that holds. Cold." },
-        { id:'white', label:"White", blurb:"The color of somewhere nobody chooses to live. Cold." },
-      ]
-    } },
-  { id:'gnome', name:'Gnome',
-    flavor:"Curious to a fault, half convinced every locked door hides a puzzle worth solving. Magic bounces off a gnome's mind more than it should.",
-    leans:{ defense:1, attack:0, divine:0, arcane:2 },
-    // Rock Gnome is paraphrased from this SRD's own text. Forest Gnome is
-    // a well known name; its flavor/note here is invented for this build.
-    subraces:[
-      { id:'rock', label:"Rock Gnome", sourced:true,
-        blurb:"Raised with a workbench instead of a crib, more or less. You'd built something small and clever before you'd built anything that mattered. (Comes with a tiny clockwork device of your choosing.)" },
-      { id:'forest', label:"Forest Gnome", sourced:false,
-        blurb:"Raised on the edge of the woods, close enough to talk to whatever was living in them. (A knack for small illusions and small animals.)" },
-    ],
-    racialDetail:{
-      type:'reveal',
-      prompt:"What being a gnome already means",
-      text:"Enchantments that would flatten a bigger mind tend to slide right past yours. You see fine in the dark, and you've never met a locked mechanism you didn't want to take apart.",
-      mechanicNote:"Gnome Cunning, Darkvision."
-    } },
-  { id:'halfelf', name:'Half-Elf',
-    flavor:"Belongs fully to neither human nor elven society, and made peace with that by getting good at reading a room and holding a group together.",
-    leans:{ defense:0, attack:0, divine:2, arcane:1 },
-    racialDetail:{
-      type:'choice',
-      prompt:"Which world mistakes you for one of its own, first?",
-      mechanicNote:"Flavor only, the two-skills-of-your-choice trait this echoes isn't tracked in this build.",
-      options:[
-        { id:'human-world', label:"Human towns", blurb:"You pass, mostly, until someone asks the wrong question." },
-        { id:'elven-world', label:"Elven circles", blurb:"Tolerated there, in a way that never quite becomes belonging." },
-      ]
-    } },
-  { id:'halforc', name:'Half-Orc',
-    flavor:"Built to take a hit and keep coming. Orcish blood runs hot, but the will not to let it run the show runs hotter.",
-    leans:{ defense:1, attack:2, divine:0, arcane:0 },
-    racialDetail:{
-      type:'reveal',
-      prompt:"What being a half-orc already means",
-      text:"You've been left for dead before and gotten back up anyway. When you hit something hard it tends to stay hit, and most people decide not to test that twice.",
-      mechanicNote:"Relentless Endurance, Savage Attacks, Menacing."
-    } },
-  { id:'tiefling', name:'Tiefling',
-    flavor:"Carries an infernal bloodline whether it's wanted or not, and learned early to rely on wit and will rather than anyone else's good opinion.",
-    leans:{ defense:0, attack:1, divine:0, arcane:2 },
-    racialDetail:{
-      type:'reveal',
-      prompt:"What being a tiefling already means",
-      text:"Fire has never bothered you the way it bothers everyone else, and your eyes do fine in the dark your blood came from. People decided what you were before you said a word, most of your life. You stopped waiting for them to change their minds.",
-      mechanicNote:"Hellish Resistance, Darkvision."
-    } },
-];
-
-const RACE_QUESTIONS = [
-  {
-    text:"What did your hands know how to do before anyone taught you?",
-    options:[
-      { label:"Hold still and take a hit", w:{dwarf:2, halforc:1} },
-      { label:"Move quiet and get there first", w:{elf:2, halfling:1} },
-      { label:"Take things apart to see how they worked", w:{gnome:2, tiefling:1} },
-      { label:"Talk your way past a problem", w:{halfelf:2, human:1} },
-    ]
-  },
-  {
-    text:"Who did you trust most, growing up?",
-    options:[
-      { label:"Family, full stop", w:{dwarf:1, dragonborn:2} },
-      { label:"Whoever was useful that week", w:{tiefling:2, halforc:1} },
-      { label:"A small circle of close friends", w:{halfling:2, gnome:1} },
-      { label:"Nobody in particular, you figured it out yourself", w:{human:2, elf:1} },
-    ]
-  },
-  {
-    text:"What's the first thing you reach for when things go wrong?",
-    options:[
-      { label:"A weapon", w:{dragonborn:2, halforc:1} },
-      { label:"A plan", w:{halfelf:2, gnome:1} },
-      { label:"A door", w:{halfling:2, tiefling:1} },
-      { label:"Whatever's nearby, magical or not", w:{elf:1, gnome:1, human:1} },
-    ]
-  },
-  {
-    text:"How do strangers react to you, before you've said a word?",
-    options:[
-      { label:"Wary", w:{dragonborn:2, tiefling:2} },
-      { label:"Unbothered, you blend in", w:{human:2, halfling:1} },
-      { label:"A little too interested", w:{halfelf:1, elf:1, tiefling:1} },
-      { label:"Reassured, you look like you know what you're doing", w:{dwarf:2, halforc:1} },
-    ]
-  },
-  {
-    text:"What do you actually want, underneath everything else?",
-    options:[
-      { label:"To be left alone to do the work", w:{dwarf:1, gnome:2} },
-      { label:"To matter to the people around you", w:{halfling:1, halfelf:2} },
-      { label:"To prove something, to somebody", w:{dragonborn:2, halforc:1} },
-      { label:"To understand the thing nobody else bothered to look at", w:{elf:1, tiefling:2, gnome:1} },
-    ]
-  },
-];
-
-// ---------------------------------------------------------------------
-// Alignment
-// ---------------------------------------------------------------------
-
-// The nine SRD 5.1 alignment cells. law/good are the axis brackets the
-// scoring resolves to. Flavor text is written for this game, the
-// alignment definitions behind it are SRD 5.1's.
-const ALIGNMENTS = [
-  { id:'lg', name:'Lawful Good',     law:1,  good:1,
-    flavor:"You do the right thing, and you do it the way it's supposed to be done." },
-  { id:'ng', name:'Neutral Good',    law:0,  good:1,
-    flavor:"You help where help is needed. The rulebook is somebody else's problem." },
-  { id:'cg', name:'Chaotic Good',    law:-1, good:1,
-    flavor:"Your conscience gives the orders, and it doesn't much care who disagrees." },
-  { id:'ln', name:'Lawful Neutral',  law:1,  good:0,
-    flavor:"You keep to the code. Whether the code is kind isn't the point." },
-  { id:'n',  name:'Neutral',         law:0,  good:0,
-    flavor:"You take each thing as it comes and don't pretend to a side you don't hold." },
-  { id:'cn', name:'Chaotic Neutral', law:-1, good:0,
-    flavor:"Your own freedom comes first. Everything else is negotiable." },
-  { id:'le', name:'Lawful Evil',     law:1,  good:-1,
-    flavor:"You take what you want, in order, within the limits you've agreed to." },
-  { id:'ne', name:'Neutral Evil',    law:0,  good:-1,
-    flavor:"You do what you can get away with, and you're honest with yourself about it." },
-  { id:'ce', name:'Chaotic Evil',    law:-1, good:-1,
-    flavor:"You answer to appetite. Restraint was never the interesting part." },
-];
-
-// Shared alignment questions, all framed as childhood experiences.
-// law/good each run -2..+2. `track` is the same soft four-track bias
-// the race data uses. `id` is stable so per-race overrides can target it.
-const ALIGNMENT_QUESTIONS = [
-  { id:'purse',
-    text:"A traveling merchant dropped his purse in the road, and you were the only one who saw it.",
-    options:[
-      { id:'return',  label:"Ran it back to him before you'd thought about it",              law:1,  good:2,  track:'divine'  },
-      { id:'author',  label:"Took it to whoever kept order in town and let them sort it out", law:2,  good:1,  track:'defense' },
-      { id:'need',    label:"Kept it. Your family needed it more than he did",                law:-1, good:-1, track:'attack'  },
-      { id:'silent',  label:"Kept it, and never told anyone, ever",                           law:-1, good:-2, track:'arcane'  },
-    ] },
-  { id:'broke',
-    text:"You broke something in the house that mattered, and nobody knew it was you.",
-    options:[
-      { id:'mend',    label:"Fixed it yourself in secret and never brought it up",            law:-1, good:1,  track:'arcane'  },
-      { id:'own',     label:"Said so straight away and took what came",                       law:2,  good:1,  track:'defense' },
-      { id:'wait',    label:"Waited to see whether anyone would even notice",                 law:0,  good:-1, track:'arcane'  },
-      { id:'blame',   label:"Let it stand. Someone else took the blame",                      law:-1, good:-2, track:'attack'  },
-    ] },
-  { id:'beating',
-    text:"Another child was getting beaten by the older ones, most days, and everyone knew.",
-    options:[
-      { id:'tell',    label:"Told an adult who could actually stop it",                       law:2,  good:1,  track:'divine'  },
-      { id:'fight',   label:"Fought them. Lost, mostly",                                      law:-1, good:2,  track:'attack'  },
-      { id:'away',    label:"Walked the other way. It wasn't yours to fix",                   law:0,  good:-1, track:'defense' },
-      { id:'join',    label:"Joined in enough not to be next",                                law:-1, good:-2, track:'attack'  },
-    ] },
-  { id:'rule',
-    text:"Whoever raised you had one rule you never understood the reason for.",
-    options:[
-      { id:'break',   label:"Broke it once, just to see",                                     law:-2, good:-1, track:'attack'  },
-      { id:'keep',    label:"Kept it anyway. They'd earned that much",                         law:2,  good:0,  track:'defense' },
-      { id:'ask',     label:"Asked, and kept asking, until you got a real answer",            law:1,  good:1,  track:'arcane'  },
-      { id:'evade',   label:"Kept it in front of them and broke it everywhere else",          law:-2, good:0,  track:'arcane'  },
-    ] },
-  { id:'winter',
-    text:"A hard winter. There wasn't enough.",
-    options:[
-      { id:'ledger',  label:"Kept exact count of who owed what, and collected later",         law:2,  good:-1, track:'arcane'  },
-      { id:'give',    label:"Gave up your share more than once",                              law:0,  good:2,  track:'divine'  },
-      { id:'take',    label:"Took what you could from people slower than you",                law:-2, good:-2, track:'attack'  },
-      { id:'ownfirst',label:"Made sure your own ate first, whatever that cost anyone else",   law:1,  good:-1, track:'defense' },
-    ] },
-  { id:'lied',
-    text:"Someone you looked up to had been lying to you the whole time, and you found out.",
-    options:[
-      { id:'watch',   label:"Kept them close and stopped believing a word",                   law:-1, good:-1, track:'arcane'  },
-      { id:'forgive', label:"Forgave them, mostly",                                           law:0,  good:2,  track:'divine'  },
-      { id:'cut',     label:"Cut them off. No argument, no second conversation",              law:1,  good:-1, track:'defense' },
-      { id:'cost',    label:"Made sure they understood exactly what it had cost them",        law:-1, good:-2, track:'attack'  },
-    ] },
-];
-
-// --- Per-race customization hooks. All inert by default. ---
-
-// Swap the wording and/or options of a shared question for one race,
-// keeping the question count and scoring math unchanged.
-// e.g. { dwarf: { winter: { text:"...", options:[...] } } }
-const RACE_QUESTION_OVERRIDES = {};
-
-// Extra race-only questions, appended after the shared pool, so the
-// race-specific scene closes the sequence. The normalization handles a
-// changed question count on its own.
-//
-// Each option set is skewed toward that race's SRD alignment tendency
-// by weighting the OPTIONS, not by biasing the player's score: a dwarf
-// gets more lawful things to have plausibly done, but every race's
-// question keeps at least one strong against-type answer that scores
-// fully. The SRD says racial tendencies aren't binding on player
-// characters, and this preserves that - the lean is in what the world
-// offered you, not in the arithmetic.
-const RACE_ALIGNMENT_EXTRAS = {
-
-  // SRD: most dwarves are lawful, and tend toward good.
-  dwarf:[{ id:'hold',
-    text:"The hold had a way of doing everything, and a name for whoever had done it first.",
-    options:[
-      { id:'names',  label:"Learned the names, all of them, in order",           law:2,  good:0,  track:'defense' },
-      { id:'work',   label:"Learned the work and let others keep the names",     law:1,  good:1,  track:'defense' },
-      { id:'enough', label:"Learned enough to be useful and not one word more",  law:0,  good:0,  track:'attack'  },
-      { id:'left',   label:"Left the first chance you got",                      law:-2, good:0,  track:'arcane'  },
-    ] }],
-
-  // SRD: elves lean toward the gentler aspects of chaos, more often good.
-  elf:[{ id:'longchild',
-    text:"You were a child for longer than most people are alive, and the adults were in no hurry about you.",
-    options:[
-      { id:'onething', label:"Spent it on one thing until you were good at it",              law:0,  good:0,  track:'arcane'  },
-      { id:'wander',   label:"Spent it wandering, and nobody worried",                       law:-2, good:1,  track:'attack'  },
-      { id:'drift',    label:"Spent it with whoever would have you, moving on when they wouldn't", law:-1, good:0, track:'divine' },
-      { id:'told',     label:"Spent it wishing someone would just tell you what to do",      law:2,  good:0,  track:'defense' },
-    ] }],
-
-  // SRD: most halflings are lawful good, leaning on community and old ways.
-  halfling:[{ id:'table',
-    text:"Every meal you ate as a child, you ate with other people.",
-    options:[
-      { id:'empty',   label:"And you'd have noticed if a chair was empty",          law:1,  good:2,  track:'divine'  },
-      { id:'kept',    label:"And you kept the table yourself once you were tall enough", law:2, good:1, track:'defense' },
-      { id:'alone',   label:"And you'd have preferred to eat alone",                law:-1, good:-1, track:'arcane'  },
-      { id:'served',  label:"And you learned early who got served first",           law:0,  good:-1, track:'arcane'  },
-    ] }],
-
-  // SRD: humans tend toward no particular alignment; the best and worst
-  // are found among them. So this option set is spread deliberately wide
-  // rather than skewed - the spread IS the stereotype.
-  human:[{ id:'handschanged',
-    text:"You grew up somewhere that changed hands more than once.",
-    options:[
-      { id:'headdown', label:"Kept your head down and got on with whoever was in charge", law:0,  good:0,  track:'defense' },
-      { id:'learn',    label:"Learned each new set of rules faster than anyone",          law:2,  good:0,  track:'arcane'  },
-      { id:'scavenge', label:"Took what the changeovers left lying around",               law:-2, good:-2, track:'attack'  },
-      { id:'worst',    label:"Helped whoever was worst off that year, whoever that was",  law:0,  good:2,  track:'divine'  },
-    ] }],
-
-  // SRD: dragonborn tend to extremes, making a conscious choice for one
-  // side or the other. The two committed answers score hard; the one
-  // that refuses to choose scores zero on both axes, which pulls the
-  // ratio toward Neutral rather than nudging it anywhere.
-  dragonborn:[{ id:'blood',
-    text:"You were told, young, that your blood meant you'd amount to something. Nobody said what.",
-    options:[
-      { id:'trusted', label:"Decided it meant you'd be worth trusting, and never wavered", law:2,  good:2,  track:'divine'  },
-      { id:'feared',  label:"Decided it meant you'd be feared, and never wavered",         law:1,  good:-2, track:'attack'  },
-      { id:'nothing', label:"Decided nothing, and let people assume",                      law:0,  good:0,  track:'defense' },
-      { id:'mine',    label:"Decided it was your business alone what it meant",            law:-2, good:0,  track:'arcane'  },
-    ] }],
-
-  // SRD: gnomes are most often good; the lawful ones are scholars and
-  // researchers, the chaotic ones tricksters and wanderers. Both of the
-  // strong options here are good, split across the law axis.
-  gnome:[{ id:'unexplained',
-    text:"There was one thing in your village nobody had ever managed to explain.",
-    options:[
-      { id:'wrote',   label:"Spent years on it, properly, and wrote down what you found", law:2,  good:1,  track:'arcane'  },
-      { id:'fun',     label:"Spent years on it and told everyone a different answer for fun", law:-2, good:1, track:'arcane' },
-      { id:'lost',    label:"Asked once, got nothing, lost interest",                     law:0,  good:0,  track:'defense' },
-      { id:'sold',    label:"Worked it out and sold the answer",                          law:0,  good:-1, track:'attack'  },
-    ] }],
-
-  // SRD: half-elves share the chaotic bent of their elven heritage,
-  // with neither love of leaders nor desire for followers.
-  halfelf:[{ id:'noplace',
-    text:"Neither side of your family had a place already set for you.",
-    options:[
-      { id:'ownplace', label:"Made your own, somewhere else entirely",                 law:-2, good:0,  track:'arcane'  },
-      { id:'useful',   label:"Made yourself useful to both until they needed you",     law:0,  good:1,  track:'divine'  },
-      { id:'offered',  label:"Took the place one of them offered and stopped asking questions", law:2, good:0, track:'defense' },
-      { id:'guilt',    label:"Made sure they both felt bad about it",                  law:-1, good:-2, track:'attack'  },
-    ] }],
-
-  // SRD: half-orcs inherit a tendency toward chaos and are not strongly
-  // inclined toward good.
-  halforc:[{ id:'decided',
-    text:"People had decided what you'd grow into before you'd grown into anything.",
-    options:[
-      { id:'wrong',   label:"Proved them wrong, slowly, to nobody's applause",  law:1,  good:2,  track:'defense' },
-      { id:'right',   label:"Proved them right when it was useful",             law:-1, good:-2, track:'attack'  },
-      { id:'stopped', label:"Stopped caring what they'd decided",               law:-2, good:0,  track:'attack'  },
-      { id:'near',    label:"Found the ones who hadn't decided, and stayed near them", law:0, good:0, track:'divine' },
-    ] }],
-
-  // SRD: an independent nature inclines many tieflings toward chaotic,
-  // and many end up evil whether or not they started that way.
-  tiefling:[{ id:'lookaway',
-    text:"There was always someone who'd look at you and then look away.",
-    options:[
-      { id:'afraid',  label:"Gave them something to actually be afraid of",        law:-1, good:-2, track:'arcane'  },
-      { id:'leave',   label:"Left before anyone could look twice",                 law:-2, good:0,  track:'attack'  },
-      { id:'decent',  label:"Kept being decent at them until some of them stopped", law:0, good:2,  track:'divine'  },
-      { id:'useful',  label:"Learned exactly which of them could be useful",       law:1,  good:-1, track:'arcane'  },
-    ] }],
-};
-
-// Drop a shared question for one race, by question id.
-// e.g. { elf: ['rule'] }
-const RACE_QUESTION_SKIPS = {};
-
-// A small starting offset on the axes, before any answers.
-// Deliberately all-zero: SRD 5.1 says racial alignment tendencies are
-// not binding on player characters, so biasing a player's own answers
-// by race would contradict the source. The hook exists to be overridden
-// on purpose, not by default.
-// e.g. { dwarf: { law:1, good:0 } }
-const RACE_AXIS_BIAS = {};
+// Creation data loaded from /data/*.json — see boot().
+let TRACKS = [];
+let RACES = [];
+let RACE_QUESTIONS = [];
+let ALIGNMENTS = [];
+let ALIGNMENT_QUESTIONS = [];
+let RACE_QUESTION_OVERRIDES = {};
+let RACE_ALIGNMENT_EXTRAS = {};
+let RACE_QUESTION_SKIPS = {};
+let RACE_AXIS_BIAS = {};
 
 // Assembles the question list a given race actually sees.
 function alignmentQuestionsFor(raceId){
@@ -2124,17 +1707,49 @@ function onAction(e){
   }
 }
 
+async function loadJson(path){
+  const res = await fetch(path);
+  if(!res.ok) throw new Error('Failed to load '+path+' ('+res.status+')');
+  return res.json();
+}
+
 async function boot(){
   try {
-    const res = await fetch('/data/skills.json');
-    if(!res.ok) throw new Error('Failed to load skills ('+res.status+')');
-    FEATURES = await res.json();
+    const [
+      skills,
+      tracks,
+      races,
+      raceQuestions,
+      alignments,
+      alignmentQuestions,
+      raceAlignment,
+    ] = await Promise.all([
+      loadJson('/data/skills.json'),
+      loadJson('/data/tracks.json'),
+      loadJson('/data/races.json'),
+      loadJson('/data/race-questions.json'),
+      loadJson('/data/alignments.json'),
+      loadJson('/data/alignment-questions.json'),
+      loadJson('/data/race-alignment.json'),
+    ]);
+
+    FEATURES = skills;
     if(!Array.isArray(FEATURES)) throw new Error('skills.json must be an array');
+    TRACKS = tracks;
+    RACES = races;
+    RACE_QUESTIONS = raceQuestions;
+    ALIGNMENTS = alignments;
+    ALIGNMENT_QUESTIONS = alignmentQuestions;
+    RACE_ALIGNMENT_EXTRAS = raceAlignment.extras || {};
+    RACE_QUESTION_OVERRIDES = raceAlignment.overrides || {};
+    RACE_QUESTION_SKIPS = raceAlignment.skips || {};
+    RACE_AXIS_BIAS = raceAlignment.axisBias || {};
+
     rebuildWorld();
     render();
   } catch (err) {
     console.error(err);
-    app.innerHTML = `<div class="screen"><p class="lede">Could not load world data.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
+    app.innerHTML = `<div class="screen"><p class="lede">Could not load creation data.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
   }
 }
 

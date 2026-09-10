@@ -1,0 +1,206 @@
+[
+  {
+    "id": "purse",
+    "text": "A traveling merchant dropped his purse in the road, and you were the only one who saw it.",
+    "options": [
+      {
+        "id": "return",
+        "label": "Ran it back to him before you'd thought about it",
+        "law": 1,
+        "good": 2,
+        "track": "divine"
+      },
+      {
+        "id": "author",
+        "label": "Took it to whoever kept order in town and let them sort it out",
+        "law": 2,
+        "good": 1,
+        "track": "defense"
+      },
+      {
+        "id": "need",
+        "label": "Kept it. Your family needed it more than he did",
+        "law": -1,
+        "good": -1,
+        "track": "attack"
+      },
+      {
+        "id": "silent",
+        "label": "Kept it, and never told anyone, ever",
+        "law": -1,
+        "good": -2,
+        "track": "arcane"
+      }
+    ]
+  },
+  {
+    "id": "broke",
+    "text": "You broke something in the house that mattered, and nobody knew it was you.",
+    "options": [
+      {
+        "id": "mend",
+        "label": "Fixed it yourself in secret and never brought it up",
+        "law": -1,
+        "good": 1,
+        "track": "arcane"
+      },
+      {
+        "id": "own",
+        "label": "Said so straight away and took what came",
+        "law": 2,
+        "good": 1,
+        "track": "defense"
+      },
+      {
+        "id": "wait",
+        "label": "Waited to see whether anyone would even notice",
+        "law": 0,
+        "good": -1,
+        "track": "arcane"
+      },
+      {
+        "id": "blame",
+        "label": "Let it stand. Someone else took the blame",
+        "law": -1,
+        "good": -2,
+        "track": "attack"
+      }
+    ]
+  },
+  {
+    "id": "beating",
+    "text": "Another child was getting beaten by the older ones, most days, and everyone knew.",
+    "options": [
+      {
+        "id": "tell",
+        "label": "Told an adult who could actually stop it",
+        "law": 2,
+        "good": 1,
+        "track": "divine"
+      },
+      {
+        "id": "fight",
+        "label": "Fought them. Lost, mostly",
+        "law": -1,
+        "good": 2,
+        "track": "attack"
+      },
+      {
+        "id": "away",
+        "label": "Walked the other way. It wasn't yours to fix",
+        "law": 0,
+        "good": -1,
+        "track": "defense"
+      },
+      {
+        "id": "join",
+        "label": "Joined in enough not to be next",
+        "law": -1,
+        "good": -2,
+        "track": "attack"
+      }
+    ]
+  },
+  {
+    "id": "rule",
+    "text": "Whoever raised you had one rule you never understood the reason for.",
+    "options": [
+      {
+        "id": "break",
+        "label": "Broke it once, just to see",
+        "law": -2,
+        "good": -1,
+        "track": "attack"
+      },
+      {
+        "id": "keep",
+        "label": "Kept it anyway. They'd earned that much",
+        "law": 2,
+        "good": 0,
+        "track": "defense"
+      },
+      {
+        "id": "ask",
+        "label": "Asked, and kept asking, until you got a real answer",
+        "law": 1,
+        "good": 1,
+        "track": "arcane"
+      },
+      {
+        "id": "evade",
+        "label": "Kept it in front of them and broke it everywhere else",
+        "law": -2,
+        "good": 0,
+        "track": "arcane"
+      }
+    ]
+  },
+  {
+    "id": "winter",
+    "text": "A hard winter. There wasn't enough.",
+    "options": [
+      {
+        "id": "ledger",
+        "label": "Kept exact count of who owed what, and collected later",
+        "law": 2,
+        "good": -1,
+        "track": "arcane"
+      },
+      {
+        "id": "give",
+        "label": "Gave up your share more than once",
+        "law": 0,
+        "good": 2,
+        "track": "divine"
+      },
+      {
+        "id": "take",
+        "label": "Took what you could from people slower than you",
+        "law": -2,
+        "good": -2,
+        "track": "attack"
+      },
+      {
+        "id": "ownfirst",
+        "label": "Made sure your own ate first, whatever that cost anyone else",
+        "law": 1,
+        "good": -1,
+        "track": "defense"
+      }
+    ]
+  },
+  {
+    "id": "lied",
+    "text": "Someone you looked up to had been lying to you the whole time, and you found out.",
+    "options": [
+      {
+        "id": "watch",
+        "label": "Kept them close and stopped believing a word",
+        "law": -1,
+        "good": -1,
+        "track": "arcane"
+      },
+      {
+        "id": "forgive",
+        "label": "Forgave them, mostly",
+        "law": 0,
+        "good": 2,
+        "track": "divine"
+      },
+      {
+        "id": "cut",
+        "label": "Cut them off. No argument, no second conversation",
+        "law": 1,
+        "good": -1,
+        "track": "defense"
+      },
+      {
+        "id": "cost",
+        "label": "Made sure they understood exactly what it had cost them",
+        "law": -1,
+        "good": -2,
+        "track": "attack"
+      }
+    ]
+  }
+]

@@ -1,0 +1,65 @@
+[
+  {
+    "id": "lg",
+    "name": "Lawful Good",
+    "law": 1,
+    "good": 1,
+    "flavor": "You do the right thing, and you do it the way it's supposed to be done."
+  },
+  {
+    "id": "ng",
+    "name": "Neutral Good",
+    "law": 0,
+    "good": 1,
+    "flavor": "You help where help is needed. The rulebook is somebody else's problem."
+  },
+  {
+    "id": "cg",
+    "name": "Chaotic Good",
+    "law": -1,
+    "good": 1,
+    "flavor": "Your conscience gives the orders, and it doesn't much care who disagrees."
+  },
+  {
+    "id": "ln",
+    "name": "Lawful Neutral",
+    "law": 1,
+    "good": 0,
+    "flavor": "You keep to the code. Whether the code is kind isn't the point."
+  },
+  {
+    "id": "n",
+    "name": "Neutral",
+    "law": 0,
+    "good": 0,
+    "flavor": "You take each thing as it comes and don't pretend to a side you don't hold."
+  },
+  {
+    "id": "cn",
+    "name": "Chaotic Neutral",
+    "law": -1,
+    "good": 0,
+    "flavor": "Your own freedom comes first. Everything else is negotiable."
+  },
+  {
+    "id": "le",
+    "name": "Lawful Evil",
+    "law": 1,
+    "good": -1,
+    "flavor": "You take what you want, in order, within the limits you've agreed to."
+  },
+  {
+    "id": "ne",
+    "name": "Neutral Evil",
+    "law": 0,
+    "good": -1,
+    "flavor": "You do what you can get away with, and you're honest with yourself about it."
+  },
+  {
+    "id": "ce",
+    "name": "Chaotic Evil",
+    "law": -1,
+    "good": -1,
+    "flavor": "You answer to appetite. Restraint was never the interesting part."
+  }
+]

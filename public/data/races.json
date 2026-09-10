@@ -1,0 +1,310 @@
+[
+  {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "flavor": "Raised underground on discipline, ale, and the belief that a well built wall outlasts a clever plan. Comfortable in heavy armor, handy with an axe.",
+    "leans": {
+      "defense": 2,
+      "attack": 1,
+      "divine": 0,
+      "arcane": 0
+    },
+    "subraces": [
+      {
+        "id": "hill",
+        "label": "Hill Dwarf",
+        "sourced": true,
+        "blurb": "Raised with an instinct for omens and a body that shrugs off wounds other people are still nursing. (Extra hit points, and more every level.)"
+      },
+      {
+        "id": "mountain",
+        "label": "Mountain Dwarf",
+        "sourced": false,
+        "blurb": "Raised in a hold that measured you by how much steel you could carry and still swing a hammer. (A feel for heavier armor.)"
+      }
+    ],
+    "racialDetail": {
+      "type": "choice",
+      "prompt": "Every dwarf apprentices to something before they ever lift a weapon in anger. What did you learn?",
+      "mechanicNote": "This is where your tool proficiency comes from.",
+      "options": [
+        {
+          "id": "smith",
+          "label": "Smith's tools",
+          "blurb": "You learned to shape metal before you learned to fight."
+        },
+        {
+          "id": "brewer",
+          "label": "Brewer's supplies",
+          "blurb": "You learned what makes a hall worth coming back to."
+        },
+        {
+          "id": "mason",
+          "label": "Mason's tools",
+          "blurb": "You learned how stone remembers everything built into it."
+        }
+      ]
+    }
+  },
+  {
+    "id": "elf",
+    "name": "Elf",
+    "flavor": "Grew up in a culture that treats swordplay and spellcraft as the same kind of art, one worth centuries of practice. Quick, precise, unhurried.",
+    "leans": {
+      "defense": 0,
+      "attack": 2,
+      "divine": 0,
+      "arcane": 1
+    },
+    "subraces": [
+      {
+        "id": "high",
+        "label": "High Elf",
+        "sourced": true,
+        "blurb": "Raised around old books and older magic, the kind who picked up a spell before anyone taught you one on purpose. (A cantrip of your choice, and a second language.)"
+      },
+      {
+        "id": "wood",
+        "label": "Wood Elf",
+        "sourced": false,
+        "blurb": "Raised somewhere the trees outnumbered the people, and you learned to move through both without being noticed. (Quicker on your feet, harder to spot in the open.)"
+      }
+    ],
+    "racialDetail": {
+      "type": "reveal",
+      "prompt": "What being an elf already means",
+      "text": "You don't sleep, not really. Four hours of trance does what a human needs eight for, and you've spent the extra hours of every night of your life half dreaming, half watching. Charm magic slides off you more easily than it should, and your eyes find what others miss in a dim room.",
+      "mechanicNote": "Trance, Fey Ancestry, Darkvision, Keen Senses, if you're keeping score."
+    }
+  },
+  {
+    "id": "halfling",
+    "name": "Halfling",
+    "flavor": "Small, stubborn, and loyal to hearth and neighbor above all else. Luckier than they have any right to be.",
+    "leans": {
+      "defense": 1,
+      "attack": 0,
+      "divine": 2,
+      "arcane": 0
+    },
+    "subraces": [
+      {
+        "id": "lightfoot",
+        "label": "Lightfoot Halfling",
+        "sourced": true,
+        "blurb": "Raised to be underestimated, and to use that. You slip past notice even standing right next to someone. (You can hide behind almost anyone bigger than you.)"
+      },
+      {
+        "id": "stout",
+        "label": "Stout Halfling",
+        "sourced": false,
+        "blurb": "Raised on the idea that the road is safer than it looks, provided you're too stubborn to be poisoned by it. (Better odds against poison.)"
+      }
+    ],
+    "racialDetail": {
+      "type": "reveal",
+      "prompt": "What being a halfling already means",
+      "text": "You've had narrower misses than you can explain, and less fear than makes sense for someone your size. People underestimate you right up until it costs them.",
+      "mechanicNote": "Lucky, Brave, Halfling Nimbleness."
+    }
+  },
+  {
+    "id": "human",
+    "name": "Human",
+    "flavor": "No particular gift, no particular curse. What you become is entirely up to how you train.",
+    "leans": {
+      "defense": 0,
+      "attack": 0,
+      "divine": 0,
+      "arcane": 0
+    },
+    "racialDetail": {
+      "type": "choice",
+      "prompt": "Common was never the only thing you picked up, listening at crossroads and market stalls.",
+      "mechanicNote": "This becomes the second language on your record.",
+      "options": [
+        {
+          "id": "dwarvish",
+          "label": "Dwarvish",
+          "blurb": "Hard consonants, said like they're meant."
+        },
+        {
+          "id": "elvish",
+          "label": "Elvish",
+          "blurb": "Picked up from travelers, songs more than sentences."
+        },
+        {
+          "id": "orc",
+          "label": "Orc",
+          "blurb": "Blunt and useful, learned somewhere you'd rather not explain."
+        },
+        {
+          "id": "draconic",
+          "label": "Draconic",
+          "blurb": "Old and harsh, mostly found in books nobody else wanted to read."
+        }
+      ]
+    }
+  },
+  {
+    "id": "dragonborn",
+    "name": "Dragonborn",
+    "flavor": "Descended from dragons and raised to prove it. Proud, blunt, and inclined to make a stand rather than a retreat.",
+    "leans": {
+      "defense": 0,
+      "attack": 2,
+      "divine": 1,
+      "arcane": 0
+    },
+    "racialDetail": {
+      "type": "choice",
+      "prompt": "Every dragonborn carries the color of one dragon in their blood, whether they've ever breathed fire or not.",
+      "mechanicNote": "This sets the damage type of your breath weapon.",
+      "options": [
+        {
+          "id": "black",
+          "label": "Black",
+          "blurb": "Corrosive and patient, a color that wears things down slowly. Acid."
+        },
+        {
+          "id": "blue",
+          "label": "Blue",
+          "blurb": "Sharp and sudden, a color that arrives before the sound does. Lightning."
+        },
+        {
+          "id": "brass",
+          "label": "Brass",
+          "blurb": "Talkative ancestry, if the stories about it are true. Fire."
+        },
+        {
+          "id": "bronze",
+          "label": "Bronze",
+          "blurb": "Coastal blood, drawn to open water. Lightning."
+        },
+        {
+          "id": "copper",
+          "label": "Copper",
+          "blurb": "A trickster's color, fond of a long game. Acid."
+        },
+        {
+          "id": "gold",
+          "label": "Gold",
+          "blurb": "The color nobility likes to claim for itself. Fire."
+        },
+        {
+          "id": "green",
+          "label": "Green",
+          "blurb": "Quiet and cunning, patient in a different way than black. Poison."
+        },
+        {
+          "id": "red",
+          "label": "Red",
+          "blurb": "The color everyone already has an opinion about. Fire."
+        },
+        {
+          "id": "silver",
+          "label": "Silver",
+          "blurb": "Cold and clear, the color of a line that holds. Cold."
+        },
+        {
+          "id": "white",
+          "label": "White",
+          "blurb": "The color of somewhere nobody chooses to live. Cold."
+        }
+      ]
+    }
+  },
+  {
+    "id": "gnome",
+    "name": "Gnome",
+    "flavor": "Curious to a fault, half convinced every locked door hides a puzzle worth solving. Magic bounces off a gnome's mind more than it should.",
+    "leans": {
+      "defense": 1,
+      "attack": 0,
+      "divine": 0,
+      "arcane": 2
+    },
+    "subraces": [
+      {
+        "id": "rock",
+        "label": "Rock Gnome",
+        "sourced": true,
+        "blurb": "Raised with a workbench instead of a crib, more or less. You'd built something small and clever before you'd built anything that mattered. (Comes with a tiny clockwork device of your choosing.)"
+      },
+      {
+        "id": "forest",
+        "label": "Forest Gnome",
+        "sourced": false,
+        "blurb": "Raised on the edge of the woods, close enough to talk to whatever was living in them. (A knack for small illusions and small animals.)"
+      }
+    ],
+    "racialDetail": {
+      "type": "reveal",
+      "prompt": "What being a gnome already means",
+      "text": "Enchantments that would flatten a bigger mind tend to slide right past yours. You see fine in the dark, and you've never met a locked mechanism you didn't want to take apart.",
+      "mechanicNote": "Gnome Cunning, Darkvision."
+    }
+  },
+  {
+    "id": "halfelf",
+    "name": "Half-Elf",
+    "flavor": "Belongs fully to neither human nor elven society, and made peace with that by getting good at reading a room and holding a group together.",
+    "leans": {
+      "defense": 0,
+      "attack": 0,
+      "divine": 2,
+      "arcane": 1
+    },
+    "racialDetail": {
+      "type": "choice",
+      "prompt": "Which world mistakes you for one of its own, first?",
+      "mechanicNote": "Flavor only, the two-skills-of-your-choice trait this echoes isn't tracked in this build.",
+      "options": [
+        {
+          "id": "human-world",
+          "label": "Human towns",
+          "blurb": "You pass, mostly, until someone asks the wrong question."
+        },
+        {
+          "id": "elven-world",
+          "label": "Elven circles",
+          "blurb": "Tolerated there, in a way that never quite becomes belonging."
+        }
+      ]
+    }
+  },
+  {
+    "id": "halforc",
+    "name": "Half-Orc",
+    "flavor": "Built to take a hit and keep coming. Orcish blood runs hot, but the will not to let it run the show runs hotter.",
+    "leans": {
+      "defense": 1,
+      "attack": 2,
+      "divine": 0,
+      "arcane": 0
+    },
+    "racialDetail": {
+      "type": "reveal",
+      "prompt": "What being a half-orc already means",
+      "text": "You've been left for dead before and gotten back up anyway. When you hit something hard it tends to stay hit, and most people decide not to test that twice.",
+      "mechanicNote": "Relentless Endurance, Savage Attacks, Menacing."
+    }
+  },
+  {
+    "id": "tiefling",
+    "name": "Tiefling",
+    "flavor": "Carries an infernal bloodline whether it's wanted or not, and learned early to rely on wit and will rather than anyone else's good opinion.",
+    "leans": {
+      "defense": 0,
+      "attack": 1,
+      "divine": 0,
+      "arcane": 2
+    },
+    "racialDetail": {
+      "type": "reveal",
+      "prompt": "What being a tiefling already means",
+      "text": "Fire has never bothered you the way it bothers everyone else, and your eyes do fine in the dark your blood came from. People decided what you were before you said a word, most of your life. You stopped waiting for them to change their minds.",
+      "mechanicNote": "Hellish Resistance, Darkvision."
+    }
+  }
+]

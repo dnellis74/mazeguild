@@ -1,0 +1,18 @@
+[
+  {
+    "id": "defense",
+    "label": "Defense"
+  },
+  {
+    "id": "attack",
+    "label": "Attack"
+  },
+  {
+    "id": "divine",
+    "label": "Divine"
+  },
+  {
+    "id": "arcane",
+    "label": "Arcane"
+  }
+]
