@@ -1,0 +1,360 @@
+{
+  "known": {
+    "Bard": 2,
+    "Cleric": 3,
+    "Druid": 2,
+    "Sorcerer": 4,
+    "Warlock": 2,
+    "Wizard": 3
+  },
+  "cantrips": [
+    {
+      "id": 1,
+      "archetype": "Bard",
+      "name": "Dancing Lights",
+      "description": "Create up to four torch-sized lights (or combine them into one dim humanoid shape) that hover in the air and that you can move as a bonus action."
+    },
+    {
+      "id": 2,
+      "archetype": "Bard",
+      "name": "Light",
+      "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour."
+    },
+    {
+      "id": 3,
+      "archetype": "Bard",
+      "name": "Mage Hand",
+      "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance."
+    },
+    {
+      "id": 4,
+      "archetype": "Bard",
+      "name": "Mending",
+      "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage."
+    },
+    {
+      "id": 5,
+      "archetype": "Bard",
+      "name": "Message",
+      "description": "Whisper a message toward a creature within range; only that creature hears it and can whisper a reply back that only you hear."
+    },
+    {
+      "id": 6,
+      "archetype": "Bard",
+      "name": "Minor Illusion",
+      "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion."
+    },
+    {
+      "id": 7,
+      "archetype": "Bard",
+      "name": "Prestidigitation",
+      "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket."
+    },
+    {
+      "id": 8,
+      "archetype": "Bard",
+      "name": "True Strike",
+      "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended."
+    },
+    {
+      "id": 9,
+      "archetype": "Bard",
+      "name": "Vicious Mockery",
+      "description": "Hurl a string of insults laced with subtle magic at a creature that can hear you; it makes a Wisdom save or takes 1d4 psychic damage and has disadvantage on its next attack roll."
+    },
+    {
+      "id": 10,
+      "archetype": "Cleric",
+      "name": "Guidance",
+      "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one ability check of its choice."
+    },
+    {
+      "id": 11,
+      "archetype": "Cleric",
+      "name": "Light",
+      "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour."
+    },
+    {
+      "id": 12,
+      "archetype": "Cleric",
+      "name": "Mending",
+      "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage."
+    },
+    {
+      "id": 13,
+      "archetype": "Cleric",
+      "name": "Resistance",
+      "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one saving throw of its choice."
+    },
+    {
+      "id": 14,
+      "archetype": "Cleric",
+      "name": "Sacred Flame",
+      "description": "Call down flame-like radiance on a creature you can see; it makes a Dexterity save, with no benefit from cover, or takes 1d8 radiant damage."
+    },
+    {
+      "id": 15,
+      "archetype": "Cleric",
+      "name": "Spare the Dying",
+      "description": "Touch a living creature that has 0 hit points, causing it to become stable."
+    },
+    {
+      "id": 16,
+      "archetype": "Cleric",
+      "name": "Thaumaturgy",
+      "description": "Manifest a minor supernatural sign at will: a booming voice, flickering flames, harmless ground tremors, a remote sound, a door flying open or slamming shut, or briefly altered eyes."
+    },
+    {
+      "id": 17,
+      "archetype": "Druid",
+      "name": "Druidcraft",
+      "description": "Produce a small nature effect: predict the next 24 hours of weather at your location, make a plant bud or bloom, create a harmless sensory effect, or light or snuff out a small flame."
+    },
+    {
+      "id": 18,
+      "archetype": "Druid",
+      "name": "Guidance",
+      "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one ability check of its choice."
+    },
+    {
+      "id": 19,
+      "archetype": "Druid",
+      "name": "Mending",
+      "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage."
+    },
+    {
+      "id": 20,
+      "archetype": "Druid",
+      "name": "Poison Spray",
+      "description": "Project a puff of noxious gas at a creature within 10 feet; it makes a Constitution save or takes 1d12 poison damage, increasing at higher character levels."
+    },
+    {
+      "id": 21,
+      "archetype": "Druid",
+      "name": "Produce Flame",
+      "description": "Conjure a harmless flickering flame in your hand that sheds light for up to 10 minutes, or hurl it at a creature within 30 feet as a ranged spell attack for 1d8 fire damage, ending the spell."
+    },
+    {
+      "id": 22,
+      "archetype": "Druid",
+      "name": "Resistance",
+      "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one saving throw of its choice."
+    },
+    {
+      "id": 23,
+      "archetype": "Druid",
+      "name": "Shillelagh",
+      "description": "Imbue a club or quarterstaff you're holding with nature's power, letting you use your spellcasting ability instead of Strength for its attack and damage rolls, and increasing its damage die to a d8."
+    },
+    {
+      "id": 24,
+      "archetype": "Sorcerer",
+      "name": "Acid Splash",
+      "description": "Hurl a bubble of acid at one creature, or two creatures standing within 5 feet of each other; each target makes a Dexterity save or takes 1d6 acid damage, increasing at higher character levels."
+    },
+    {
+      "id": 25,
+      "archetype": "Sorcerer",
+      "name": "Chill Touch",
+      "description": "Make a ranged spell attack with a ghostly skeletal hand; on a hit the target takes 1d8 necrotic damage and can't regain hit points until your next turn, and an undead target also has disadvantage on attacks against you."
+    },
+    {
+      "id": 26,
+      "archetype": "Sorcerer",
+      "name": "Dancing Lights",
+      "description": "Create up to four torch-sized lights (or combine them into one dim humanoid shape) that hover in the air and that you can move as a bonus action."
+    },
+    {
+      "id": 27,
+      "archetype": "Sorcerer",
+      "name": "Fire Bolt",
+      "description": "Make a ranged spell attack, hurling a mote of fire; on a hit the target takes 1d10 fire damage and flammable objects ignite, with the damage increasing at higher character levels."
+    },
+    {
+      "id": 28,
+      "archetype": "Sorcerer",
+      "name": "Light",
+      "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour."
+    },
+    {
+      "id": 29,
+      "archetype": "Sorcerer",
+      "name": "Mage Hand",
+      "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance."
+    },
+    {
+      "id": 30,
+      "archetype": "Sorcerer",
+      "name": "Mending",
+      "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage."
+    },
+    {
+      "id": 31,
+      "archetype": "Sorcerer",
+      "name": "Message",
+      "description": "Whisper a message toward a creature within range; only that creature hears it and can whisper a reply back that only you hear."
+    },
+    {
+      "id": 32,
+      "archetype": "Sorcerer",
+      "name": "Minor Illusion",
+      "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion."
+    },
+    {
+      "id": 33,
+      "archetype": "Sorcerer",
+      "name": "Poison Spray",
+      "description": "Project a puff of noxious gas at a creature within 10 feet; it makes a Constitution save or takes 1d12 poison damage, increasing at higher character levels."
+    },
+    {
+      "id": 34,
+      "archetype": "Sorcerer",
+      "name": "Prestidigitation",
+      "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket."
+    },
+    {
+      "id": 35,
+      "archetype": "Sorcerer",
+      "name": "Ray of Frost",
+      "description": "Make a ranged spell attack with a frigid beam of light; on a hit the target takes 1d8 cold damage and its speed is reduced by 10 feet until your next turn."
+    },
+    {
+      "id": 36,
+      "archetype": "Sorcerer",
+      "name": "Shocking Grasp",
+      "description": "Make a melee spell attack (with advantage if the target wears metal armor) that deals 1d8 lightning damage and prevents the target from taking reactions until its next turn."
+    },
+    {
+      "id": 37,
+      "archetype": "Sorcerer",
+      "name": "True Strike",
+      "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended."
+    },
+    {
+      "id": 38,
+      "archetype": "Warlock",
+      "name": "Chill Touch",
+      "description": "Make a ranged spell attack with a ghostly skeletal hand; on a hit the target takes 1d8 necrotic damage and can't regain hit points until your next turn, and an undead target also has disadvantage on attacks against you."
+    },
+    {
+      "id": 39,
+      "archetype": "Warlock",
+      "name": "Eldritch Blast",
+      "description": "Make a ranged spell attack with a beam of crackling force; on a hit the target takes 1d10 force damage, with additional beams at higher character levels."
+    },
+    {
+      "id": 40,
+      "archetype": "Warlock",
+      "name": "Mage Hand",
+      "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance."
+    },
+    {
+      "id": 41,
+      "archetype": "Warlock",
+      "name": "Minor Illusion",
+      "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion."
+    },
+    {
+      "id": 42,
+      "archetype": "Warlock",
+      "name": "Poison Spray",
+      "description": "Project a puff of noxious gas at a creature within 10 feet; it makes a Constitution save or takes 1d12 poison damage, increasing at higher character levels."
+    },
+    {
+      "id": 43,
+      "archetype": "Warlock",
+      "name": "Prestidigitation",
+      "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket."
+    },
+    {
+      "id": 44,
+      "archetype": "Warlock",
+      "name": "True Strike",
+      "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended."
+    },
+    {
+      "id": 45,
+      "archetype": "Wizard",
+      "name": "Acid Splash",
+      "description": "Hurl a bubble of acid at one creature, or two creatures standing within 5 feet of each other; each target makes a Dexterity save or takes 1d6 acid damage, increasing at higher character levels."
+    },
+    {
+      "id": 46,
+      "archetype": "Wizard",
+      "name": "Chill Touch",
+      "description": "Make a ranged spell attack with a ghostly skeletal hand; on a hit the target takes 1d8 necrotic damage and can't regain hit points until your next turn, and an undead target also has disadvantage on attacks against you."
+    },
+    {
+      "id": 47,
+      "archetype": "Wizard",
+      "name": "Dancing Lights",
+      "description": "Create up to four torch-sized lights (or combine them into one dim humanoid shape) that hover in the air and that you can move as a bonus action."
+    },
+    {
+      "id": 48,
+      "archetype": "Wizard",
+      "name": "Fire Bolt",
+      "description": "Make a ranged spell attack, hurling a mote of fire; on a hit the target takes 1d10 fire damage and flammable objects ignite, with the damage increasing at higher character levels."
+    },
+    {
+      "id": 49,
+      "archetype": "Wizard",
+      "name": "Light",
+      "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour."
+    },
+    {
+      "id": 50,
+      "archetype": "Wizard",
+      "name": "Mage Hand",
+      "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance."
+    },
+    {
+      "id": 51,
+      "archetype": "Wizard",
+      "name": "Mending",
+      "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage."
+    },
+    {
+      "id": 52,
+      "archetype": "Wizard",
+      "name": "Message",
+      "description": "Whisper a message toward a creature within range; only that creature hears it and can whisper a reply back that only you hear."
+    },
+    {
+      "id": 53,
+      "archetype": "Wizard",
+      "name": "Minor Illusion",
+      "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion."
+    },
+    {
+      "id": 54,
+      "archetype": "Wizard",
+      "name": "Poison Spray",
+      "description": "Project a puff of noxious gas at a creature within 10 feet; it makes a Constitution save or takes 1d12 poison damage, increasing at higher character levels."
+    },
+    {
+      "id": 55,
+      "archetype": "Wizard",
+      "name": "Prestidigitation",
+      "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket."
+    },
+    {
+      "id": 56,
+      "archetype": "Wizard",
+      "name": "Ray of Frost",
+      "description": "Make a ranged spell attack with a frigid beam of light; on a hit the target takes 1d8 cold damage and its speed is reduced by 10 feet until your next turn."
+    },
+    {
+      "id": 57,
+      "archetype": "Wizard",
+      "name": "Shocking Grasp",
+      "description": "Make a melee spell attack (with advantage if the target wears metal armor) that deals 1d8 lightning damage and prevents the target from taking reactions until its next turn."
+    },
+    {
+      "id": 58,
+      "archetype": "Wizard",
+      "name": "True Strike",
+      "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended."
+    }
+  ]
+}

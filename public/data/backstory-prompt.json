@@ -1,0 +1,21 @@
+{
+  "intro": "Write a short paragraph giving origin story for this fantasy character.",
+  "labels": {
+    "race": "Race",
+    "alignment": "Alignment",
+    "definingExperience": "Defining experience",
+    "reaction": "How they reacted",
+    "features": "Features earned",
+    "archetypes": "Archetypes drawn from",
+    "cantrips": "Cantrips learned"
+  },
+  "abilityNotes": {
+    "highOrLow": "Notable ability scores: {notables}.",
+    "even": "Scores are fairly even — no need to dwell on extremes.",
+    "notablyHigh": "{name} is notably high ({score})",
+    "notablyLow": "{name} is notably low ({score})",
+    "strongest": "{name} stands out as strongest ({score})",
+    "weakest": "{name} stands out as weakest ({score})"
+  },
+  "outro": "Make it atmospheric but focus more on giving background for the provided traits.  Don't really too much on the defining experience, it's currently uninteresting."
+}

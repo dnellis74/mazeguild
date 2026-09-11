@@ -26,7 +26,7 @@
   {
     "id": "f_03x5n2",
     "archetype": "Bard",
-    "feature": "Bardic Inspiration",
+    "feature": ["Bardic Inspiration", "Bardic Cantrips"],
     "prerequisite": null,
     "area": "Walled City",
     "building": "Tavern",
@@ -50,7 +50,7 @@
   {
     "id": "f_05k2v7",
     "archetype": "Cleric",
-    "feature": "Divine Spellcasting",
+    "feature": ["Divine Spellcasting", "Divine Cantrips"],
     "prerequisite": null,
     "area": "Walled City",
     "building": "Cathedral",
@@ -75,7 +75,7 @@
   {
     "id": "f_07n4r6",
     "archetype": "Druid",
-    "feature": "Druidic",
+    "feature": ["Druidic", "Druidic Cantrips"],
     "prerequisite": null,
     "area": "The Wilds",
     "building": "Pagan Temple",
@@ -309,7 +309,7 @@
   {
     "id": "f_21r8x2",
     "archetype": "Sorcerer",
-    "feature": "Sorcerous Origin",
+    "feature": ["Sorcerous Origin", "Sorcerer Cantrips"],
     "prerequisite": null,
     "area": "Walled City",
     "building": "Library",
@@ -321,7 +321,7 @@
   {
     "id": "f_22p5t7",
     "archetype": "Warlock",
-    "feature": "Otherworldly Patron",
+    "feature":["Otherworldly Patron", "Warlock Cantrips"],
     "detail": "The Great Old One",
     "prerequisite": null,
     "area": "The Wilds",
@@ -347,7 +347,7 @@
   {
     "id": "f_24q7n4",
     "archetype": "Wizard",
-    "feature": "Arcane Spellcasting",
+    "feature": ["Arcane Spellcasting", "Wizard Cantrips"],
     "prerequisite": null,
     "area": "Walled City",
     "building": "Library",

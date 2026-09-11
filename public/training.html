@@ -42,7 +42,23 @@ let RACES = [];
 let ALIGNMENTS = [];
 let TRACKS = [];
 let FAVORED_ENEMY = {};
+let ABILITY_MODS = null;
+let BACKSTORY_PROMPT = null;
+let CANTRIP_KNOWN = {};
+let CANTRIPS = [];
 const FAVORED_ENEMY_SKILL_ID = 'f_15m9q5';
+const ABILITY_ORDER = ['STR','DEX','CON','INT','WIS','CHA'];
+const ABILITY_FULL_NAME = {
+  STR: 'Strength',
+  DEX: 'Dexterity',
+  CON: 'Constitution',
+  INT: 'Intelligence',
+  WIS: 'Wisdom',
+  CHA: 'Charisma',
+};
+const ABILITY_SHORT_NAME = Object.fromEntries(
+  Object.entries(ABILITY_FULL_NAME).map(([short, full])=>[full, short])
+);
 let TIMING = {
   unlock: { fills: 6, fillMsSec: 0.5 },
   featureDefault: { fills: 6, fillMsSec: 1 },
@@ -85,8 +101,255 @@ function formatFillNote(spec){
   return `${spec.fills} fills of ${tick}s`;
 }
 
+function abilityMod(score){
+  return Math.floor((Number(score) - 10) / 2);
+}
+
+function formatAbilityMod(score){
+  const m = abilityMod(score);
+  return (m >= 0 ? '+' : '') + m;
+}
+
+function pointBuyRaiseCost(score, costs){
+  const next = score + 1;
+  if(costs[next] == null || costs[score] == null) return Infinity;
+  return costs[next] - costs[score];
+}
+
+function pointBuyStartingScore(){
+  return ABILITY_MODS?.pointBuy?.startingScore ?? 8;
+}
+
+function baseAbilityScores(){
+  const start = pointBuyStartingScore();
+  return Object.fromEntries(ABILITY_ORDER.map(ab=>[ab, start]));
+}
+
+function ensureAbilityScores(ch){
+  if(!ch.abilityScores){
+    ch.abilityScores = baseAbilityScores();
+  }
+  return ch.abilityScores;
+}
+
+/**
+ * After both feature draws: meet archetype mins, spend leftover point-buy at random, apply racial bonuses.
+ */
+function assignAbilityScores(ch){
+  if(!ABILITY_MODS || !ch.features || ch.features.length < 2) return false;
+  if(ch.abilityScoresAssigned) return false;
+
+  const pb = ABILITY_MODS.pointBuy;
+  const costs = pb.costs;
+  const start = pb.startingScore ?? 8;
+  const maxPre = pb.maximumBeforeRacialBonuses ?? 15;
+  let points = pb.points ?? 27;
+  const scores = Object.fromEntries(ABILITY_ORDER.map(ab=>[ab, start]));
+
+  const mins = {}; // short -> required minimum
+  const fighterAny = [];
+
+  for(const arch of earnedArchetypes()){
+    const spec = ABILITY_MODS.archetypeMinimums[arch];
+    if(!spec) continue;
+    if(Array.isArray(spec.any)){
+      for(const opt of spec.any){
+        for(const [full, min] of Object.entries(opt)){
+          const short = ABILITY_SHORT_NAME[full];
+          if(short) fighterAny.push({ short, min });
+        }
+      }
+      continue;
+    }
+    for(const [full, min] of Object.entries(spec)){
+      if(full === 'any') continue;
+      const short = ABILITY_SHORT_NAME[full];
+      if(!short) continue;
+      mins[short] = Math.max(mins[short] || 0, min);
+    }
+  }
+
+  // Hard minimums first
+  for(const [short, min] of Object.entries(mins)){
+    while(scores[short] < min){
+      const cost = pointBuyRaiseCost(scores[short], costs);
+      if(!Number.isFinite(cost) || cost > points || scores[short] >= maxPre) break;
+      points -= cost;
+      scores[short] += 1;
+    }
+  }
+
+  // Fighter-style "any one of these at 13"
+  if(fighterAny.length){
+    const satisfied = fighterAny.some(({ short, min })=> scores[short] >= min);
+    if(!satisfied){
+      const affordable = fighterAny.filter(({ short, min })=>{
+        let trial = scores[short];
+        let need = 0;
+        while(trial < min){
+          const c = pointBuyRaiseCost(trial, costs);
+          if(!Number.isFinite(c) || trial >= maxPre) return false;
+          need += c;
+          trial += 1;
+        }
+        return need <= points;
+      });
+      const pick = (affordable.length ? affordable : fighterAny)[Math.floor(Math.random() * (affordable.length || fighterAny.length))];
+      while(scores[pick.short] < pick.min){
+        const cost = pointBuyRaiseCost(scores[pick.short], costs);
+        if(!Number.isFinite(cost) || cost > points || scores[pick.short] >= maxPre) break;
+        points -= cost;
+        scores[pick.short] += 1;
+      }
+    }
+  }
+
+  // Spend remaining points at random, one bump at a time
+  let guard = 200;
+  while(points > 0 && guard-- > 0){
+    const candidates = ABILITY_ORDER.filter(ab=>{
+      if(scores[ab] >= maxPre) return false;
+      const cost = pointBuyRaiseCost(scores[ab], costs);
+      return Number.isFinite(cost) && cost <= points;
+    });
+    if(!candidates.length) break;
+    const ab = candidates[Math.floor(Math.random() * candidates.length)];
+    const cost = pointBuyRaiseCost(scores[ab], costs);
+    points -= cost;
+    scores[ab] += 1;
+  }
+
+  // Racial modifiers last
+  const race = raceById(ch.raceId);
+  const racial = (race && ABILITY_MODS.racialBonuses[race.name]) || {};
+  for(const [full, bonus] of Object.entries(racial)){
+    const short = ABILITY_SHORT_NAME[full];
+    if(short) scores[short] += bonus;
+  }
+
+  ch.abilityScores = scores;
+  ch.abilityScoresAssigned = true;
+  ch.abilityPointsUnspent = points;
+  return true;
+}
+
 function skillById(id){
   return FEATURES.find(s=>s.id===id);
+}
+
+/** skills.json `feature` may be a string or an array of feature names */
+function asFeatureList(feature){
+  if(Array.isArray(feature)) return feature.filter(Boolean).map(String);
+  if(feature == null || feature === '') return [];
+  return [String(feature)];
+}
+
+function featureLabel(feature){
+  return asFeatureList(feature).join(' & ');
+}
+
+function earnedFeatureNames(ch, archetype){
+  return (ch.features || [])
+    .filter(f=>!archetype || f.archetype === archetype)
+    .flatMap(f=>asFeatureList(f.feature));
+}
+
+function hasCantripAccess(ch, archetype){
+  return earnedFeatureNames(ch, archetype).some(n=>/cantrips/i.test(n));
+}
+
+function hasFullSpellcasting(ch, archetype){
+  return earnedFeatureNames(ch, archetype).some(n=>
+    /spellcasting/i.test(n) || /^pact magic$/i.test(n)
+  );
+}
+
+function cantripTotalFor(archetype){
+  return Number(CANTRIP_KNOWN[archetype]) || 0;
+}
+
+/** Half the SRD known count while only cantrips are unlocked; full once spellcasting lands. */
+function cantripAllowance(ch, archetype){
+  const total = cantripTotalFor(archetype);
+  if(!total) return 0;
+  const half = Math.floor(total / 2);
+  const access = hasCantripAccess(ch, archetype);
+  const full = hasFullSpellcasting(ch, archetype);
+  if(!access && !full) return 0;
+  if(full) return total;
+  return Math.max(half, 1);
+}
+
+function ownedCantrips(ch, archetype){
+  return (ch.cantrips || []).filter(c=>!archetype || c.archetype === archetype);
+}
+
+function cantripsRemaining(ch, archetype){
+  return Math.max(0, cantripAllowance(ch, archetype) - ownedCantrips(ch, archetype).length);
+}
+
+function cantripsForArchetype(archetype){
+  return CANTRIPS.filter(c=>c.archetype === archetype);
+}
+
+function cantripById(id){
+  return CANTRIPS.find(c=>String(c.id) === String(id));
+}
+
+function cantripRoomForArchetype(archetype){
+  const skill = FEATURES.find(s=>
+    s.archetype === archetype && asFeatureList(s.feature).some(n=>/cantrips/i.test(n))
+  );
+  if(!skill) return null;
+  return { area: skill.area, building: skill.building, room: skill.room };
+}
+
+function isCurrentCantripRoom(ui, archetype){
+  const loc = cantripRoomForArchetype(archetype);
+  return !!(loc
+    && ui.worldArea === loc.area
+    && ui.worldBuilding === loc.building
+    && ui.worldRoom === loc.room);
+}
+
+function openCantripSlots(ch){
+  const arches = new Set([
+    ...earnedArchetypes(),
+    ...Object.keys(CANTRIP_KNOWN),
+  ]);
+  return [...arches]
+    .filter(a=>cantripsRemaining(ch, a) > 0)
+    .map(a=>({
+      archetype: a,
+      remaining: cantripsRemaining(ch, a),
+      allowance: cantripAllowance(ch, a),
+      owned: ownedCantrips(ch, a).length,
+    }));
+}
+
+function openCantripPicker(archetype){
+  const ch = state.character;
+  const remaining = cantripsRemaining(ch, archetype);
+  if(remaining <= 0){
+    showToast('No cantrip slots left for '+archetype+'.');
+    return;
+  }
+  const ownedIds = new Set(ownedCantrips(ch, archetype).map(c=>String(c.id)));
+  const options = cantripsForArchetype(archetype).filter(c=>!ownedIds.has(String(c.id)));
+  if(!options.length){
+    showToast('No cantrips left to learn.');
+    return;
+  }
+  state.ui.hubTab = 'world';
+  state.ui.pendingChoice = {
+    type: 'cantrip',
+    archetype,
+    remaining,
+    allowance: cantripAllowance(ch, archetype),
+    owned: ownedCantrips(ch, archetype).length,
+    options,
+  };
+  render();
 }
 
 function hasSkill(ch, id){
@@ -120,7 +383,7 @@ function buildWorld(){
       r.activities.push({
         id:f.id,
         activity:f.activity,
-        feature:f.feature,
+        feature: asFeatureList(f.feature),
         archetype:f.archetype,
         detail:f.detail,
         description:f.description,
@@ -248,6 +511,23 @@ function renderPendingChoice(){
         </div>
       </div>`;
   }
+  if(pending.type === 'cantrip'){
+    return `
+      <div class="feature-choice">
+        <button type="button" class="back" data-action="cancel-choice">← Back</button>
+        <p class="kicker">${esc(pending.archetype)} cantrips</p>
+        <h2>Choose a cantrip</h2>
+        <p class="lede" style="margin-top:8px">${pending.owned} of ${pending.allowance} known · pick ${pending.remaining} more.</p>
+        <div class="choice-list">
+          ${pending.options.map(c=>`
+            <button type="button" class="choice-card" data-action="confirm-cantrip" data-cantrip-id="${esc(c.id)}">
+              <span class="choice-title">${esc(c.name)}</span>
+              <span class="choice-sub">${esc(c.description || '')}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>`;
+  }
   return '';
 }
 
@@ -279,49 +559,125 @@ function archetypeSourceLines(){
   return state.character.features.map(f=>{
     const skill = skillById(f.id);
     const detail = f.detail || (skill && skill.detail);
-    const parts = [f.archetype, f.activity].filter(Boolean);
+    const parts = [f.archetype, featureLabel(f.feature), f.activity].filter(Boolean);
     if(detail) parts.push(detail);
     return parts.join(' · ');
   });
 }
 
+function fillTemplate(template, vars){
+  return String(template || '').replace(/\{(\w+)\}/g, (_, key)=> (vars[key] != null ? String(vars[key]) : ''));
+}
+
 function buildOriginPrompt(ch){
+  const tpl = BACKSTORY_PROMPT || {
+    intro: 'Write a short paragraph giving origin story for this fantasy character.',
+    labels: {
+      race: 'Race',
+      alignment: 'Alignment',
+      definingExperience: 'Defining experience',
+      reaction: 'How they reacted',
+      features: 'Features earned',
+      archetypes: 'Archetypes drawn from',
+      cantrips: 'Cantrips learned',
+    },
+    abilityNotes: {
+      highOrLow: 'Notable ability scores: {notables}.',
+      even: 'Scores are fairly even — no need to dwell on extremes.',
+      notablyHigh: '{name} is notably high ({score})',
+      notablyLow: '{name} is notably low ({score})',
+      strongest: '{name} stands out as strongest ({score})',
+      weakest: '{name} stands out as weakest ({score})',
+    },
+    outro: 'Make it atmospheric but focus more on a good story than long descriptions',
+  };
+  const labels = tpl.labels || {};
   const race = raceById(ch.raceId);
   const align = alignmentById(ch.alignment.alignmentId);
   const raceLabel = ch.subrace && ch.subrace.label
     ? `${ch.subrace.label} (${race.name})`
     : race.name;
   const lines = [
-    'Write a short paragraph giving origin story for this fantasy character.',
+    tpl.intro,
     '',
-    `Race: ${raceLabel}`,
-    `Alignment: ${align.name}`,
+    `${labels.race || 'Race'}: ${raceLabel}`,
+    `${labels.alignment || 'Alignment'}: ${align.name}`,
   ];
   const exp = ch.alignment && ch.alignment.definingExperience;
   if(exp && (exp.scenario || exp.label)){
-    lines.push(`Defining experience: ${exp.scenario || ''}`);
-    if(exp.label) lines.push(`How they reacted: ${exp.label}`);
+    lines.push(`${labels.definingExperience || 'Defining experience'}: ${exp.scenario || ''}`);
+    if(exp.label) lines.push(`${labels.reaction || 'How they reacted'}: ${exp.label}`);
   }
   if(ch.features && ch.features.length){
-    const feats = ch.features.map(f=>{
+    const feats = ch.features.flatMap(f=>{
       const skill = skillById(f.id);
       const detail = f.detail || (skill && skill.detail);
-      return detail ? `${f.feature} (${detail})` : f.feature;
+      const names = asFeatureList(f.feature);
+      return names.map((name, i)=> (detail && i === 0) ? `${name} (${detail})` : name);
     });
-    lines.push(`Features earned: ${feats.join('; ')}`);
+    lines.push(`${labels.features || 'Features earned'}: ${feats.join('; ')}`);
     const archLines = ch.features.map(f=>{
       const skill = skillById(f.id);
       const detail = f.detail || (skill && skill.detail);
-      const skillLabel = detail ? `${f.feature} (${detail})` : f.feature;
+      const skillLabel = featureLabel(f.feature) + (detail ? ` (${detail})` : '');
       return `${f.archetype} · ${skillLabel}${f.activity ? ` · ${f.activity}` : ''}`;
     });
-    lines.push(`Archetypes drawn from: ${archLines.join('; ')}`);
+    lines.push(`${labels.archetypes || 'Archetypes drawn from'}: ${archLines.join('; ')}`);
   }
-  lines.push(
-    '',
-    'Make it atmospheric but focus more on a good story than long descriptions',
-  );
+  if(ch.cantrips && ch.cantrips.length){
+    const cantripLine = ch.cantrips.map(c=>
+      c.archetype ? `${c.name} (${c.archetype})` : c.name
+    ).join('; ');
+    lines.push(`${labels.cantrips || 'Cantrips learned'}: ${cantripLine}`);
+  }
+  const scores = ch.abilityScores;
+  if(scores && ch.abilityScoresAssigned){
+    const notes = tpl.abilityNotes || {};
+    const notables = abilityScoreNotables(scores, notes);
+    if(notables.length){
+      lines.push(fillTemplate(notes.highOrLow || 'Call out anything particularly high or low: {notables}.', {
+        notables: notables.join('; '),
+      }));
+    } else if(notes.even){
+      lines.push(notes.even);
+    }
+  }
+  if(tpl.outro){
+    lines.push('', tpl.outro);
+  }
   return lines.join('\n');
+}
+
+function abilityScoreNotables(scores, noteTpl){
+  const tpl = noteTpl || {};
+  const entries = ABILITY_ORDER.map(ab=>({
+    ab,
+    name: ABILITY_FULL_NAME[ab],
+    score: Number(scores[ab]),
+  }));
+  const vals = entries.map(e=>e.score);
+  const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
+  const highCut = Math.max(15, Math.ceil(avg + 3));
+  const lowCut = Math.min(9, Math.floor(avg - 3));
+  const notes = [];
+  for(const e of entries){
+    if(e.score >= highCut){
+      notes.push(fillTemplate(tpl.notablyHigh || '{name} is notably high ({score})', e));
+    } else if(e.score <= lowCut){
+      notes.push(fillTemplate(tpl.notablyLow || '{name} is notably low ({score})', e));
+    }
+  }
+  if(!notes.length){
+    const max = Math.max(...vals);
+    const min = Math.min(...vals);
+    if(max - min >= 5){
+      for(const e of entries){
+        if(e.score === max) notes.push(fillTemplate(tpl.strongest || '{name} stands out as strongest ({score})', e));
+        if(e.score === min) notes.push(fillTemplate(tpl.weakest || '{name} stands out as weakest ({score})', e));
+      }
+    }
+  }
+  return notes;
 }
 
 function originStoryText(ch){
@@ -414,17 +770,25 @@ function renderSheet(){
   const race = raceById(ch.raceId);
   const align = alignmentById(ch.alignment.alignmentId);
   const archetypes = earnedArchetypes();
-  const abilities = ['STR','DEX','CON','INT','WIS','CHA'].map(ab=>`
-    <div class="ability-cell"><div class="ab">${ab}</div><div class="sc">10</div></div>
-  `).join('');
+  const scores = ensureAbilityScores(ch);
+  const abilities = ABILITY_ORDER.map(ab=>{
+    const score = scores[ab] ?? pointBuyStartingScore();
+    const mod = ch.abilityScoresAssigned ? formatAbilityMod(score) : '—';
+    return `
+    <div class="ability-cell">
+      <div class="ab">${ab}</div>
+      <div class="sc">${score}</div>
+      <div class="mod">${mod}</div>
+    </div>`;
+  }).join('');
   const features = ch.features.length
-    ? `<div class="feature-list">${ch.features.map(f=>{
+    ? `<div class="feature-list">${ch.features.flatMap(f=>{
         const skill = skillById(f.id);
         const detail = f.detail || (skill && skill.detail);
-        return `
+        return asFeatureList(f.feature).map((name, i)=>`
         <div class="feature-card">
-          <div class="name">${esc(f.feature)}${detail ? `: ${esc(detail)}` : ''}</div>
-        </div>`;
+          <div class="name">${esc(name)}${detail && i===0 ? `: ${esc(detail)}` : ''}</div>
+        </div>`);
       }).join('')}</div>`
     : `<p class="empty-note">No features yet. Spend time in the World to earn them.</p>`;
   const arch = archetypes.length
@@ -445,7 +809,11 @@ function renderSheet(){
     <div class="sheet-block">
       <div class="sheet-label">Abilities</div>
       <div class="ability-grid">${abilities}</div>
-      <p class="mechanic-note" style="margin-top:10px">Scores stay flat for now. Race and training will shape them later.</p>
+      <p class="mechanic-note" style="margin-top:10px">${
+        ch.abilityScoresAssigned
+          ? 'Bought to archetype minimums, leftover points spent at random, then racial bonuses.'
+          : 'Scores lock in after your second feature — archetype minimums first, then leftover points, then race.'
+      }</p>
     </div>
     ${ch.alignment.definingExperience?`
     <div class="sheet-block">
@@ -460,6 +828,16 @@ function renderSheet(){
     <div class="sheet-block">
       <div class="sheet-label">Archetypes drawn from</div>
       ${arch}
+    </div>
+    <div class="sheet-block">
+      <div class="sheet-label">Cantrips</div>
+      ${(ch.cantrips && ch.cantrips.length)
+        ? `<div class="feature-list">${ch.cantrips.map(c=>`
+            <div class="feature-card">
+              <div class="name">${esc(c.name)}</div>
+              <div class="from">${esc(c.archetype)}${c.description ? ` · ${esc(c.description)}` : ''}</div>
+            </div>`).join('')}</div>`
+        : `<p class="empty-note">Cantrips appear once an archetype grants them — half now, the rest with full spellcasting.</p>`}
     </div>
     <div class="sheet-block">
       <div class="sheet-label">Origin story</div>
@@ -539,7 +917,7 @@ function renderWorld(){
     const room = building.rooms.find(r=>r.name===ui.worldRoom);
     const acts = availableActivities(room, ch);
     crumb = `<div class="world-crumb"><button data-action="world-nav" data-view="areas">Areas</button> / <button data-action="world-nav" data-view="buildings">${ui.worldArea}</button> / <button data-action="world-nav" data-view="rooms">${ui.worldBuilding}</button> / ${ui.worldRoom}</div>`;
-    cards = acts.length
+    const actCards = acts.length
       ? acts.map(act=>{
           const owned = hasSkill(ch, act.id);
           const working = job && job.kind==='activity' && job.skillId===act.id;
@@ -551,11 +929,24 @@ function renderWorld(){
                     data-fills="${timing.fills}" data-fill-ms-sec="${timing.fillMsSec}"
                     ${owned || (job && !working) || ch.featurePoints<=0 && !working ? 'disabled':''}>
               <span class="wc-title">${act.activity}</span>
-              <span class="wc-sub">Earns <strong>${act.feature}</strong> · ${act.archetype} · 1 point · ${formatDuration(timing)}${act.description ? `<br>${esc(act.description)}` : ''}</span>
+              <span class="wc-sub">Earns <strong>${esc(featureLabel(act.feature))}</strong> · ${act.archetype} · 1 point · ${formatDuration(timing)}${act.description ? `<br>${esc(act.description)}` : ''}</span>
               <span class="wc-status">${owned?'Earned':working?'Participating…':ch.featurePoints<=0?'No points left':`${formatDuration(timing)} to complete`}</span>
             </button>`;
         }).join('')
-      : `<p class="empty-note">Nothing open here yet. Earn a prerequisite feature elsewhere first.</p>`;
+      : '';
+    const cantripCards = openCantripSlots(ch)
+      .filter(slot=>isCurrentCantripRoom(ui, slot.archetype))
+      .map(slot=>`
+        <button class="world-card"
+                data-action="world-select-cantrip"
+                data-archetype="${esc(slot.archetype)}"
+                ${job ? 'disabled':''}>
+          <span class="wc-title">Learn a ${esc(slot.archetype)} cantrip</span>
+          <span class="wc-sub">${slot.owned} of ${slot.allowance} known · ${slot.remaining} open</span>
+          <span class="wc-status">${hasFullSpellcasting(ch, slot.archetype) ? 'Full spellcasting allotment' : 'First half of cantrips'}</span>
+        </button>`).join('');
+    cards = actCards + cantripCards
+      || `<p class="empty-note">Nothing open here yet. Earn a prerequisite feature elsewhere first.</p>`;
   }
 
   const unlock = unlockTiming();
@@ -620,7 +1011,7 @@ function completeJob(){
       ch.featurePoints -= 1;
       ch.features.push({
         id: skill.id,
-        feature: skill.feature,
+        feature: asFeatureList(skill.feature),
         archetype: skill.archetype,
         detail: job.detail || skill.detail || null,
         description: skill.description || null,
@@ -629,7 +1020,25 @@ function completeJob(){
         room: skill.room || job.room,
         activity: skill.activity || job.activity,
       });
-      showToast(job.detail ? `Learned ${skill.feature}: ${job.detail}.` : `Learned ${skill.feature}.`);
+      const label = featureLabel(skill.feature);
+      const learned = job.detail ? `Learned ${label}: ${job.detail}.` : `Learned ${label}.`;
+      let msg = learned;
+      if(ch.features.length >= 2 && assignAbilityScores(ch)){
+        msg += ' Ability scores set.';
+      }
+      showToast(msg);
+      const arch = skill.archetype;
+      if(arch && cantripsRemaining(ch, arch) > 0){
+        const loc = cantripRoomForArchetype(arch);
+        if(loc){
+          state.ui.worldArea = loc.area;
+          state.ui.worldBuilding = loc.building;
+          state.ui.worldRoom = loc.room;
+          state.ui.worldView = 'activities';
+        }
+        // Defer picker until after this completeJob finishes its render
+        setTimeout(()=> openCantripPicker(arch), 0);
+      }
     }
   }
   ch.activeJob = null;
@@ -729,6 +1138,40 @@ function onAction(e){
     ui.pendingChoice = null;
     startJob(job);
   }
+  else if(action==='confirm-cantrip'){
+    const pending = ui.pendingChoice;
+    if(!pending || pending.type !== 'cantrip') return;
+    const cantrip = cantripById(e.currentTarget.dataset.cantripId);
+    if(!cantrip || cantrip.archetype !== pending.archetype){
+      showToast('Invalid cantrip.');
+      return;
+    }
+    if(ownedCantrips(ch, pending.archetype).some(c=>String(c.id)===String(cantrip.id))){
+      showToast('Already known.');
+      return;
+    }
+    if(cantripsRemaining(ch, pending.archetype) <= 0){
+      showToast('No cantrip slots left.');
+      ui.pendingChoice = null;
+      render();
+      return;
+    }
+    if(!ch.cantrips) ch.cantrips = [];
+    ch.cantrips.push({
+      id: cantrip.id,
+      name: cantrip.name,
+      archetype: cantrip.archetype,
+      description: cantrip.description || '',
+    });
+    persistCharacter();
+    showToast(`Learned ${cantrip.name}.`);
+    if(cantripsRemaining(ch, pending.archetype) > 0){
+      openCantripPicker(pending.archetype);
+    } else {
+      ui.pendingChoice = null;
+      render();
+    }
+  }
   else if(action==='world-nav'){
     const view = e.currentTarget.dataset.view;
     ui.worldView = view;
@@ -816,6 +1259,13 @@ function onAction(e){
     }
     startJob(job);
   }
+  else if(action==='world-select-cantrip'){
+    if(ch.activeJob){
+      showToast('Already at work.');
+      return;
+    }
+    openCantripPicker(e.currentTarget.dataset.archetype);
+  }
   else if(action==='restart-init'){
     localStorage.removeItem(STORAGE_KEY);
     window.location.href = '/character-initialization.html';
@@ -847,14 +1297,19 @@ async function boot(){
     if(!state.character.unlocked) state.character.unlocked = { areas:{}, buildings:{}, rooms:{} };
     if(!('activeJob' in state.character)) state.character.activeJob = null;
     if(!('originStory' in state.character)) state.character.originStory = null;
+    if(!('abilityScoresAssigned' in state.character)) state.character.abilityScoresAssigned = false;
+    if(!state.character.cantrips) state.character.cantrips = [];
 
-    const [skills, tracks, races, alignments, timing, favoredEnemy] = await Promise.all([
+    const [skills, tracks, races, alignments, timing, favoredEnemy, abilityMods, backstoryPrompt, cantripData] = await Promise.all([
       loadJson('/data/skills.json'),
       loadJson('/data/tracks.json'),
       loadJson('/data/races.json'),
       loadJson('/data/alignments.json'),
       loadJson('/data/training-timing.json'),
       loadJson('/data/favored-enemy.json'),
+      loadJson('/data/ability-modifiers.json'),
+      loadJson('/data/backstory-prompt.json'),
+      loadJson('/data/cantrips.json'),
     ]);
     FEATURES = skills;
     TRACKS = tracks;
@@ -862,18 +1317,37 @@ async function boot(){
     ALIGNMENTS = alignments;
     TIMING = timing;
     FAVORED_ENEMY = favoredEnemy;
-    // Backfill skill ids on older earned features / jobs
+    ABILITY_MODS = abilityMods;
+    BACKSTORY_PROMPT = backstoryPrompt;
+    if(Array.isArray(cantripData)){
+      CANTRIPS = cantripData;
+      CANTRIP_KNOWN = {};
+    } else {
+      CANTRIPS = cantripData.cantrips || [];
+      CANTRIP_KNOWN = cantripData.known || {};
+    }
+    // Unassigned scores use point-buy base (not 10).
+    if(!state.character.abilityScoresAssigned){
+      state.character.abilityScores = baseAbilityScores();
+    } else if(!state.character.abilityScores){
+      state.character.abilityScores = baseAbilityScores();
+    }
+    // Backfill skill ids / normalize feature arrays on older earned features / jobs
     state.character.features = state.character.features.map(f=>{
-      if(f.id) return f;
-      const match = FEATURES.find(s=>s.feature===f.feature && s.activity===f.activity);
-      return match ? { ...f, id: match.id } : f;
+      let next = f;
+      if(!f.id){
+        const match = FEATURES.find(s=>s.activity===f.activity && featureLabel(s.feature)===featureLabel(f.feature));
+        if(match) next = { ...next, id: match.id };
+      }
+      return { ...next, feature: asFeatureList(next.feature) };
     });
     if(state.character.activeJob && state.character.activeJob.kind==='activity' && !state.character.activeJob.skillId){
       const job = state.character.activeJob;
-      const match = FEATURES.find(s=>s.feature===job.feature && s.activity===job.activity);
+      const match = FEATURES.find(s=>s.activity===job.activity && featureLabel(s.feature)===featureLabel(job.feature));
       if(match) job.skillId = match.id;
       else state.character.activeJob = null;
     }
+    if(assignAbilityScores(state.character)) persistCharacter();
     rebuildWorld();
     render();
   } catch (err) {

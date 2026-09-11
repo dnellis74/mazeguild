@@ -590,6 +590,12 @@
     font-weight:600;
     font-size:16px;
   }
+  .feature-card .from{
+    margin-top:4px;
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.45;
+  }
   .archetype-summary .from{
     margin-top:0;
     font-size:13px;
@@ -624,6 +630,12 @@
     font-weight:600;
     font-size:20px;
     margin-top:2px;
+  }
+  .ability-cell .mod{
+    margin-top:2px;
+    font-size:12px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
   }
 
   .world-crumb{
