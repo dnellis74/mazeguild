@@ -12,6 +12,24 @@ export function sortPatrons(patrons: SrdCharacter[]): SrdCharacter[] {
   );
 }
 
+/** Seat a training recruit in the tavern and mark them hired. */
+export function mergeRecruit(
+  patrons: SrdCharacter[],
+  recruit: SrdCharacter,
+  tavernCap: number,
+): { patrons: SrdCharacter[]; selected: string[] } {
+  const nextRecruit = {
+    ...recruit,
+    name: recruit.name?.trim() || "PLAYER",
+  };
+  const label = characterLabel(nextRecruit);
+  const others = patrons.filter((p) => characterLabel(p) !== label);
+  return {
+    patrons: sortPatrons([nextRecruit, ...others].slice(0, tavernCap)),
+    selected: [label],
+  };
+}
+
 function hashSeed(text: string): number {
   let h = 2166136261;
   for (let i = 0; i < text.length; i++) {

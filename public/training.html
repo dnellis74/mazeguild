@@ -19,6 +19,7 @@
  * Character is still persisted in localStorage until a real store exists.
  */
 const STORAGE_KEY = 'mazeguild.character';
+const RECRUIT_KEY = 'mazeguild.tavernRecruit';
 const app = document.getElementById('app');
 
 const state = {
@@ -307,7 +308,16 @@ function render(){
       : v.job;
     body = renderWorld(v.world, v.unlockNote, liveJob);
   }
-  else body = `<div class="quest-stub"><h2>Quest</h2><p class="lede" style="margin:0 auto">${esc(v.quest?.message||'')}</p></div>`;
+  else {
+    const cta = v.quest?.cta;
+    body = `<div class="quest-stub">
+      <h2>Quest</h2>
+      <p class="lede" style="margin:0 auto">${esc(v.quest?.message||'')}</p>
+      ${cta ? `<p class="origin-actions" style="margin-top:24px;justify-content:center">
+        <button type="button" class="primary" data-action="${esc(cta.action)}">${esc(cta.label)}</button>
+      </p>` : ''}
+    </div>`;
+  }
 
   app.innerHTML = `
   <div class="hub">
@@ -349,6 +359,20 @@ function actionFromEl(el){
   return null;
 }
 
+async function enterTavern(){
+  const res = await fetch('/api/training/export', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ character: state.character }),
+  });
+  const data = await res.json();
+  if(!res.ok || !data.character){
+    throw new Error(data.error || 'Could not prepare character for the tavern');
+  }
+  sessionStorage.setItem(RECRUIT_KEY, JSON.stringify(data.character));
+  window.location.href = '/?recruit=1';
+}
+
 function bindEvents(){
   app.querySelectorAll('[data-action]').forEach(el=>{
     el.addEventListener('click', async (e)=>{
@@ -356,6 +380,15 @@ function bindEvents(){
       if(actionName === 'restart-init'){
         localStorage.removeItem(STORAGE_KEY);
         window.location.href = '/character-initialization.html';
+        return;
+      }
+      if(actionName === 'enter-tavern'){
+        try {
+          await enterTavern();
+        } catch (err) {
+          console.error(err);
+          showToast(String(err.message || err));
+        }
         return;
       }
       const action = actionFromEl(e.currentTarget);

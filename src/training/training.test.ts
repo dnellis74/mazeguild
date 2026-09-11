@@ -3,6 +3,7 @@ import { getCatalog } from "@/training/catalog";
 import { migrateCharacter, defaultTrainingUi } from "@/training/character";
 import { applyTrainingAction } from "@/training/actions";
 import { buildTrainingView } from "@/training/view";
+import { trainingToSrd } from "@/training/toSrd";
 
 describe("training API domain", () => {
   it("builds a sheet view for a minimal character", () => {
@@ -46,5 +47,49 @@ describe("training API domain", () => {
     result = applyTrainingAction(catalog, character, result.ui, { type: "complete-job" });
     expect(result.character.unlocked.areas["The Wilds"]).toBe(true);
     expect(result.ui.worldView).toBe("buildings");
+  });
+
+  it("exports a trained character to an SRD blob", () => {
+    const catalog = getCatalog();
+    const character = migrateCharacter(catalog, {
+      raceId: "human",
+      alignment: { alignmentId: "lg" },
+      features: [
+        {
+          skillId: "fighter-fighting-style",
+          archetype: "Fighter",
+          feature: "Defense",
+          area: "Town",
+          building: "Drill Yard",
+          room: "Yard",
+        },
+      ],
+      abilityScores: {
+        STR: 15,
+        DEX: 14,
+        CON: 13,
+        INT: 10,
+        WIS: 12,
+        CHA: 8,
+      },
+      abilityScoresAssigned: true,
+    });
+    const srd = trainingToSrd(catalog, character);
+    expect(srd.class).toBe("Fighter");
+    expect(srd.race).toBe("Human");
+    expect(srd.name).toBe("PLAYER");
+    expect(srd.hit_points.value).toBeGreaterThan(0);
+    expect(srd.ability_scores.STR.score).toBe(15);
+  });
+
+  it("exposes an enter-tavern CTA on the quest tab", () => {
+    const catalog = getCatalog();
+    const character = migrateCharacter(catalog, {
+      raceId: "human",
+      alignment: { alignmentId: "lg" },
+    });
+    const ui = { ...defaultTrainingUi(), hubTab: "quest" as const };
+    const view = buildTrainingView(catalog, character, ui);
+    expect(view.quest?.cta?.action).toBe("enter-tavern");
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyTavernReturn,
   characterLabel,
+  mergeRecruit,
   sortPatrons,
 } from "./tavern";
 import type { PartySnapshot, SrdCharacter } from "@/sim/types";
@@ -67,5 +68,21 @@ describe("applyTavernReturn", () => {
     expect(next[0]?.meta?.level).toBe(2);
     expect(next[0]?.hit_points.value).toBeGreaterThan(12);
     expect(next[1]).toEqual(patrons[1]);
+  });
+});
+
+describe("mergeRecruit", () => {
+  it("pre-hires the recruit as PLAYER", () => {
+    const recruit: SrdCharacter = {
+      ...base,
+      name: "PLAYER",
+      class: "Wizard",
+      race: "Elf",
+    };
+    const patrons = [base, { ...base, name: "Bryn" }];
+    const merged = mergeRecruit(patrons, recruit, 12);
+    expect(merged.selected).toEqual(["PLAYER"]);
+    expect(merged.patrons.map(characterLabel)).toContain("PLAYER");
+    expect(merged.patrons).toHaveLength(3);
   });
 });

@@ -40,7 +40,7 @@ export type TrainingView = {
   tab: TrainingUi["hubTab"];
   sheet: SheetView | null;
   world: WorldView | null;
-  quest: { message: string } | null;
+  quest: { message: string; cta?: { action: string; label: string } } | null;
   job: JobView | null;
   unlockNote: string;
 };
@@ -415,7 +415,11 @@ export function buildTrainingView(
     world: ui.hubTab === "world" ? buildWorldView(catalog, ch, ui) : null,
     quest:
       ui.hubTab === "quest"
-        ? { message: "Not open yet. The sheet and the world come first." }
+        ? {
+            message:
+              "The tavern door is open. Bring your record downstairs — you'll already be hired, then pick three more companions for the maze.",
+            cta: { action: "enter-tavern", label: "Enter the tavern" },
+          }
         : null,
     job,
     unlockNote,
