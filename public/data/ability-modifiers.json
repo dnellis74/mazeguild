@@ -1,0 +1,104 @@
+{
+    "pointBuy": {
+        "startingScore": 8,
+        "points": 30,
+        "costs": {
+            "8": 0,
+            "9": 1,
+            "10": 2,
+            "11": 3,
+            "12": 4,
+            "13": 5,
+            "14": 7,
+            "15": 9
+        },
+        "maximumBeforeRacialBonuses": 15
+    },
+    "racialBonuses": {
+        "Dwarf": {
+            "Constitution": 2
+        },
+        "Elf": {
+            "Dexterity": 2
+        },
+        "Halfling": {
+            "Dexterity": 2
+        },
+        "Human": {
+            "Strength": 1,
+            "Dexterity": 1,
+            "Constitution": 1,
+            "Intelligence": 1,
+            "Wisdom": 1,
+            "Charisma": 1
+        },
+        "Dragonborn": {
+            "Strength": 2,
+            "Charisma": 1
+        },
+        "Gnome": {
+            "Intelligence": 2
+        },
+        "Half-Elf": {
+            "Charisma": 2,
+            "Dexterity": 1,
+            "Wisdom": 1
+        },
+        "Half-Orc": {
+            "Strength": 2,
+            "Constitution": 1
+        },
+        "Tiefling": {
+            "Charisma": 2,
+            "Intelligence": 1
+        }
+    },
+    "archetypeMinimums": {
+        "Barbarian": {
+            "Strength": 13
+        },
+        "Bard": {
+            "Charisma": 13
+        },
+        "Cleric": {
+            "Wisdom": 13
+        },
+        "Druid": {
+            "Wisdom": 13
+        },
+        "Fighter": {
+            "any": [
+                {
+                    "Strength": 13
+                },
+                {
+                    "Dexterity": 13
+                }
+            ]
+        },
+        "Monk": {
+            "Dexterity": 13,
+            "Wisdom": 13
+        },
+        "Paladin": {
+            "Strength": 13,
+            "Charisma": 13
+        },
+        "Ranger": {
+            "Dexterity": 13,
+            "Wisdom": 13
+        },
+        "Rogue": {
+            "Dexterity": 13
+        },
+        "Sorcerer": {
+            "Charisma": 13
+        },
+        "Warlock": {
+            "Charisma": 13
+        },
+        "Wizard": {
+            "Intelligence": 13
+        }
+    }
+}

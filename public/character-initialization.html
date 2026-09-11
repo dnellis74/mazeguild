@@ -49,13 +49,21 @@ let RACE_ALIGNMENT_EXTRAS = {};
 let RACE_QUESTION_SKIPS = {};
 let RACE_AXIS_BIAS = {};
 
+function alignmentRaceKey(raceId){
+  if(raceId === 'half-elf') return 'halfelf';
+  if(raceId === 'half-orc') return 'halforc';
+  return raceId;
+}
+
 function alignmentQuestionsFor(raceId){
-  const skips = RACE_QUESTION_SKIPS[raceId] || [];
-  const overrides = RACE_QUESTION_OVERRIDES[raceId] || {};
-  const base = ALIGNMENT_QUESTIONS
+  const key = alignmentRaceKey(raceId);
+  const skips = RACE_QUESTION_SKIPS[key] || RACE_QUESTION_SKIPS[raceId] || [];
+  const overrides = RACE_QUESTION_OVERRIDES[key] || RACE_QUESTION_OVERRIDES[raceId] || {};
+  const extras = RACE_ALIGNMENT_EXTRAS[key] || RACE_ALIGNMENT_EXTRAS[raceId] || [];
+  const base = (Array.isArray(ALIGNMENT_QUESTIONS) ? ALIGNMENT_QUESTIONS : [])
     .filter(q=> !skips.includes(q.id))
     .map(q=> overrides[q.id] ? { ...q, ...overrides[q.id] } : q);
-  return base.concat(RACE_ALIGNMENT_EXTRAS[raceId] || []);
+  return base.concat(extras);
 }
 
 
@@ -641,6 +649,7 @@ function onAction(e){
       ...structuredClone(ch),
       featurePoints: 2,
       features: [],
+      originStory: null,
       unlocked: { areas:{}, buildings:{}, rooms:{} },
       activeJob: null,
     };
@@ -665,7 +674,7 @@ async function boot(){
     RACES = races;
     RACE_QUESTIONS = raceQuestions;
     ALIGNMENTS = alignments;
-    ALIGNMENT_QUESTIONS = alignmentQuestions;
+    ALIGNMENT_QUESTIONS = Array.isArray(alignmentQuestions) ? alignmentQuestions : [];
     RACE_ALIGNMENT_EXTRAS = raceAlignment.extras || {};
     RACE_QUESTION_OVERRIDES = raceAlignment.overrides || {};
     RACE_QUESTION_SKIPS = raceAlignment.skips || {};

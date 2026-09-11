@@ -50,7 +50,7 @@
   {
     "id": "f_05k2v7",
     "archetype": "Cleric",
-    "feature": "Spellcasting",
+    "feature": "Divine Spellcasting",
     "prerequisite": null,
     "area": "Walled City",
     "building": "Cathedral",
@@ -87,7 +87,7 @@
   {
     "id": "f_08t1x5",
     "archetype": "Druid",
-    "feature": "Spellcasting",
+    "feature": "Primal Spellcasting",
     "prerequisite": "f_07n4r6",
     "area": "The Wilds",
     "building": "Pagan Temple",
@@ -297,7 +297,7 @@
   {
     "id": "f_20k4n7",
     "archetype": "Sorcerer",
-    "feature": "Spellcasting",
+    "feature": "Innate Spellcasting",
     "prerequisite": "f_21m6q3",
     "area": "Walled City",
     "building": "Library",
@@ -347,7 +347,7 @@
   {
     "id": "f_24q7n4",
     "archetype": "Wizard",
-    "feature": "Spellcasting",
+    "feature": "Arcane Spellcasting",
     "prerequisite": null,
     "area": "Walled City",
     "building": "Library",

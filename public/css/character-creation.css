@@ -504,6 +504,45 @@
     border-bottom:1px solid var(--rule);
   }
   .sheet-block:last-child{ border-bottom:none; margin-bottom:0; }
+  .origin-story{
+    width:100%;
+    min-height:10rem;
+    padding:12px 14px;
+    background:var(--paper-dim);
+    border:1px solid var(--rule);
+    border-radius:5px;
+    font-family:var(--font-body, 'IBM Plex Sans', sans-serif);
+    font-size:14px;
+    line-height:1.5;
+    color:var(--ink);
+    resize:vertical;
+  }
+  .origin-story:focus{
+    outline:2px solid var(--seal);
+    outline-offset:1px;
+  }
+  .origin-actions{
+    margin-top:12px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+  }
+  .origin-actions button{
+    padding:10px 16px;
+    border:1px solid var(--rule);
+    border-radius:5px;
+    background:transparent;
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+  .origin-actions button:hover{ color:var(--ink); border-color:var(--ink-soft); }
+  .origin-actions button.primary{
+    background:var(--seal);
+    border-color:var(--seal);
+    color:#fff;
+  }
+  .origin-actions button.primary:hover{ background:var(--seal-dark); border-color:var(--seal-dark); }
   .sheet-label{
     font-size:11px;
     letter-spacing:.14em;

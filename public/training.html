@@ -177,6 +177,7 @@ const state = {
     worldBuilding:null,
     worldRoom:null,
     pendingChoice:null,
+    originDraft:null,
   },
   character:null,
 };
@@ -282,6 +283,51 @@ function archetypeSourceLines(){
     if(detail) parts.push(detail);
     return parts.join(' · ');
   });
+}
+
+function buildOriginPrompt(ch){
+  const race = raceById(ch.raceId);
+  const align = alignmentById(ch.alignment.alignmentId);
+  const raceLabel = ch.subrace && ch.subrace.label
+    ? `${ch.subrace.label} (${race.name})`
+    : race.name;
+  const lines = [
+    'Write a short paragraph giving origin story for this fantasy character.',
+    '',
+    `Race: ${raceLabel}`,
+    `Alignment: ${align.name}`,
+  ];
+  const exp = ch.alignment && ch.alignment.definingExperience;
+  if(exp && (exp.scenario || exp.label)){
+    lines.push(`Defining experience: ${exp.scenario || ''}`);
+    if(exp.label) lines.push(`How they reacted: ${exp.label}`);
+  }
+  if(ch.features && ch.features.length){
+    const feats = ch.features.map(f=>{
+      const skill = skillById(f.id);
+      const detail = f.detail || (skill && skill.detail);
+      return detail ? `${f.feature} (${detail})` : f.feature;
+    });
+    lines.push(`Features earned: ${feats.join('; ')}`);
+    const archLines = ch.features.map(f=>{
+      const skill = skillById(f.id);
+      const detail = f.detail || (skill && skill.detail);
+      const skillLabel = detail ? `${f.feature} (${detail})` : f.feature;
+      return `${f.archetype} · ${skillLabel}${f.activity ? ` · ${f.activity}` : ''}`;
+    });
+    lines.push(`Archetypes drawn from: ${archLines.join('; ')}`);
+  }
+  lines.push(
+    '',
+    'Make it atmospheric but focus more on a good story than long descriptions',
+  );
+  return lines.join('\n');
+}
+
+function originStoryText(ch){
+  if(state.ui.originDraft != null) return state.ui.originDraft;
+  if(ch.originStory != null && ch.originStory !== '') return ch.originStory;
+  return buildOriginPrompt(ch);
 }
 
 function jobProgress(job){
@@ -404,7 +450,8 @@ function renderSheet(){
     ${ch.alignment.definingExperience?`
     <div class="sheet-block">
       <div class="sheet-label">Defining experience</div>
-      <div class="sheet-sub">${ch.alignment.definingExperience.label}</div>
+      <div class="sheet-value">${esc(ch.alignment.definingExperience.scenario || '')}</div>
+      <div class="sheet-sub">${esc(ch.alignment.definingExperience.label || '')}</div>
     </div>`:''}
     <div class="sheet-block">
       <div class="sheet-label">Features</div>
@@ -413,6 +460,15 @@ function renderSheet(){
     <div class="sheet-block">
       <div class="sheet-label">Archetypes drawn from</div>
       ${arch}
+    </div>
+    <div class="sheet-block">
+      <div class="sheet-label">Origin story</div>
+      <p class="mechanic-note" style="margin-top:0;margin-bottom:10px">Paste the prompt into an AI for three sentences, write your own, or leave it. Save when you're happy.</p>
+      <textarea class="origin-story" id="origin-story" rows="8" spellcheck="true">${esc(originStoryText(ch))}</textarea>
+      <div class="origin-actions">
+        <button type="button" class="primary" data-action="save-origin-story">Save</button>
+        <button type="button" data-action="reset-origin-prompt">Reset to prompt</button>
+      </div>
     </div>`;
 }
 
@@ -611,6 +667,12 @@ function bindEvents(){
   app.querySelectorAll('[data-action]').forEach(el=>{
     el.addEventListener('click', onAction);
   });
+  const origin = document.getElementById('origin-story');
+  if(origin){
+    origin.addEventListener('input', ()=>{
+      state.ui.originDraft = origin.value;
+    });
+  }
 }
 
 
@@ -634,6 +696,22 @@ function onAction(e){
     if(ui.pendingChoice) return;
     ui.hubTab = e.currentTarget.dataset.tab;
     render();
+  }
+  else if(action==='save-origin-story'){
+    const el = document.getElementById('origin-story');
+    const text = el ? el.value : (ui.originDraft || '');
+    ch.originStory = text;
+    ui.originDraft = text;
+    persistCharacter();
+    showToast('Origin story saved.');
+  }
+  else if(action==='reset-origin-prompt'){
+    const prompt = buildOriginPrompt(ch);
+    ui.originDraft = prompt;
+    const el = document.getElementById('origin-story');
+    if(el) el.value = prompt;
+    else render();
+    showToast('Prompt refreshed.');
   }
   else if(action==='cancel-choice'){
     ui.pendingChoice = null;
@@ -768,6 +846,7 @@ async function boot(){
     if(!state.character.features) state.character.features = [];
     if(!state.character.unlocked) state.character.unlocked = { areas:{}, buildings:{}, rooms:{} };
     if(!('activeJob' in state.character)) state.character.activeJob = null;
+    if(!('originStory' in state.character)) state.character.originStory = null;
 
     const [skills, tracks, races, alignments, timing, favoredEnemy] = await Promise.all([
       loadJson('/data/skills.json'),
