@@ -30,7 +30,7 @@ export default function TrainingLayout({
 }) {
   return (
     <div
-      className={`${display.variable} ${body.variable} ${crt.variable} training-page h-dvh overflow-hidden`}
+      className={`${display.variable} ${body.variable} ${crt.variable} training-page`}
     >
       {/* Character-creation theme for Sheet / World; Quest uses GameClient CRT styles. */}
       {/* eslint-disable-next-line @next/next/no-css-tags */}
