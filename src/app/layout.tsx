@@ -28,10 +28,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-dvh overflow-hidden">
-      <body className="h-dvh overflow-hidden bg-black text-amber-300 antialiased">
-        {children}
-      </body>
+    <html lang="en" className="h-dvh">
+      <body className="h-dvh antialiased">{children}</body>
     </html>
   );
 }

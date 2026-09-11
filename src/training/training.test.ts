@@ -90,6 +90,6 @@ describe("training API domain", () => {
     });
     const ui = { ...defaultTrainingUi(), hubTab: "quest" as const };
     const view = buildTrainingView(catalog, character, ui);
-    expect(view.quest?.cta?.action).toBe("enter-tavern");
+    expect(view.quest?.message).toMatch(/tavern/i);
   });
 });

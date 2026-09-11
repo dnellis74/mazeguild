@@ -15,8 +15,8 @@ renders view DTOs and posts actions.
 Character state is still owned by the browser (`localStorage`) and sent on every
 request. Later this can become a DB-backed character id without changing the UI.
 
-Quest → tavern: export stores the SRD blob in `sessionStorage` (`mazeguild.tavernRecruit`),
-then opens `/`. `GameClient` merges that recruit into the tavern roster and pre-selects them.
+Quest → tavern: the Quest tab on `/training` exports the character as PLAYER and
+embeds the adventuring UI (`GameClient`) with them already hired.
 
 ## Layout
 

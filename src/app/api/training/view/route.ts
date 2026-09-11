@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const character = migrateCharacter(catalog, rawCharacter);
     const err = validateCharacter(character);
     if (err) {
-      return Response.json({ error: err, redirect: "/character-initialization.html" }, { status: 400 });
+      return Response.json({ error: err, redirect: "/" }, { status: 400 });
     }
     const ui: TrainingUi = { ...defaultTrainingUi(), ...(rawUi || {}) };
     const view = buildTrainingView(catalog, character, ui);

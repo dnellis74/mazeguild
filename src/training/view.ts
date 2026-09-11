@@ -417,8 +417,7 @@ export function buildTrainingView(
       ui.hubTab === "quest"
         ? {
             message:
-              "The tavern door is open. Bring your record downstairs — you'll already be hired, then pick three more companions for the maze.",
-            cta: { action: "enter-tavern", label: "Enter the tavern" },
+              "The tavern and the maze live here. PLAYER joins already hired once you've earned a feature.",
           }
         : null,
     job,

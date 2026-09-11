@@ -1,15 +1,11 @@
-import { Share_Tech_Mono } from "next/font/google";
-import { GameClient } from "@/components/wizardry/GameClient";
+import type { Metadata } from "next";
 
-const crt = Share_Tech_Mono({
-  weight: "400",
-  subsets: ["latin"],
-});
+export const metadata: Metadata = {
+  title: "guildmaze",
+  description: "Create your character, train, then enter the maze.",
+};
 
-export default function Home() {
-  return (
-    <div className={`${crt.className} h-dvh overflow-hidden`}>
-      <GameClient />
-    </div>
-  );
+/** Unreachable when middleware rewrites `/` to character-initialization.html. */
+export default function HomePage() {
+  return null;
 }

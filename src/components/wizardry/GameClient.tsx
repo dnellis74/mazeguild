@@ -51,7 +51,11 @@ function takeRecruit(): SrdCharacter | null {
   return recruitCache;
 }
 
-export function GameClient() {
+export function GameClient({
+  initialRecruit = null,
+}: {
+  initialRecruit?: SrdCharacter | null;
+}) {
   const [seed, setSeed] = useState(99);
   const [patrons, setPatrons] = useState<SrdCharacter[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -66,14 +70,20 @@ export function GameClient() {
   const [inspecting, setInspecting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [campaignStarted, setCampaignStarted] = useState(false);
-  // Must load after mount — useState(init) runs on SSR as null and never re-reads.
-  const [pendingRecruit, setPendingRecruit] = useState<SrdCharacter | null>(null);
-  const [recruitReady, setRecruitReady] = useState(false);
+  const [pendingRecruit, setPendingRecruit] = useState<SrdCharacter | null>(
+    initialRecruit,
+  );
+  const [recruitReady, setRecruitReady] = useState(initialRecruit !== null);
 
   useEffect(() => {
+    if (initialRecruit) {
+      setPendingRecruit(initialRecruit);
+      setRecruitReady(true);
+      return;
+    }
     setPendingRecruit(takeRecruit());
     setRecruitReady(true);
-  }, []);
+  }, [initialRecruit]);
 
   useEffect(() => {
     if (!recruitReady || campaignStarted) return;
@@ -267,7 +277,7 @@ export function GameClient() {
     (sheetDisabled || selected.length >= PARTY_SIZE);
 
   return (
-    <div className="crt flex h-dvh max-h-dvh flex-col overflow-hidden px-[max(1rem,var(--safe-left))] pt-[max(0.5rem,var(--safe-top))] pr-[max(1rem,var(--safe-right))] text-amber-300">
+    <div className="crt flex h-full min-h-0 max-h-full flex-col overflow-hidden bg-[#050301] px-[max(1rem,var(--safe-left))] pt-[max(0.5rem,var(--safe-top))] pr-[max(1rem,var(--safe-right))] text-amber-300">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-800/70 pb-2 select-none">
         <div className="min-w-0">
           <p className="hidden font-mono text-[10px] tracking-[0.28em] text-amber-600 lg:block">
