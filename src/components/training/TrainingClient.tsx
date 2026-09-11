@@ -1,8 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { GameClient } from "@/components/wizardry/GameClient";
+import { QuestClient } from "@/components/training/QuestClient";
+import {
+  clearCharacter,
+  loadCharacter,
+  saveCharacter,
+} from "@/lib/characterStorage";
+import { jobProgress } from "@/training/view";
 import type {
   JobView,
   SheetView,
@@ -10,9 +16,6 @@ import type {
   WorldView,
 } from "@/training/view";
 import type { Character, TrainingAction, TrainingUi } from "@/training/types";
-import type { SrdCharacter } from "@/sim/types";
-
-const STORAGE_KEY = "mazeguild.character";
 
 const defaultUi = (): TrainingUi => ({
   hubTab: "sheet",
@@ -24,48 +27,6 @@ const defaultUi = (): TrainingUi => ({
   originDraft: null,
 });
 
-function localJobProgress(job: Character["activeJob"]): JobView | null {
-  if (!job) return null;
-  const durationMs = job.durationMs;
-  const fills = job.fills;
-  const elapsed = Date.now() - job.startedAt;
-  const pct = Math.min(1, elapsed / durationMs);
-  const exact = pct * fills;
-  const filled = Math.floor(exact);
-  const partial = filled >= fills ? 0 : Math.min(1, exact - filled);
-  const title =
-    job.kind === "activity"
-      ? job.detail
-        ? `${job.activity} · ${job.detail}`
-        : job.activity || ""
-      : job.kind === "room"
-        ? job.room || ""
-        : job.kind === "building"
-          ? job.building || ""
-          : job.area || "";
-  const label =
-    job.kind === "activity"
-      ? "Participating"
-      : job.kind === "room"
-        ? "Exploring room"
-        : job.kind === "building"
-          ? "Surveying building"
-          : "Scouting area";
-  const tick = Number.isInteger(job.fillMsSec)
-    ? String(job.fillMsSec)
-    : String(Math.round(job.fillMsSec * 10) / 10);
-  return {
-    label,
-    title,
-    fills,
-    filled: Math.min(fills, filled),
-    partial,
-    remainingSec: Math.ceil(Math.max(0, durationMs - elapsed) / 1000),
-    fillNote: `${fills} fills of ${tick}s`,
-    done: elapsed >= durationMs,
-  };
-}
-
 export function TrainingClient() {
   const router = useRouter();
   const [character, setCharacter] = useState<Character | null>(null);
@@ -76,7 +37,7 @@ export function TrainingClient() {
   const [originDraft, setOriginDraft] = useState("");
 
   const persist = useCallback((ch: Character) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ch));
+    saveCharacter(ch);
   }, []);
 
   const showToast = useCallback((msg: string) => {
@@ -94,7 +55,7 @@ export function TrainingClient() {
       const data = await res.json();
       if (!res.ok) {
         if (data.redirect) {
-          router.replace(data.redirect === "/character-initialization.html" ? "/" : data.redirect);
+          router.replace(data.redirect);
           return null;
         }
         throw new Error(data.error || "View failed");
@@ -122,7 +83,7 @@ export function TrainingClient() {
       const data = await res.json();
       if (!res.ok) {
         if (data.redirect) {
-          router.replace(data.redirect === "/character-initialization.html" ? "/" : data.redirect);
+          router.replace(data.redirect);
           return;
         }
         throw new Error(data.error || "Action failed");
@@ -141,12 +102,11 @@ export function TrainingClient() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
+      const ch = loadCharacter();
+      if (!ch) {
         router.replace("/");
         return;
       }
-      const ch = JSON.parse(raw) as Character;
       setCharacter(ch);
       void apiView(ch, defaultUi()).catch((err) => {
         setBootError(String(err?.message || err));
@@ -164,7 +124,7 @@ export function TrainingClient() {
     const id = window.setInterval(() => {
       const job = character.activeJob;
       if (!job) return;
-      const progress = localJobProgress(job);
+      const progress = jobProgress(job);
       if (progress?.done) {
         window.clearInterval(id);
         void apiAction({ type: "complete-job" }).catch((err) =>
@@ -180,7 +140,7 @@ export function TrainingClient() {
   }, [character?.activeJob, apiAction, showToast]);
 
   const restart = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    clearCharacter();
     router.replace("/");
   };
 
@@ -225,7 +185,7 @@ export function TrainingClient() {
   const onQuest = view.tab === "quest";
   const liveJob =
     character.activeJob && view.tab === "world"
-      ? localJobProgress(character.activeJob)
+      ? jobProgress(character.activeJob)
       : view.job;
 
   return (
@@ -303,7 +263,7 @@ export function TrainingClient() {
                 }
               />
             ) : view.tab === "quest" ? (
-              <QuestPanel character={character} />
+              <QuestClient character={character} />
             ) : null}
           </div>
         </div>
@@ -634,86 +594,6 @@ function JobPanel({ job }: { job: JobView }) {
       <div className="job-eta">
         {job.remainingSec}s remaining · {job.fillNote}
       </div>
-    </div>
-  );
-}
-
-function QuestPanel({ character }: { character: Character }) {
-  const featureCount = character.features?.length ?? 0;
-  const exportKey = useMemo(
-    () =>
-      JSON.stringify({
-        raceId: character.raceId,
-        features: character.features,
-        scores: character.abilityScores,
-        cantrips: character.cantrips,
-        spells: character.spells,
-      }),
-    [character],
-  );
-  const [recruit, setRecruit] = useState<SrdCharacter | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (featureCount < 1) {
-      setLoading(false);
-      setRecruit(null);
-      setError("Earn at least one feature in the World before you enter the tavern.");
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    void (async () => {
-      try {
-        const res = await fetch("/api/training/export", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ character }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.character) {
-          throw new Error(data.error || "Could not prepare PLAYER for the tavern");
-        }
-        if (!cancelled) setRecruit(data.character as SrdCharacter);
-      } catch (err) {
-        if (!cancelled) {
-          setRecruit(null);
-          setError(err instanceof Error ? err.message : "Export failed");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // exportKey captures relevant character fields
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exportKey, featureCount]);
-
-  if (loading) {
-    return (
-      <div className="quest-stub">
-        <p className="lede">Opening the tavern…</p>
-      </div>
-    );
-  }
-  if (error || !recruit) {
-    return (
-      <div className="quest-stub">
-        <h2>Quest</h2>
-        <p className="lede" style={{ margin: "0 auto" }}>
-          {error || "Not ready."}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="quest-adventure">
-      <GameClient key={exportKey} initialRecruit={recruit} />
     </div>
   );
 }

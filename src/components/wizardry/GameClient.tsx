@@ -19,7 +19,6 @@ const STEP_MS = 500;
 const BATTLE_MS = 160;
 const PARTY_SIZE = PARTY_CAP;
 const TAVERN_SIZE = 12;
-const RECRUIT_KEY = "mazeguild.tavernRecruit";
 
 const TOWN_LINES = [
   "A busy town. Adventurers linger by the tavern door.",
@@ -31,26 +30,7 @@ const TOWN_LINES_WITH_RECRUIT = [
   "Pick three more companions, then press ENTER MAZE.",
 ];
 
-/** Survives Strict Mode double-mount so we only consume sessionStorage once. */
-let recruitCache: SrdCharacter | null | undefined;
-
-function takeRecruit(): SrdCharacter | null {
-  if (typeof window === "undefined") return null;
-  if (recruitCache !== undefined) return recruitCache;
-  try {
-    const raw = sessionStorage.getItem(RECRUIT_KEY);
-    if (raw) {
-      sessionStorage.removeItem(RECRUIT_KEY);
-      recruitCache = JSON.parse(raw) as SrdCharacter;
-    } else {
-      recruitCache = null;
-    }
-  } catch {
-    recruitCache = null;
-  }
-  return recruitCache;
-}
-
+/** Tavern + maze UI. Quest tab passes `initialRecruit` (PLAYER) already hired. */
 export function GameClient({
   initialRecruit = null,
 }: {
@@ -70,23 +50,9 @@ export function GameClient({
   const [inspecting, setInspecting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [campaignStarted, setCampaignStarted] = useState(false);
-  const [pendingRecruit, setPendingRecruit] = useState<SrdCharacter | null>(
-    initialRecruit,
-  );
-  const [recruitReady, setRecruitReady] = useState(initialRecruit !== null);
 
   useEffect(() => {
-    if (initialRecruit) {
-      setPendingRecruit(initialRecruit);
-      setRecruitReady(true);
-      return;
-    }
-    setPendingRecruit(takeRecruit());
-    setRecruitReady(true);
-  }, [initialRecruit]);
-
-  useEffect(() => {
-    if (!recruitReady || campaignStarted) return;
+    if (campaignStarted) return;
 
     const ac = new AbortController();
     const id = window.setTimeout(() => {
@@ -117,10 +83,10 @@ export function GameClient({
           if (!res.ok || !data.party) {
             throw new Error(data.error ?? "tavern failed to fill");
           }
-          if (pendingRecruit) {
+          if (initialRecruit) {
             const merged = mergeRecruit(
               data.party,
-              pendingRecruit,
+              initialRecruit,
               TAVERN_SIZE,
             );
             setPatrons(merged.patrons);
@@ -141,7 +107,7 @@ export function GameClient({
       window.clearTimeout(id);
       ac.abort();
     };
-  }, [seed, campaignStarted, pendingRecruit, recruitReady]);
+  }, [seed, campaignStarted, initialRecruit]);
 
   const actOnInspected = useCallback(() => {
     if (inspecting === null || disabled.includes(inspecting)) return;
@@ -412,7 +378,7 @@ export function GameClient({
               ) : (
                 <TownLog
                   lines={
-                    pendingRecruit ? TOWN_LINES_WITH_RECRUIT : TOWN_LINES
+                    initialRecruit ? TOWN_LINES_WITH_RECRUIT : TOWN_LINES
                   }
                 />
               )}

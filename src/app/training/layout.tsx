@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   description: "Train your character, then take them into the maze.",
 };
 
+/**
+ * Theme split:
+ * - Sheet / World: paper ledger via `/css/character-creation.css` (`.training-page`, `.hub`)
+ * - Quest: CRT flipped only under `.stage-quest` / `.app-quest` / `.quest-adventure`
+ *   (QuestClient mounts GameClient there)
+ */
 export default function TrainingLayout({
   children,
 }: {
@@ -32,7 +38,6 @@ export default function TrainingLayout({
     <div
       className={`${display.variable} ${body.variable} ${crt.variable} training-page`}
     >
-      {/* Character-creation theme for Sheet / World; Quest uses GameClient CRT styles. */}
       {/* eslint-disable-next-line @next/next/no-css-tags */}
       <link rel="stylesheet" href="/css/character-creation.css" />
       {children}

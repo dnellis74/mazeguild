@@ -40,7 +40,6 @@ export type TrainingView = {
   tab: TrainingUi["hubTab"];
   sheet: SheetView | null;
   world: WorldView | null;
-  quest: { message: string; cta?: { action: string; label: string } } | null;
   job: JobView | null;
   unlockNote: string;
 };
@@ -401,7 +400,6 @@ export function buildTrainingView(
       tab: ui.hubTab,
       sheet: null,
       world: null,
-      quest: null,
       job,
       unlockNote,
     };
@@ -413,13 +411,6 @@ export function buildTrainingView(
     tab: ui.hubTab,
     sheet: ui.hubTab === "sheet" ? buildSheetView(catalog, ch, ui) : null,
     world: ui.hubTab === "world" ? buildWorldView(catalog, ch, ui) : null,
-    quest:
-      ui.hubTab === "quest"
-        ? {
-            message:
-              "The tavern and the maze live here. PLAYER joins already hired once you've earned a feature.",
-          }
-        : null,
     job,
     unlockNote,
   };

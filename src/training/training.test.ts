@@ -82,7 +82,7 @@ describe("training API domain", () => {
     expect(srd.ability_scores.STR.score).toBe(15);
   });
 
-  it("exposes an enter-tavern CTA on the quest tab", () => {
+  it("switches the hub tab to quest without a quest view DTO", () => {
     const catalog = getCatalog();
     const character = migrateCharacter(catalog, {
       raceId: "human",
@@ -90,6 +90,8 @@ describe("training API domain", () => {
     });
     const ui = { ...defaultTrainingUi(), hubTab: "quest" as const };
     const view = buildTrainingView(catalog, character, ui);
-    expect(view.quest?.message).toMatch(/tavern/i);
+    expect(view.tab).toBe("quest");
+    expect(view.sheet).toBeNull();
+    expect(view.world).toBeNull();
   });
 });
