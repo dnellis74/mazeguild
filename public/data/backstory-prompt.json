@@ -7,7 +7,8 @@
     "reaction": "How they reacted",
     "features": "Features earned",
     "archetypes": "Archetypes drawn from",
-    "cantrips": "Cantrips learned"
+    "cantrips": "Cantrips learned",
+    "spells": "Spells learned"
   },
   "abilityNotes": {
     "highOrLow": "Notable ability scores: {notables}.",

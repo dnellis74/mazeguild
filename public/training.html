@@ -46,6 +46,8 @@ let ABILITY_MODS = null;
 let BACKSTORY_PROMPT = null;
 let CANTRIP_KNOWN = {};
 let CANTRIPS = [];
+let SPELL_KNOWN = {};
+let SPELLS_L1 = [];
 const FAVORED_ENEMY_SKILL_ID = 'f_15m9q5';
 const ABILITY_ORDER = ['STR','DEX','CON','INT','WIS','CHA'];
 const ABILITY_FULL_NAME = {
@@ -352,6 +354,116 @@ function openCantripPicker(archetype){
   render();
 }
 
+function spellTotalFor(archetype){
+  return Number(SPELL_KNOWN[archetype]) || 0;
+}
+
+function spellAllowance(ch, archetype){
+  if(!hasFullSpellcasting(ch, archetype)) return 0;
+  return spellTotalFor(archetype);
+}
+
+function ownedSpells(ch, archetype){
+  return (ch.spells || []).filter(s=>!archetype || s.archetype === archetype);
+}
+
+function spellsRemaining(ch, archetype){
+  return Math.max(0, spellAllowance(ch, archetype) - ownedSpells(ch, archetype).length);
+}
+
+function spellsForArchetype(archetype){
+  return SPELLS_L1.filter(s=>s.archetype === archetype);
+}
+
+function spellById(id){
+  return SPELLS_L1.find(s=>String(s.id) === String(id));
+}
+
+function spellcastingRoomForArchetype(archetype){
+  const skill = FEATURES.find(s=>
+    s.archetype === archetype && asFeatureList(s.feature).some(n=>
+      /spellcasting/i.test(n) || /^pact magic$/i.test(n)
+    )
+  );
+  if(!skill) return null;
+  return { area: skill.area, building: skill.building, room: skill.room };
+}
+
+function isCurrentSpellRoom(ui, archetype){
+  const loc = spellcastingRoomForArchetype(archetype);
+  return !!(loc
+    && ui.worldArea === loc.area
+    && ui.worldBuilding === loc.building
+    && ui.worldRoom === loc.room);
+}
+
+function openSpellSlots(ch){
+  const arches = new Set([
+    ...earnedArchetypes(),
+    ...Object.keys(SPELL_KNOWN),
+  ]);
+  return [...arches]
+    .filter(a=>spellsRemaining(ch, a) > 0)
+    .map(a=>({
+      archetype: a,
+      remaining: spellsRemaining(ch, a),
+      allowance: spellAllowance(ch, a),
+      owned: ownedSpells(ch, a).length,
+    }));
+}
+
+function openSpellPicker(archetype){
+  const ch = state.character;
+  const remaining = spellsRemaining(ch, archetype);
+  if(remaining <= 0){
+    showToast('No spell slots left for '+archetype+'.');
+    return;
+  }
+  const ownedIds = new Set(ownedSpells(ch, archetype).map(s=>String(s.id)));
+  const options = spellsForArchetype(archetype).filter(s=>!ownedIds.has(String(s.id)));
+  if(!options.length){
+    showToast('No spells left to learn.');
+    return;
+  }
+  state.ui.hubTab = 'world';
+  state.ui.pendingChoice = {
+    type: 'spell',
+    archetype,
+    remaining,
+    allowance: spellAllowance(ch, archetype),
+    owned: ownedSpells(ch, archetype).length,
+    options,
+  };
+  render();
+}
+
+/** After unlocking magic, open the next pending pick for this archetype. */
+function maybeOpenMagicPicker(archetype){
+  if(!archetype) return;
+  const ch = state.character;
+  if(cantripsRemaining(ch, archetype) > 0){
+    const loc = cantripRoomForArchetype(archetype) || spellcastingRoomForArchetype(archetype);
+    if(loc){
+      state.ui.worldArea = loc.area;
+      state.ui.worldBuilding = loc.building;
+      state.ui.worldRoom = loc.room;
+      state.ui.worldView = 'activities';
+    }
+    setTimeout(()=> openCantripPicker(archetype), 0);
+    return;
+  }
+  if(spellsRemaining(ch, archetype) > 0){
+    const loc = spellcastingRoomForArchetype(archetype) || cantripRoomForArchetype(archetype);
+    if(loc){
+      state.ui.worldArea = loc.area;
+      state.ui.worldBuilding = loc.building;
+      state.ui.worldRoom = loc.room;
+      state.ui.worldView = 'activities';
+    }
+    setTimeout(()=> openSpellPicker(archetype), 0);
+  }
+}
+
 function hasSkill(ch, id){
   if(!id) return false;
   return (ch.features || []).some(f=>f.id===id);
@@ -528,6 +640,23 @@ function renderPendingChoice(){
         </div>
       </div>`;
   }
+  if(pending.type === 'spell'){
+    return `
+      <div class="feature-choice">
+        <button type="button" class="back" data-action="cancel-choice">← Back</button>
+        <p class="kicker">${esc(pending.archetype)} 1st-level spells</p>
+        <h2>Choose a spell</h2>
+        <p class="lede" style="margin-top:8px">${pending.owned} of ${pending.allowance} known · pick ${pending.remaining} more.</p>
+        <div class="choice-list">
+          ${pending.options.map(s=>`
+            <button type="button" class="choice-card" data-action="confirm-spell" data-spell-id="${esc(s.id)}">
+              <span class="choice-title">${esc(s.name)}</span>
+              <span class="choice-sub">${esc(s.description || '')}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>`;
+  }
   return '';
 }
 
@@ -580,6 +709,7 @@ function buildOriginPrompt(ch){
       features: 'Features earned',
       archetypes: 'Archetypes drawn from',
       cantrips: 'Cantrips learned',
+      spells: 'Spells learned',
     },
     abilityNotes: {
       highOrLow: 'Notable ability scores: {notables}.',
@@ -629,6 +759,12 @@ function buildOriginPrompt(ch){
       c.archetype ? `${c.name} (${c.archetype})` : c.name
     ).join('; ');
     lines.push(`${labels.cantrips || 'Cantrips learned'}: ${cantripLine}`);
+  }
+  if(ch.spells && ch.spells.length){
+    const spellLine = ch.spells.map(s=>
+      s.archetype ? `${s.name} (${s.archetype})` : s.name
+    ).join('; ');
+    lines.push(`${labels.spells || 'Spells learned'}: ${spellLine}`);
   }
   const scores = ch.abilityScores;
   if(scores && ch.abilityScoresAssigned){
@@ -840,6 +976,16 @@ function renderSheet(){
         : `<p class="empty-note">Cantrips appear once an archetype grants them — half now, the rest with full spellcasting.</p>`}
     </div>
     <div class="sheet-block">
+      <div class="sheet-label">Spells</div>
+      ${(ch.spells && ch.spells.length)
+        ? `<div class="feature-list">${ch.spells.map(s=>`
+            <div class="feature-card">
+              <div class="name">${esc(s.name)}</div>
+              <div class="from">${esc(s.archetype)} · 1st-level${s.description ? ` · ${esc(s.description)}` : ''}</div>
+            </div>`).join('')}</div>`
+        : `<p class="empty-note">1st-level spells unlock when you learn spellcasting or pact magic.</p>`}
+    </div>
+    <div class="sheet-block">
       <div class="sheet-label">Origin story</div>
       <p class="mechanic-note" style="margin-top:0;margin-bottom:10px">Paste the prompt into an AI for three sentences, write your own, or leave it. Save when you're happy.</p>
       <textarea class="origin-story" id="origin-story" rows="8" spellcheck="true">${esc(originStoryText(ch))}</textarea>
@@ -945,7 +1091,18 @@ function renderWorld(){
           <span class="wc-sub">${slot.owned} of ${slot.allowance} known · ${slot.remaining} open</span>
           <span class="wc-status">${hasFullSpellcasting(ch, slot.archetype) ? 'Full spellcasting allotment' : 'First half of cantrips'}</span>
         </button>`).join('');
-    cards = actCards + cantripCards
+    const spellCards = openSpellSlots(ch)
+      .filter(slot=>isCurrentSpellRoom(ui, slot.archetype))
+      .map(slot=>`
+        <button class="world-card"
+                data-action="world-select-spell"
+                data-archetype="${esc(slot.archetype)}"
+                ${job ? 'disabled':''}>
+          <span class="wc-title">Learn a ${esc(slot.archetype)} spell</span>
+          <span class="wc-sub">${slot.owned} of ${slot.allowance} known · ${slot.remaining} open</span>
+          <span class="wc-status">1st-level spells</span>
+        </button>`).join('');
+    cards = actCards + cantripCards + spellCards
       || `<p class="empty-note">Nothing open here yet. Earn a prerequisite feature elsewhere first.</p>`;
   }
 
@@ -1027,18 +1184,7 @@ function completeJob(){
         msg += ' Ability scores set.';
       }
       showToast(msg);
-      const arch = skill.archetype;
-      if(arch && cantripsRemaining(ch, arch) > 0){
-        const loc = cantripRoomForArchetype(arch);
-        if(loc){
-          state.ui.worldArea = loc.area;
-          state.ui.worldBuilding = loc.building;
-          state.ui.worldRoom = loc.room;
-          state.ui.worldView = 'activities';
-        }
-        // Defer picker until after this completeJob finishes its render
-        setTimeout(()=> openCantripPicker(arch), 0);
-      }
+      maybeOpenMagicPicker(skill.archetype);
     }
   }
   ch.activeJob = null;
@@ -1167,6 +1313,43 @@ function onAction(e){
     showToast(`Learned ${cantrip.name}.`);
     if(cantripsRemaining(ch, pending.archetype) > 0){
       openCantripPicker(pending.archetype);
+    } else if(spellsRemaining(ch, pending.archetype) > 0){
+      openSpellPicker(pending.archetype);
+    } else {
+      ui.pendingChoice = null;
+      render();
+    }
+  }
+  else if(action==='confirm-spell'){
+    const pending = ui.pendingChoice;
+    if(!pending || pending.type !== 'spell') return;
+    const spell = spellById(e.currentTarget.dataset.spellId);
+    if(!spell || spell.archetype !== pending.archetype){
+      showToast('Invalid spell.');
+      return;
+    }
+    if(ownedSpells(ch, pending.archetype).some(s=>String(s.id)===String(spell.id))){
+      showToast('Already known.');
+      return;
+    }
+    if(spellsRemaining(ch, pending.archetype) <= 0){
+      showToast('No spell slots left.');
+      ui.pendingChoice = null;
+      render();
+      return;
+    }
+    if(!ch.spells) ch.spells = [];
+    ch.spells.push({
+      id: spell.id,
+      name: spell.name,
+      archetype: spell.archetype,
+      level: spell.level || 1,
+      description: spell.description || '',
+    });
+    persistCharacter();
+    showToast(`Learned ${spell.name}.`);
+    if(spellsRemaining(ch, pending.archetype) > 0){
+      openSpellPicker(pending.archetype);
     } else {
       ui.pendingChoice = null;
       render();
@@ -1266,6 +1449,13 @@ function onAction(e){
     }
     openCantripPicker(e.currentTarget.dataset.archetype);
   }
+  else if(action==='world-select-spell'){
+    if(ch.activeJob){
+      showToast('Already at work.');
+      return;
+    }
+    openSpellPicker(e.currentTarget.dataset.archetype);
+  }
   else if(action==='restart-init'){
     localStorage.removeItem(STORAGE_KEY);
     window.location.href = '/character-initialization.html';
@@ -1299,8 +1489,9 @@ async function boot(){
     if(!('originStory' in state.character)) state.character.originStory = null;
     if(!('abilityScoresAssigned' in state.character)) state.character.abilityScoresAssigned = false;
     if(!state.character.cantrips) state.character.cantrips = [];
+    if(!state.character.spells) state.character.spells = [];
 
-    const [skills, tracks, races, alignments, timing, favoredEnemy, abilityMods, backstoryPrompt, cantripData] = await Promise.all([
+    const [skills, tracks, races, alignments, timing, favoredEnemy, abilityMods, backstoryPrompt, cantripData, spellData] = await Promise.all([
       loadJson('/data/skills.json'),
       loadJson('/data/tracks.json'),
       loadJson('/data/races.json'),
@@ -1310,6 +1501,7 @@ async function boot(){
       loadJson('/data/ability-modifiers.json'),
       loadJson('/data/backstory-prompt.json'),
       loadJson('/data/cantrips.json'),
+      loadJson('/data/spells_level1.json'),
     ]);
     FEATURES = skills;
     TRACKS = tracks;
@@ -1325,6 +1517,13 @@ async function boot(){
     } else {
       CANTRIPS = cantripData.cantrips || [];
       CANTRIP_KNOWN = cantripData.known || {};
+    }
+    if(Array.isArray(spellData)){
+      SPELLS_L1 = spellData;
+      SPELL_KNOWN = {};
+    } else {
+      SPELLS_L1 = spellData.spells || [];
+      SPELL_KNOWN = spellData.known || {};
     }
     // Unassigned scores use point-buy base (not 10).
     if(!state.character.abilityScoresAssigned){
