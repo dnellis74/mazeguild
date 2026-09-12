@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   getRosterEntry,
+  loadRoster,
   upsertRosterEntry,
 } from "@/lib/rosterStorage";
 import { jobProgress } from "@/training/view";
@@ -65,23 +66,68 @@ export function TrainingClient() {
   const [sheetReturn, setSheetReturn] = useState<"world" | "town">(
     initialTab === "sheet" ? "town" : "world",
   );
+  const [nameRolling, setNameRolling] = useState(false);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 2200);
+  }, []);
 
   const persist = useCallback(
-    (ch: Character) => {
+    (ch: Character, name = displayName) => {
       if (!entryId) return;
       upsertRosterEntry({
         id: entryId,
-        displayName,
+        displayName: name,
         character: ch,
       });
     },
     [entryId, displayName],
   );
 
-  const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
-  }, []);
+  const saveDisplayName = useCallback(
+    (raw: string) => {
+      const next = raw.trim() || displayName;
+      setDisplayName(next);
+      if (!entryId || !character) return;
+      upsertRosterEntry({
+        id: entryId,
+        displayName: next,
+        character,
+      });
+    },
+    [entryId, character, displayName],
+  );
+
+  const rollDisplayName = useCallback(async () => {
+    if (!character || !entryId || nameRolling) return;
+    setNameRolling(true);
+    try {
+      const taken = loadRoster()
+        .filter((e) => e.id !== entryId)
+        .map((e) => e.displayName);
+      const res = await fetch("/api/names", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ raceId: character.raceId, taken }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.name) {
+        throw new Error(data.error || "Could not roll a name");
+      }
+      const next = String(data.name);
+      setDisplayName(next);
+      upsertRosterEntry({
+        id: entryId,
+        displayName: next,
+        character,
+      });
+    } catch (err) {
+      showToast(String(err instanceof Error ? err.message : err));
+    } finally {
+      setNameRolling(false);
+    }
+  }, [character, entryId, nameRolling, showToast]);
 
   const apiView = useCallback(
     async (ch: Character, nextUi: TrainingUi) => {
@@ -266,27 +312,42 @@ export function TrainingClient() {
       <div className="app">
         <div className="hub">
           <div className="hub-header">
-            {onWorld ? (
+            <p className="kicker">{view.header.title}</p>
+            {onSheet ? (
+              <div className="name-field">
+                <input
+                  className="name-field-input"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  onBlur={() => saveDisplayName(displayName)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  aria-label="Character name"
+                  spellCheck={false}
+                />
+                <button
+                  type="button"
+                  className="name-field-die"
+                  onClick={() => void rollDisplayName()}
+                  disabled={nameRolling}
+                  aria-label="Roll a race-appropriate name"
+                  title="Roll a new name"
+                >
+                  <DieIcon />
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                className="kicker hub-name-link"
+                className="name-field-link"
                 onClick={openSheet}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  color: "inherit",
-                  font: "inherit",
-                }}
               >
                 {displayName}
               </button>
-            ) : (
-              <p className="kicker">{displayName}</p>
             )}
-            <h1>{view.header.title}</h1>
             <p className="hub-meta">
               {view.header.featurePoints} feature point
               {view.header.featurePoints === 1 ? "" : "s"} left ·{" "}
@@ -651,6 +712,25 @@ function cardToAction(card: WorldView["cards"][number]): TrainingAction {
     default:
       return { type: "world-nav", view: "areas" };
   }
+}
+
+function DieIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" />
+      <circle cx="8.2" cy="8.2" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="15.8" cy="15.8" r="1.15" fill="currentColor" stroke="none" />
+    </svg>
+  );
 }
 
 function JobPanel({ job }: { job: JobView }) {

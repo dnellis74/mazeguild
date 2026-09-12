@@ -11,11 +11,34 @@ import {
   TOWN_SQUARE_AREA,
   TOWN_SQUARE_BUILDING,
 } from "@/training/townSquare";
+import type { Character } from "@/training/types";
+
+type CatalogLabels = {
+  races: Record<string, string>;
+  alignments: Record<string, string>;
+};
+
+function companionLine(ch: Character, labels: CatalogLabels | null): string {
+  const align =
+    labels?.alignments[ch.alignment?.alignmentId || ""] ||
+    ch.alignment?.alignmentId?.toUpperCase() ||
+    "?";
+  const race = labels?.races[ch.raceId] || ch.raceId || "Unknown";
+  return `${align} ${race}`;
+}
+
+function featureArchetypes(ch: Character): string {
+  const archetypes = (ch.features || [])
+    .slice(0, 2)
+    .map((f) => f.archetype)
+    .filter(Boolean);
+  return archetypes.join(" · ");
+}
 
 /**
  * Town Square — adventure home.
  * 0 selected: Welcome a Stranger
- * 1 selected: crumb into the world (Areas / Walled City)
+ * 1 selected: Enter the City (+ crumb into the world)
  * 2+ selected: Quest (party → maze)
  */
 export function TownSquareClient() {
@@ -23,10 +46,23 @@ export function TownSquareClient() {
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+  const [labels, setLabels] = useState<CatalogLabels | null>(null);
 
   useEffect(() => {
     setRoster(loadRoster());
     setReady(true);
+    void fetch("/api/training/catalog")
+      .then((r) => r.json())
+      .then((data) => {
+        const races: Record<string, string> = {};
+        const alignments: Record<string, string> = {};
+        for (const r of data.races || []) races[r.id] = r.name;
+        for (const a of data.alignments || []) alignments[a.id] = a.name;
+        setLabels({ races, alignments });
+      })
+      .catch(() => {
+        /* fall back to raw ids on the cards */
+      });
   }, []);
 
   const refresh = useCallback(() => {
@@ -43,6 +79,8 @@ export function TownSquareClient() {
 
   const count = selected.length;
   const exploreId = count === 1 ? selected[0]! : null;
+  const canEnterCity = count === 1;
+  const canQuest = count >= 2;
 
   const explore = useCallback(
     (opts?: { area?: string }) => {
@@ -54,15 +92,21 @@ export function TownSquareClient() {
     [exploreId, router],
   );
 
-  const questAction = useMemo(() => {
-    if (count < 2) return null;
-    return {
-      id: "quest",
-      label: "Quest",
-      onClick: () =>
-        router.push(`/quest?ids=${selected.map(encodeURIComponent).join(",")}`),
-    };
-  }, [count, selected, router]);
+  const startQuest = useCallback(() => {
+    if (!canQuest) return;
+    router.push(`/quest?ids=${selected.map(encodeURIComponent).join(",")}`);
+  }, [canQuest, selected, router]);
+
+  const helperNote = useMemo(() => {
+    if (roster.length === 0) return null;
+    if (count === 0) {
+      return "Select a companion to enter the city. Select two or more to quest.";
+    }
+    if (count >= PARTY_CAP) {
+      return `Party is full (${PARTY_CAP}). Deselect someone to change the roster.`;
+    }
+    return null;
+  }, [roster.length, count]);
 
   if (!ready) {
     return (
@@ -92,7 +136,7 @@ export function TownSquareClient() {
 
           <div className="hub-body town-square-body">
             <div className="world-crumb" aria-label="Location">
-              {exploreId ? (
+              {canEnterCity ? (
                 <>
                   <button type="button" onClick={() => explore()}>
                     Areas
@@ -128,25 +172,26 @@ export function TownSquareClient() {
                 >
                   Welcome a Stranger
                 </button>
-                {questAction ? (
-                  <button
-                    type="button"
-                    className="primary"
-                    onClick={questAction.onClick}
-                  >
-                    {questAction.label}
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={!canEnterCity}
+                  onClick={() => explore({ area: TOWN_SQUARE_AREA })}
+                >
+                  Enter the City
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={!canQuest}
+                  onClick={startQuest}
+                >
+                  Quest
+                </button>
               </div>
-              {count === 0 && roster.length > 0 ? (
+              {helperNote ? (
                 <p className="mechanic-note" style={{ marginTop: 12 }}>
-                  Select a companion, then use the crumb to explore. Select two or more to
-                  quest.
-                </p>
-              ) : null}
-              {count >= PARTY_CAP ? (
-                <p className="mechanic-note" style={{ marginTop: 12 }}>
-                  Party is full ({PARTY_CAP}). Deselect someone to change the roster.
+                  {helperNote}
                 </p>
               ) : null}
             </div>
@@ -162,6 +207,8 @@ export function TownSquareClient() {
                   {roster.map((entry) => {
                     const on = selected.includes(entry.id);
                     const blocked = !on && selected.length >= PARTY_CAP;
+                    const identity = companionLine(entry.character, labels);
+                    const archetypes = featureArchetypes(entry.character);
                     return (
                       <button
                         key={entry.id}
@@ -172,11 +219,14 @@ export function TownSquareClient() {
                         aria-pressed={on}
                       >
                         <span className="choice-title">{entry.displayName}</span>
+                        <span className="choice-sub">{identity}</span>
+                        {archetypes ? (
+                          <span className="choice-sub">{archetypes}</span>
+                        ) : (
+                          <span className="choice-sub">No features yet</span>
+                        )}
                         <span className="choice-sub">
                           {on ? "Selected" : blocked ? "Party full" : "Tap to select"}
-                          {" · "}
-                          {entry.character.features?.length ?? 0} feature
-                          {(entry.character.features?.length ?? 0) === 1 ? "" : "s"}
                         </span>
                       </button>
                     );

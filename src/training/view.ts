@@ -246,7 +246,7 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
         action: "world-select-building",
         title: b.name,
         sub: portal
-          ? `${TOWN_SQUARE_PORTALS.length} activities`
+          ? "Character selection"
           : `${b.rooms.length} room${b.rooms.length === 1 ? "" : "s"}`,
         status: working
           ? "Surveying…"

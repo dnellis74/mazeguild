@@ -21,8 +21,6 @@ import {
   isTownSquareLocation,
   townSquarePortalById,
   TOWN_SQUARE_AREA,
-  TOWN_SQUARE_BUILDING,
-  TOWN_SQUARE_ROOM,
 } from "./townSquare";
 import {
   areaKey,
@@ -355,19 +353,15 @@ export function applyTrainingAction(
     }
     case "world-select-building": {
       if (!ui.worldArea) return { character: ch, ui, toast: "No area selected." };
-      // Town Square portals skip the room drill-down and unlock job.
+      // Town Square is the roster / character-selection hub, not a skill building.
       if (
         ui.worldArea === TOWN_SQUARE_AREA &&
         isTownSquareBuilding(action.building)
       ) {
         return {
           character: ensureUnlocked(ch),
-          ui: {
-            ...ui,
-            worldBuilding: TOWN_SQUARE_BUILDING,
-            worldRoom: TOWN_SQUARE_ROOM,
-            worldView: "activities",
-          },
+          ui,
+          navigate: "/",
         };
       }
       const key = buildingKey(ui.worldArea, action.building);

@@ -564,6 +564,66 @@
   .hub-header h1{
     font-size:clamp(1.15rem, 4vw, 1.75rem);
   }
+  .name-field{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+    min-width:0;
+  }
+  .name-field-input,
+  .name-field-link{
+    font-family:var(--font-display);
+    font-weight:400;
+    font-size:clamp(1.15rem, 4vw, 1.75rem);
+    line-height:1.2;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:transparent;
+    border:none;
+    padding:0;
+    min-width:0;
+  }
+  .name-field-input{
+    flex:1;
+    width:100%;
+    border-bottom:1px solid var(--rule);
+    padding:2px 0 4px;
+    border-radius:0;
+    outline:none;
+  }
+  .name-field-input:focus{
+    border-bottom-color:var(--seal);
+  }
+  .name-field-link{
+    text-align:left;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .name-field-die{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:44px;
+    min-width:44px;
+    color:var(--seal);
+    border:1px solid var(--rule);
+    background:transparent;
+    cursor:pointer;
+  }
+  .name-field-die:hover:not(:disabled),
+  .name-field-die:focus-visible{
+    border-color:var(--seal);
+    outline:none;
+  }
+  .name-field-die:disabled{
+    opacity:0.45;
+    cursor:wait;
+  }
   .hub-meta{
     margin-top:6px;
     font-size:13px;
@@ -661,7 +721,22 @@
     border-color:var(--seal);
     color:var(--ink);
   }
-  .origin-actions button.primary:hover{ background:rgba(228, 180, 90, 0.32); border-color:var(--seal); }
+  .origin-actions button.primary:hover:not(:disabled){
+    background:rgba(228, 180, 90, 0.32);
+    border-color:var(--seal);
+  }
+  .origin-actions button.primary:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+    background:transparent;
+    color:var(--ink-soft);
+    border-color:var(--rule);
+  }
+  .origin-actions button.primary:disabled:hover{
+    background:transparent;
+    color:var(--ink-soft);
+    border-color:var(--rule);
+  }
   .sheet-label{
     font-size:10px;
     letter-spacing:.2em;

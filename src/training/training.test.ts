@@ -8,7 +8,6 @@ import { buildWorld } from "@/training/world";
 import {
   TOWN_SQUARE_AREA,
   TOWN_SQUARE_BUILDING,
-  TOWN_SQUARE_PORTALS,
 } from "@/training/townSquare";
 
 describe("training API domain", () => {
@@ -36,9 +35,9 @@ describe("training API domain", () => {
     expect(names.indexOf(TOWN_SQUARE_BUILDING)).toBeLessThan(names.indexOf("Tavern"));
   });
 
-  it("opens Town Square portal activities that navigate to UIs", () => {
+  it("sends Town Square selection to the character roster hub", () => {
     const catalog = getCatalog();
-    let character = migrateCharacter(catalog, {
+    const character = migrateCharacter(catalog, {
       raceId: "human",
       alignment: { alignmentId: "lg" },
     });
@@ -60,27 +59,7 @@ describe("training API domain", () => {
       type: "world-select-building",
       building: TOWN_SQUARE_BUILDING,
     });
-    expect(result.ui.worldView).toBe("activities");
-    character = result.character;
-    ui = result.ui;
-
-    const view = buildTrainingView(catalog, character, ui);
-    expect(view.world?.cards.map((c) => c.title)).toEqual(
-      TOWN_SQUARE_PORTALS.map((p) => p.activity),
-    );
-    expect(view.world?.cards.every((c) => c.action === "world-select-portal")).toBe(true);
-
-    const welcome = applyTrainingAction(catalog, character, ui, {
-      type: "world-select-portal",
-      portalId: "ts_welcome",
-    });
-    expect(welcome.navigate).toBe("/character-initialization.html");
-
-    const quest = applyTrainingAction(catalog, character, ui, {
-      type: "world-select-portal",
-      portalId: "ts_quest",
-    });
-    expect(quest.navigate).toBe("/");
+    expect(result.navigate).toBe("/");
   });
 
   it("unlocks an area via complete-job", () => {

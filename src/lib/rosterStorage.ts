@@ -1,4 +1,5 @@
 import type { Character } from "@/training/types";
+import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 
 /**
  * Multi-character roster for Town Square.
@@ -53,11 +54,13 @@ export function migrateLegacyCharacter(): void {
       (e) => JSON.stringify(e.character) === JSON.stringify(character),
     );
     if (!already) {
-      const race = character.raceId || "stranger";
-      const align = character.alignment?.alignmentId || "?";
+      const named = generateUniqueFantasyName(
+        character.raceId,
+        roster.map((e) => e.displayName),
+      );
       roster.push({
         id: crypto.randomUUID(),
-        displayName: `${align.toUpperCase()} ${race}`,
+        displayName: named.name,
         character,
       });
       writeRaw(roster);
