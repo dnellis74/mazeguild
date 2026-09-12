@@ -19,6 +19,12 @@ import {
 } from "./magic";
 import { originStoryText } from "./origin";
 import {
+  isTownSquareBuilding,
+  isTownSquareLocation,
+  TOWN_SQUARE_PORTALS,
+  TOWN_SQUARE_ROOM,
+} from "./townSquare";
+import {
   areaKey,
   buildingKey,
   buildWorld,
@@ -230,7 +236,8 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
     const area = world.find((a) => a.name === ui.worldArea);
     for (const b of area?.buildings || []) {
       const key = buildingKey(ui.worldArea!, b.name);
-      const unlocked = !!ch.unlocked.buildings[key];
+      const portal = isTownSquareBuilding(b.name);
+      const unlocked = portal || !!ch.unlocked.buildings[key];
       const working =
         job?.kind === "building" &&
         job.area === ui.worldArea &&
@@ -238,7 +245,9 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
       cards.push({
         action: "world-select-building",
         title: b.name,
-        sub: `${b.rooms.length} room${b.rooms.length === 1 ? "" : "s"}`,
+        sub: portal
+          ? `${TOWN_SQUARE_PORTALS.length} activities`
+          : `${b.rooms.length} room${b.rooms.length === 1 ? "" : "s"}`,
         status: working
           ? "Surveying…"
           : unlocked
@@ -285,12 +294,41 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
   } else {
     crumb.push({ label: "Areas", action: "world-nav", view: "areas" });
     crumb.push({ label: ui.worldArea || "", action: "world-nav", view: "buildings" });
-    crumb.push({
-      label: ui.worldBuilding || "",
-      action: "world-nav",
-      view: "rooms",
-    });
-    crumb.push({ label: ui.worldRoom || "" });
+    if (isTownSquareBuilding(ui.worldBuilding)) {
+      crumb.push({ label: ui.worldBuilding || "" });
+    } else {
+      crumb.push({
+        label: ui.worldBuilding || "",
+        action: "world-nav",
+        view: "rooms",
+      });
+      crumb.push({ label: ui.worldRoom || "" });
+    }
+
+    if (
+      isTownSquareLocation({
+        worldArea: ui.worldArea,
+        worldBuilding: ui.worldBuilding,
+        worldRoom: ui.worldRoom ?? TOWN_SQUARE_ROOM,
+      })
+    ) {
+      for (const portal of TOWN_SQUARE_PORTALS) {
+        cards.push({
+          action: "world-select-portal",
+          title: portal.activity,
+          sub: portal.description,
+          status: "Open",
+          unlocked: true,
+          data: { portalId: portal.id },
+        });
+      }
+      return {
+        crumb,
+        cards,
+        emptyNote: undefined,
+      };
+    }
+
     const area = world.find((a) => a.name === ui.worldArea);
     const building = area?.buildings.find((b) => b.name === ui.worldBuilding);
     const room = building?.rooms.find((r) => r.name === ui.worldRoom);

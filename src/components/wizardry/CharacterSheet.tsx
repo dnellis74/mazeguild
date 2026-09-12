@@ -70,7 +70,7 @@ export function CharacterSheet({
           onClick={onBack}
           className={`${tap} border-amber-700`}
         >
-          BACK TO TAVERN
+          BACK TO TOWN
         </button>
       </div>
 

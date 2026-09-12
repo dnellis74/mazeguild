@@ -174,9 +174,15 @@
   }
   .choice-card:active{ transform:scale(.99); }
   .choice-card:hover{ background:rgba(228, 180, 90, 0.1); border-color:var(--seal-dark); }
-  .choice-card.is-locked{
-    border-left-color:var(--rule);
-    opacity:.55;
+  .choice-card.is-selected{
+    background:rgba(228, 180, 90, 0.18);
+    border-color:var(--seal);
+  }
+  .town-square-actions{
+    flex-wrap:wrap;
+  }
+  .town-roster .choice-card:disabled{
+    opacity:.45;
   }
   .choice-title{
     font-family:var(--font-display);

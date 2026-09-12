@@ -23,12 +23,6 @@ export async function POST(request: Request) {
     if (err) {
       return Response.json({ error: err }, { status: 400 });
     }
-    if (!character.features?.length) {
-      return Response.json(
-        { error: "Earn at least one feature before entering the tavern." },
-        { status: 400 },
-      );
-    }
     const srd = trainingToSrd(catalog, character);
     console.log(
       JSON.stringify({

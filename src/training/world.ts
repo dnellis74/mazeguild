@@ -1,6 +1,11 @@
 import type { Catalog } from "./catalog";
 import { asFeatureList } from "./features";
 import type { Character, Skill } from "./types";
+import {
+  TOWN_SQUARE_AREA,
+  TOWN_SQUARE_BUILDING,
+  TOWN_SQUARE_ROOM,
+} from "./townSquare";
 
 export type WorldActivity = {
   id: string;
@@ -53,16 +58,56 @@ export function buildWorld(catalog: Catalog): WorldArea[] {
     }
   }
 
-  return Object.values(areas).map((a) => ({
-    name: a.name,
-    buildings: Object.values(a.buildings).map((b) => ({
-      name: b.name,
-      rooms: Object.values(b.rooms).map((r) => ({
-        name: r.name,
-        activities: r.activities,
+  return injectTownSquare(
+    Object.values(areas).map((a) => ({
+      name: a.name,
+      buildings: Object.values(a.buildings).map((b) => ({
+        name: b.name,
+        rooms: Object.values(b.rooms).map((r) => ({
+          name: r.name,
+          activities: r.activities,
+        })),
       })),
     })),
-  }));
+  );
+}
+
+/** Town Square is a portal building, not derived from skills.json. */
+export function injectTownSquare(areas: WorldArea[]): WorldArea[] {
+  const square: WorldBuilding = {
+    name: TOWN_SQUARE_BUILDING,
+    rooms: [{ name: TOWN_SQUARE_ROOM, activities: [] }],
+  };
+
+  const result = areas.map((a) => {
+    if (a.name !== TOWN_SQUARE_AREA) return a;
+    if (a.buildings.some((b) => b.name === TOWN_SQUARE_BUILDING)) return a;
+    return { ...a, buildings: [square, ...a.buildings] };
+  });
+
+  if (!result.some((a) => a.name === TOWN_SQUARE_AREA)) {
+    result.unshift({ name: TOWN_SQUARE_AREA, buildings: [square] });
+  }
+  return result;
+}
+
+/** Always available — starting place and adventure hub. */
+export function grantTownSquareAccess(ch: Character): Character {
+  const unlocked = ch.unlocked || { areas: {}, buildings: {}, rooms: {} };
+  return {
+    ...ch,
+    unlocked: {
+      areas: { ...unlocked.areas, [areaKey(TOWN_SQUARE_AREA)]: true },
+      buildings: {
+        ...unlocked.buildings,
+        [buildingKey(TOWN_SQUARE_AREA, TOWN_SQUARE_BUILDING)]: true,
+      },
+      rooms: {
+        ...unlocked.rooms,
+        [roomKey(TOWN_SQUARE_AREA, TOWN_SQUARE_BUILDING, TOWN_SQUARE_ROOM)]: true,
+      },
+    },
+  };
 }
 
 export function areaKey(area: string) {
@@ -94,8 +139,8 @@ export function featureTiming(catalog: Catalog, skill?: Partial<Skill> | null) {
 }
 
 export function ensureUnlocked(ch: Character): Character {
-  return {
+  return grantTownSquareAccess({
     ...ch,
     unlocked: ch.unlocked || { areas: {}, buildings: {}, rooms: {} },
-  };
+  });
 }

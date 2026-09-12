@@ -310,7 +310,7 @@ export function DungeonView({
         className="block h-full w-full touch-none"
         aria-label={
           scene === "town"
-            ? "First-person view of a tavern at the end of the street"
+            ? "First-person view of the town square street"
             : inCombat
               ? `First-person dungeon view, fighting ${(enemies ?? []).join(", ") || "monsters"}`
               : "First-person dungeon view"

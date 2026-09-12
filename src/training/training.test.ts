@@ -4,6 +4,12 @@ import { migrateCharacter, defaultTrainingUi } from "@/training/character";
 import { applyTrainingAction } from "@/training/actions";
 import { buildTrainingView } from "@/training/view";
 import { trainingToSrd } from "@/training/toSrd";
+import { buildWorld } from "@/training/world";
+import {
+  TOWN_SQUARE_AREA,
+  TOWN_SQUARE_BUILDING,
+  TOWN_SQUARE_PORTALS,
+} from "@/training/townSquare";
 
 describe("training API domain", () => {
   it("builds a sheet view for a minimal character", () => {
@@ -19,6 +25,62 @@ describe("training API domain", () => {
     expect(view.sheet?.abilities[0]?.score).toBe(
       catalog.abilityMods.pointBuy.startingScore,
     );
+  });
+
+  it("lists Town Square beside Tavern in the Walled City", () => {
+    const catalog = getCatalog();
+    const walled = buildWorld(catalog).find((a) => a.name === TOWN_SQUARE_AREA);
+    const names = walled?.buildings.map((b) => b.name) ?? [];
+    expect(names).toContain(TOWN_SQUARE_BUILDING);
+    expect(names).toContain("Tavern");
+    expect(names.indexOf(TOWN_SQUARE_BUILDING)).toBeLessThan(names.indexOf("Tavern"));
+  });
+
+  it("opens Town Square portal activities that navigate to UIs", () => {
+    const catalog = getCatalog();
+    let character = migrateCharacter(catalog, {
+      raceId: "human",
+      alignment: { alignmentId: "lg" },
+    });
+    expect(character.unlocked.buildings[`${TOWN_SQUARE_AREA}::${TOWN_SQUARE_BUILDING}`]).toBe(
+      true,
+    );
+
+    let ui: ReturnType<typeof defaultTrainingUi> = {
+      ...defaultTrainingUi(),
+      hubTab: "world",
+    };
+    let result = applyTrainingAction(catalog, character, ui, {
+      type: "world-select-area",
+      area: TOWN_SQUARE_AREA,
+    });
+    expect(result.ui.worldView).toBe("buildings");
+
+    result = applyTrainingAction(catalog, result.character, result.ui, {
+      type: "world-select-building",
+      building: TOWN_SQUARE_BUILDING,
+    });
+    expect(result.ui.worldView).toBe("activities");
+    character = result.character;
+    ui = result.ui;
+
+    const view = buildTrainingView(catalog, character, ui);
+    expect(view.world?.cards.map((c) => c.title)).toEqual(
+      TOWN_SQUARE_PORTALS.map((p) => p.activity),
+    );
+    expect(view.world?.cards.every((c) => c.action === "world-select-portal")).toBe(true);
+
+    const welcome = applyTrainingAction(catalog, character, ui, {
+      type: "world-select-portal",
+      portalId: "ts_welcome",
+    });
+    expect(welcome.navigate).toBe("/character-initialization.html");
+
+    const train = applyTrainingAction(catalog, character, ui, {
+      type: "world-select-portal",
+      portalId: "ts_train",
+    });
+    expect(train.navigate).toBe("/training?id={id}&tab=sheet");
   });
 
   it("unlocks an area via complete-job", () => {

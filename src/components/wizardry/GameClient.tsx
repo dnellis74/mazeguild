@@ -1,15 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { applyTavernReturn, characterLabel, mergeRecruit, sortPatrons } from "@/campaign/tavern";
+import { characterLabel } from "@/campaign/tavern";
 import { projectFrame } from "@/replay/project";
 import type { DungeonResult, SrdCharacter } from "@/sim/types";
-import { CharacterSheet } from "./CharacterSheet";
 import { DungeonView } from "./DungeonView";
 import { EventLog } from "./EventLog";
 import { MiniMap } from "./MiniMap";
 import { PartyRoster } from "./PartyRoster";
-import { PARTY_CAP } from "@/gen/data";
 
 const tap =
   "inline-flex min-h-11 min-w-11 items-center justify-center border px-3 font-mono text-sm tracking-wide select-none touch-manipulation disabled:opacity-40";
@@ -17,125 +15,38 @@ const tap =
 /** Walk pace at 1x. Combat events keep a faster cadence. */
 const STEP_MS = 500;
 const BATTLE_MS = 160;
-const PARTY_SIZE = PARTY_CAP;
-const TAVERN_SIZE = 12;
 
-const TOWN_LINES = [
-  "A busy town. Adventurers linger by the tavern door.",
-  "Hire four companions, then press ENTER MAZE.",
-];
-
-const TOWN_LINES_WITH_RECRUIT = [
-  "PLAYER is already hired.",
-  "Pick three more companions, then press ENTER MAZE.",
-];
-
-/** Tavern + maze UI. Quest tab passes `initialRecruit` (PLAYER) already hired. */
+/**
+ * Maze run UI. Party is chosen in Town Square — no tavern hire screen.
+ */
 export function GameClient({
-  initialRecruit = null,
+  party,
+  onReturnToTown,
 }: {
-  initialRecruit?: SrdCharacter | null;
+  party: SrdCharacter[];
+  onReturnToTown: () => void;
 }) {
   const [seed, setSeed] = useState(99);
-  const [patrons, setPatrons] = useState<SrdCharacter[]>([]);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [disabled, setDisabled] = useState<string[]>([]);
   const [result, setResult] = useState<DungeonResult | null>(null);
-  const [runParty, setRunParty] = useState<string[]>([]);
   const [cursor, setCursor] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const [busy, setBusy] = useState(true);
   const [running, setRunning] = useState(false);
-  const [inspecting, setInspecting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [campaignStarted, setCampaignStarted] = useState(false);
+  const [started, setStarted] = useState(false);
 
-  useEffect(() => {
-    if (campaignStarted) return;
-
-    const ac = new AbortController();
-    const id = window.setTimeout(() => {
-      setBusy(true);
-      setError(null);
-      setResult(null);
-      setRunParty([]);
-      setPlaying(false);
-      setSelected([]);
-      setInspecting(null);
-      void (async () => {
-        try {
-          const res = await fetch("/api/party", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              seed,
-              count: TAVERN_SIZE,
-              balanced: false,
-              names: true,
-            }),
-            signal: ac.signal,
-          });
-          const data = (await res.json()) as {
-            error?: string;
-            party?: SrdCharacter[];
-          };
-          if (!res.ok || !data.party) {
-            throw new Error(data.error ?? "tavern failed to fill");
-          }
-          if (initialRecruit) {
-            const merged = mergeRecruit(
-              data.party,
-              initialRecruit,
-              TAVERN_SIZE,
-            );
-            setPatrons(merged.patrons);
-            setSelected(merged.selected);
-          } else {
-            setPatrons(sortPatrons(data.party));
-          }
-        } catch (err) {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          setPatrons([]);
-          setError(err instanceof Error ? err.message : "tavern failed to fill");
-        } finally {
-          if (!ac.signal.aborted) setBusy(false);
-        }
-      })();
-    }, 280);
-    return () => {
-      window.clearTimeout(id);
-      ac.abort();
-    };
-  }, [seed, campaignStarted, initialRecruit]);
-
-  const actOnInspected = useCallback(() => {
-    if (inspecting === null || disabled.includes(inspecting)) return;
-    setSelected((cur) => {
-      if (cur.includes(inspecting)) {
-        return cur.filter((label) => label !== inspecting);
-      }
-      if (cur.length >= PARTY_SIZE) return cur;
-      return [...cur, inspecting];
-    });
-    setInspecting(null);
-  }, [inspecting, disabled]);
+  const partyKey = useMemo(
+    () => party.map((ch) => characterLabel(ch)).join("|"),
+    [party],
+  );
 
   const enterMaze = useCallback(async () => {
-    if (selected.length !== PARTY_SIZE || selected.some((label) => disabled.includes(label))) {
-      setError("Hire 4 companions first.");
-      return;
-    }
-    const party = selected
-      .map((label) => patrons.find((ch) => characterLabel(ch) === label))
-      .filter((ch): ch is SrdCharacter => ch !== undefined);
-    if (party.length !== PARTY_SIZE) {
-      setError("Hire 4 companions first.");
+    if (party.length < 2) {
+      setError("Need at least two companions to enter the maze.");
       return;
     }
     setError(null);
     setRunning(true);
-    setRunParty([...selected]);
     try {
       const res = await fetch("/api/run", {
         method: "POST",
@@ -149,43 +60,20 @@ export function GameClient({
       setResult(data);
       setCursor(0);
       setPlaying(false);
-      setCampaignStarted(true);
+      setStarted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "maze run failed");
     } finally {
       setRunning(false);
     }
-  }, [seed, selected, patrons, disabled]);
+  }, [seed, party]);
 
-  const returnToTavern = useCallback(() => {
-    if (!result) return;
-    const finalFrame = projectFrame(result, result.log.length - 1);
-    const wiped = finalFrame.outcome === "wipe";
-
-    setPatrons((current) =>
-      applyTavernReturn(current, runParty, finalFrame.party, wiped, seed),
-    );
-
-    if (wiped) {
-      setDisabled((current) =>
-        [...new Set([...current, ...runParty])].sort((a, b) =>
-          a.localeCompare(b),
-        ),
-      );
-    }
-
-    setResult(null);
-    setRunParty([]);
-    setSelected([]);
-    setPlaying(false);
-    setCursor(0);
-    setInspecting(null);
-    setError(
-      wiped
-        ? "The party was wiped. Those adventurers are gone."
-        : null,
-    );
-  }, [result, runParty, seed]);
+  // Auto-start once when the party arrives from Town Square.
+  useEffect(() => {
+    if (started || running || result) return;
+    void enterMaze();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partyKey]);
 
   const frame = useMemo(
     () => (result ? projectFrame(result, cursor) : null),
@@ -193,16 +81,6 @@ export function GameClient({
   );
 
   const inMaze = Boolean(result && frame);
-
-  useEffect(() => {
-    if (!result || !frame) return;
-    console.log("[maze]", {
-      pos: `${frame.pos.x},${frame.pos.y}`,
-      face: frame.facing.toUpperCase(),
-      xp: frame.score,
-      steps: cursor,
-    });
-  }, [result, frame, cursor]);
 
   useEffect(() => {
     if (!playing || !result) return;
@@ -231,17 +109,6 @@ export function GameClient({
     URL.revokeObjectURL(url);
   }
 
-  const sheet =
-    inspecting !== null && !inMaze
-      ? patrons.find((ch) => characterLabel(ch) === inspecting)
-      : undefined;
-  const sheetHired = inspecting !== null && selected.includes(inspecting);
-  const sheetDisabled = inspecting !== null && disabled.includes(inspecting);
-  const sheetHireBlocked =
-    inspecting !== null &&
-    !sheetHired &&
-    (sheetDisabled || selected.length >= PARTY_SIZE);
-
   return (
     <div className="crt flex h-full min-h-0 max-h-full w-full flex-col overflow-hidden bg-[#050301] pb-[max(0.5rem,var(--safe-bottom))] text-amber-300">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-800/70 pb-2 select-none">
@@ -252,23 +119,13 @@ export function GameClient({
           <h1 className="truncate font-mono text-lg tracking-widest text-amber-400 lg:text-2xl">
             MAZE OF THE GUILD
           </h1>
-          {inMaze ? (
-            <button
-              type="button"
-              onClick={returnToTavern}
-              className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500 underline-offset-2 hover:text-amber-300"
-            >
-              RETURN TO TAVERN
-            </button>
-          ) : sheet ? (
-            <p className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500">
-              CHARACTER SHEET
-            </p>
-          ) : (
-            <p className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500">
-              A BUSY TOWN
-            </p>
-          )}
+          <button
+            type="button"
+            onClick={onReturnToTown}
+            className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500 underline-offset-2 hover:text-amber-300"
+          >
+            RETURN TO TOWN SQUARE
+          </button>
         </div>
         <label className="flex shrink-0 items-center gap-2 font-mono text-sm">
           SEED
@@ -280,7 +137,7 @@ export function GameClient({
             autoCorrect="off"
             spellCheck={false}
             value={seed}
-            disabled={campaignStarted}
+            disabled={started || running}
             onChange={(e) => setSeed(Number(e.target.value))}
             onFocus={(e) => e.currentTarget.select()}
             className="w-[5.5rem] border border-amber-700 bg-black px-2 text-amber-200 disabled:opacity-40"
@@ -290,101 +147,88 @@ export function GameClient({
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain py-2 phone-land:overflow-hidden lg:overflow-hidden">
-        {sheet ? (
-          <CharacterSheet
-            character={sheet}
-            hired={sheetHired}
-            hireBlocked={sheetHireBlocked}
-            onHire={actOnInspected}
-            onBack={() => setInspecting(null)}
-          />
-        ) : (
-          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)_auto] gap-2">
-            <div className="col-start-1 row-start-1 flex min-h-0 flex-col gap-2">
-              {inMaze && frame && result ? (
-                <>
-                  <DungeonView
-                    scene="maze"
-                    maze={result.maze}
-                    pos={frame.pos}
-                    facing={frame.facing}
-                    inCombat={frame.inCombat}
-                    enemies={frame.enemies}
-                  />
-                  <MiniMap maze={result.maze} frame={frame} />
-                </>
-              ) : (
-                <>
-                  <DungeonView scene="town" />
-                  <TownMap />
-                </>
-              )}
-            </div>
-
-            <aside className="col-start-2 row-start-1 min-h-0 overflow-hidden">
-              {inMaze && frame ? (
-                <PartyRoster party={frame.party} />
-              ) : (
-                <PartyRoster
-                  mode="hire"
-                  patrons={patrons}
-                  selected={selected}
-                  disabled={disabled}
-                  onInspect={setInspecting}
-                  busy={busy}
+        <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-[minmax(0,1fr)_auto] gap-2">
+          <div className="col-start-1 row-start-1 flex min-h-0 flex-col gap-2">
+            {inMaze && frame && result ? (
+              <>
+                <DungeonView
+                  scene="maze"
+                  maze={result.maze}
+                  pos={frame.pos}
+                  facing={frame.facing}
+                  inCombat={frame.inCombat}
+                  enemies={frame.enemies}
                 />
-              )}
-            </aside>
-
-            <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
-              {error ? (
-                <p className="font-mono text-xs text-amber-200">{error}</p>
-              ) : null}
-              {inMaze && frame?.inCombat ? (
-                <p className="font-mono text-xs text-red-400">
-                  FIGHTING: {frame.enemies.join(", ")}
-                </p>
-              ) : null}
-              {inMaze && result ? (
-                <ReplayDeck
-                  cursor={cursor}
-                  length={result.log.length}
-                  playing={playing}
-                  speed={speed}
-                  onPlayPause={() => setPlaying((p) => !p)}
-                  onStepBack={() => {
-                    setPlaying(false);
-                    setCursor((c) => Math.max(0, c - 1));
-                  }}
-                  onStepForward={() => {
-                    setPlaying(false);
-                    setCursor((c) => c + 1);
-                  }}
-                  onSeek={(n) => {
-                    setPlaying(false);
-                    setCursor(n);
-                  }}
-                  onSpeed={setSpeed}
-                />
-              ) : null}
-              {inMaze && result ? (
-                cursor === 0 && !playing ? (
-                  <TownLog lines={["Press PLAY to see the party's fate."]} />
-                ) : (
-                  <EventLog log={result.log} cursor={cursor} />
-                )
-              ) : running ? (
-                <TownLog lines={["The maze is being prepared…"]} />
-              ) : (
-                <TownLog
-                  lines={
-                    initialRecruit ? TOWN_LINES_WITH_RECRUIT : TOWN_LINES
-                  }
-                />
-              )}
-            </div>
+                <MiniMap maze={result.maze} frame={frame} />
+              </>
+            ) : (
+              <DungeonView scene="town" />
+            )}
           </div>
-        )}
+
+          <aside className="col-start-2 row-start-1 min-h-0 overflow-hidden">
+            {inMaze && frame ? (
+              <PartyRoster party={frame.party} />
+            ) : (
+              <PartyRoster
+                mode="hire"
+                patrons={party}
+                selected={party.map(characterLabel)}
+                disabled={[]}
+                onInspect={() => {}}
+                busy={running}
+              />
+            )}
+          </aside>
+
+          <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
+            {error ? (
+              <p className="font-mono text-xs text-amber-200">{error}</p>
+            ) : null}
+            {inMaze && frame?.inCombat ? (
+              <p className="font-mono text-xs text-red-400">
+                FIGHTING: {frame.enemies.join(", ")}
+              </p>
+            ) : null}
+            {inMaze && result ? (
+              <ReplayDeck
+                cursor={cursor}
+                length={result.log.length}
+                playing={playing}
+                speed={speed}
+                onPlayPause={() => setPlaying((p) => !p)}
+                onStepBack={() => {
+                  setPlaying(false);
+                  setCursor((c) => Math.max(0, c - 1));
+                }}
+                onStepForward={() => {
+                  setPlaying(false);
+                  setCursor((c) => c + 1);
+                }}
+                onSeek={(n) => {
+                  setPlaying(false);
+                  setCursor(n);
+                }}
+                onSpeed={setSpeed}
+              />
+            ) : null}
+            {inMaze && result ? (
+              cursor === 0 && !playing ? (
+                <TownLog lines={["Press PLAY to see the party's fate."]} />
+              ) : (
+                <EventLog log={result.log} cursor={cursor} />
+              )
+            ) : (
+              <TownLog
+                lines={
+                  running
+                    ? ["The maze is being prepared…"]
+                    : ["The party gathers at the gate…"]
+                }
+              />
+            )}
+          </div>
+        </div>
       </main>
 
       <nav className="relative z-20 grid shrink-0 grid-cols-4 gap-2 border-t border-amber-900/70 bg-[#050301] pt-2 pb-[max(0.5rem,var(--safe-bottom))] phone-land:flex sm:flex sm:flex-wrap">
@@ -392,10 +236,10 @@ export function GameClient({
           <>
             <button
               type="button"
-              onClick={returnToTavern}
+              onClick={onReturnToTown}
               className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
             >
-              RETURN TO TAVERN
+              TOWN SQUARE
             </button>
             <button
               type="button"
@@ -410,7 +254,7 @@ export function GameClient({
           <button
             type="button"
             onClick={() => void enterMaze()}
-            disabled={busy || running || selected.length !== PARTY_SIZE}
+            disabled={running}
             className={`${tap} col-span-4 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
           >
             {running ? "…" : "ENTER MAZE"}
@@ -509,23 +353,6 @@ function ReplayDeck({
         aria-label="Replay position"
       />
     </div>
-  );
-}
-
-function TownMap() {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      className="aspect-square w-full max-w-[7.5rem] shrink-0 self-start border border-amber-700/60 bg-black sm:max-w-[10rem] lg:max-w-[12.5rem]"
-      aria-label="Town street map"
-    >
-      <rect x="16" y="16" width="16" height="16" fill="#3a2a10" />
-      <rect x="18" y="18" width="12" height="12" fill="#e4b45a" />
-      <line x1="16" y1="16" x2="32" y2="16" stroke="#c48a30" strokeWidth="1" />
-      <line x1="32" y1="16" x2="32" y2="32" stroke="#c48a30" strokeWidth="1" />
-      <line x1="16" y1="32" x2="32" y2="32" stroke="#c48a30" strokeWidth="1" />
-      <line x1="16" y1="16" x2="16" y2="32" stroke="#c48a30" strokeWidth="1" />
-    </svg>
   );
 }
 

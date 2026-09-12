@@ -16,7 +16,7 @@
 <script>
 
 
-/** Keep in sync with CHARACTER_STORAGE_KEY in src/lib/characterStorage.ts */
+/** Keep in sync with LEGACY_CHARACTER_KEY / migration in src/lib/rosterStorage.ts */
 const STORAGE_KEY = 'mazeguild.character';
 
 /** Debug: show quiz option weights under each answer. Flip to false to hide. */
@@ -646,6 +646,9 @@ function onAction(e){
     render();
   }
   else if(action==='finish'){
+    const race = RACES.find(r => r.id === ch.raceId);
+    const align = ALIGNMENTS.find(a => a.id === ch.alignment.alignmentId);
+    const displayName = `${align?.name || '?'} ${race?.name || 'Stranger'}`;
     const payload = {
       ...structuredClone(ch),
       featurePoints: 2,
@@ -658,8 +661,18 @@ function onAction(e){
       unlocked: { areas:{}, buildings:{}, rooms:{} },
       activeJob: null,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    window.location.href = '/training';
+    /** Keep in sync with ROSTER_KEY in src/lib/rosterStorage.ts */
+    const ROSTER_KEY = 'mazeguild.roster';
+    let roster = [];
+    try {
+      roster = JSON.parse(localStorage.getItem(ROSTER_KEY) || '[]');
+      if(!Array.isArray(roster)) roster = [];
+    } catch { roster = []; }
+    const id = (crypto.randomUUID && crypto.randomUUID()) || ('c-' + Date.now());
+    roster.push({ id, displayName, character: payload });
+    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.href = '/';
   }
 }
 

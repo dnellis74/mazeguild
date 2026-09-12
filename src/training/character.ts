@@ -5,6 +5,7 @@ import { skillById } from "./catalog";
 import type { Ability, Character } from "./types";
 import { ABILITY_ORDER } from "./types";
 import { featureLabel } from "./features";
+import { ensureUnlocked } from "./world";
 
 export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
   const ch = (raw || {}) as Partial<Character> & Record<string, unknown>;
@@ -39,6 +40,7 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
     if (next.abilityScores[ab] == null) next.abilityScores[ab] = pointFallback(catalog);
   }
 
+  next = ensureUnlocked(next);
   next = normalizeEarnedFeatures(catalog, next);
 
   if (next.activeJob?.kind === "activity" && !next.activeJob.skillId) {

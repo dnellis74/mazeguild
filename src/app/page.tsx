@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
+import { Share_Tech_Mono } from "next/font/google";
+import { TownSquareClient } from "@/components/town/TownSquareClient";
+
+const crt = Share_Tech_Mono({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-crt",
+});
 
 export const metadata: Metadata = {
-  title: "guildmaze",
-  description: "Create your character, train, then enter the maze.",
+  title: "Town Square · guildmaze",
+  description: "Gather companions, train, and quest into the maze.",
 };
 
-/** Unreachable when middleware rewrites `/` to character-initialization.html. */
 export default function HomePage() {
-  return null;
+  return (
+    <div className={`${crt.variable} ${crt.className} training-page`}>
+      {/* eslint-disable-next-line @next/next/no-css-tags */}
+      <link rel="stylesheet" href="/css/character-creation.css" />
+      <TownSquareClient />
+    </div>
+  );
 }

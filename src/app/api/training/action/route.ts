@@ -54,6 +54,7 @@ export async function POST(request: Request) {
       view,
       toast: result.toast || null,
       jobRunning: result.jobRunning || !!result.character.activeJob,
+      navigate: result.navigate || null,
     });
   } catch (err) {
     console.error(JSON.stringify({ msg: "training_action_error", err: String(err) }));

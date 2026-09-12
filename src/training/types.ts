@@ -148,6 +148,7 @@ export type TrainingAction =
   | { type: "world-select-building"; building: string }
   | { type: "world-select-room"; room: string }
   | { type: "world-select-activity"; skillId: string }
+  | { type: "world-select-portal"; portalId: string }
   | { type: "world-select-cantrip"; archetype: string }
   | { type: "world-select-spell"; archetype: string }
   | { type: "confirm-favored-enemy"; enemy: string }
@@ -165,4 +166,6 @@ export type ActionResult = {
   toast?: string | null;
   /** True when client should keep polling an active job. */
   jobRunning?: boolean;
+  /** Client should navigate here (portal activities). */
+  navigate?: string | null;
 };

@@ -1,13 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { QuestClient } from "@/components/training/QuestClient";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  clearCharacter,
-  loadCharacter,
-  saveCharacter,
-} from "@/lib/characterStorage";
+  getRosterEntry,
+  upsertRosterEntry,
+} from "@/lib/rosterStorage";
 import { jobProgress } from "@/training/view";
 import type {
   JobView,
@@ -17,28 +15,45 @@ import type {
 } from "@/training/view";
 import type { Character, TrainingAction, TrainingUi } from "@/training/types";
 
-const defaultUi = (): TrainingUi => ({
-  hubTab: "sheet",
-  worldView: "areas",
-  worldArea: null,
-  worldBuilding: null,
-  worldRoom: null,
-  pendingChoice: null,
-  originDraft: null,
-});
+function defaultUi(tab: "sheet" | "world" = "sheet"): TrainingUi {
+  return {
+    hubTab: tab,
+    worldView: "areas",
+    worldArea: null,
+    worldBuilding: null,
+    worldRoom: null,
+    pendingChoice: null,
+    originDraft: null,
+  };
+}
 
 export function TrainingClient() {
   const router = useRouter();
+  const params = useSearchParams();
+  const characterId = params.get("id") || "";
+  const initialTab =
+    params.get("tab") === "world" ? ("world" as const) : ("sheet" as const);
+
+  const [entryId, setEntryId] = useState(characterId);
+  const [displayName, setDisplayName] = useState("Companion");
   const [character, setCharacter] = useState<Character | null>(null);
-  const [ui, setUi] = useState<TrainingUi>(defaultUi);
+  const [ui, setUi] = useState<TrainingUi>(() => defaultUi(initialTab));
   const [view, setView] = useState<TrainingView | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [bootError, setBootError] = useState<string | null>(null);
   const [originDraft, setOriginDraft] = useState("");
 
-  const persist = useCallback((ch: Character) => {
-    saveCharacter(ch);
-  }, []);
+  const persist = useCallback(
+    (ch: Character) => {
+      if (!entryId) return;
+      upsertRosterEntry({
+        id: entryId,
+        displayName,
+        character: ch,
+      });
+    },
+    [entryId, displayName],
+  );
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -88,6 +103,18 @@ export function TrainingClient() {
         }
         throw new Error(data.error || "Action failed");
       }
+      if (data.navigate) {
+        const href = String(data.navigate).replaceAll(
+          "{id}",
+          encodeURIComponent(entryId),
+        );
+        if (href.endsWith(".html") || href.includes(".html?")) {
+          window.location.href = href;
+          return;
+        }
+        router.push(href);
+        return;
+      }
       setCharacter(data.character);
       setUi(data.ui);
       setView(data.view);
@@ -97,28 +124,34 @@ export function TrainingClient() {
         setOriginDraft(data.ui.originDraft ?? data.view.sheet.originStory.text);
       }
     },
-    [character, ui, persist, router, showToast],
+    [character, ui, persist, router, showToast, entryId],
   );
 
   useEffect(() => {
+    if (!characterId) {
+      router.replace("/");
+      return;
+    }
     try {
-      const ch = loadCharacter();
-      if (!ch) {
+      const entry = getRosterEntry(characterId);
+      if (!entry) {
         router.replace("/");
         return;
       }
-      setCharacter(ch);
-      void apiView(ch, defaultUi()).catch((err) => {
+      setEntryId(entry.id);
+      setDisplayName(entry.displayName);
+      setCharacter(entry.character);
+      const bootUi = defaultUi(initialTab);
+      void apiView(entry.character, bootUi).catch((err) => {
         setBootError(String(err?.message || err));
       });
     } catch (err) {
       setBootError(String(err instanceof Error ? err.message : err));
     }
-    // boot once
+    // boot once per id
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [characterId]);
 
-  // Job ticker — local animation, complete when done
   useEffect(() => {
     if (!character?.activeJob) return;
     const id = window.setInterval(() => {
@@ -139,10 +172,7 @@ export function TrainingClient() {
     return () => window.clearInterval(id);
   }, [character?.activeJob, apiAction, showToast]);
 
-  const restart = () => {
-    clearCharacter();
-    router.replace("/");
-  };
+  const backToSquare = () => router.push("/");
 
   if (bootError) {
     return (
@@ -160,8 +190,8 @@ export function TrainingClient() {
               {bootError}
             </pre>
             <p className="mechanic-note">
-              <button type="button" onClick={restart}>
-                Start over
+              <button type="button" onClick={backToSquare}>
+                Town Square
               </button>
             </p>
           </div>
@@ -182,54 +212,54 @@ export function TrainingClient() {
     );
   }
 
-  const onQuest = view.tab === "quest";
   const liveJob =
     character.activeJob && view.tab === "world"
       ? jobProgress(character.activeJob)
       : view.job;
 
   return (
-    <div className={`stage${onQuest ? " stage-quest" : ""}`}>
-      <div className={`app${onQuest ? " app-quest" : ""}`}>
+    <div className="stage">
+      <div className="app">
         <div className="hub">
-          {!onQuest ? (
-            <div className="hub-header">
-              <p className="kicker">Your record</p>
-              <h1>{view.header.title}</h1>
-              <p className="hub-meta">
-                {view.header.featurePoints} feature point
-                {view.header.featurePoints === 1 ? "" : "s"} left ·{" "}
-                <button
-                  type="button"
-                  onClick={restart}
-                  style={{ textDecoration: "underline", color: "var(--ink-soft)" }}
-                >
-                  New character
-                </button>
-              </p>
-            </div>
-          ) : null}
+          <div className="hub-header">
+            <p className="kicker">{displayName}</p>
+            <h1>{view.header.title}</h1>
+            <p className="hub-meta">
+              {view.header.featurePoints} feature point
+              {view.header.featurePoints === 1 ? "" : "s"} left ·{" "}
+              <button
+                type="button"
+                onClick={backToSquare}
+                style={{ textDecoration: "underline", color: "var(--ink-soft)" }}
+              >
+                Town Square
+              </button>
+            </p>
+          </div>
 
-          <div className={`hub-tabs${onQuest ? " hub-tabs-quest" : ""}`} role="tablist">
+          <div className="hub-tabs" role="tablist">
             {(
               [
                 ["sheet", "Sheet"],
                 ["world", "World"],
-                ["quest", "Quest"],
               ] as const
             ).map(([tab, label]) => (
               <button
                 key={tab}
                 type="button"
                 className={`hub-tab ${view.tab === tab ? "is-active" : ""}`}
-                onClick={() => void apiAction({ type: "hub-tab", tab }).catch((e) => showToast(String(e.message || e)))}
+                onClick={() =>
+                  void apiAction({ type: "hub-tab", tab }).catch((e) =>
+                    showToast(String(e.message || e)),
+                  )
+                }
               >
                 {label}
               </button>
             ))}
           </div>
 
-          <div className={`hub-body${onQuest ? " hub-body-quest" : ""}`}>
+          <div className="hub-body">
             {view.pending ? (
               <PendingPanel
                 pending={view.pending}
@@ -243,9 +273,10 @@ export function TrainingClient() {
                 originDraft={originDraft}
                 onOriginChange={setOriginDraft}
                 onSave={() =>
-                  void apiAction({ type: "save-origin-story", text: originDraft }).catch(
-                    (e) => showToast(String(e.message || e)),
-                  )
+                  void apiAction({
+                    type: "save-origin-story",
+                    text: originDraft,
+                  }).catch((e) => showToast(String(e.message || e)))
                 }
                 onReset={() =>
                   void apiAction({ type: "reset-origin-prompt" }).catch((e) =>
@@ -262,8 +293,6 @@ export function TrainingClient() {
                   void apiAction(a).catch((e) => showToast(String(e.message || e)))
                 }
               />
-            ) : view.tab === "quest" ? (
-              <QuestClient character={character} />
             ) : null}
           </div>
         </div>
@@ -557,6 +586,8 @@ function cardToAction(card: WorldView["cards"][number]): TrainingAction {
       return { type: "world-select-room", room: String(d.room) };
     case "world-select-activity":
       return { type: "world-select-activity", skillId: String(d.skillId) };
+    case "world-select-portal":
+      return { type: "world-select-portal", portalId: String(d.portalId) };
     case "world-select-cantrip":
       return { type: "world-select-cantrip", archetype: String(d.archetype) };
     case "world-select-spell":

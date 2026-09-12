@@ -17,8 +17,17 @@ import {
 import { buildOriginPrompt } from "./origin";
 import { jobProgress } from "./view";
 import {
+  isTownSquareBuilding,
+  isTownSquareLocation,
+  townSquarePortalById,
+  TOWN_SQUARE_AREA,
+  TOWN_SQUARE_BUILDING,
+  TOWN_SQUARE_ROOM,
+} from "./townSquare";
+import {
   areaKey,
   buildingKey,
+  ensureUnlocked,
   featureTiming,
   roomKey,
   unlockTiming,
@@ -346,6 +355,21 @@ export function applyTrainingAction(
     }
     case "world-select-building": {
       if (!ui.worldArea) return { character: ch, ui, toast: "No area selected." };
+      // Town Square portals skip the room drill-down and unlock job.
+      if (
+        ui.worldArea === TOWN_SQUARE_AREA &&
+        isTownSquareBuilding(action.building)
+      ) {
+        return {
+          character: ensureUnlocked(ch),
+          ui: {
+            ...ui,
+            worldBuilding: TOWN_SQUARE_BUILDING,
+            worldRoom: TOWN_SQUARE_ROOM,
+            worldView: "activities",
+          },
+        };
+      }
       const key = buildingKey(ui.worldArea, action.building);
       if (ch.unlocked.buildings[key]) {
         return {
@@ -420,6 +444,20 @@ export function applyTrainingAction(
         };
       }
       return startJob(catalog, ch, ui, jobBase);
+    }
+    case "world-select-portal": {
+      if (
+        !isTownSquareLocation({
+          worldArea: ui.worldArea,
+          worldBuilding: ui.worldBuilding,
+          worldRoom: ui.worldRoom,
+        })
+      ) {
+        return { character: ch, ui, toast: "Not in Town Square." };
+      }
+      const portal = townSquarePortalById(action.portalId);
+      if (!portal) return { character: ch, ui, toast: "Unknown activity." };
+      return { character: ch, ui, navigate: portal.href };
     }
     case "confirm-favored-enemy": {
       const pending = ui.pendingChoice;

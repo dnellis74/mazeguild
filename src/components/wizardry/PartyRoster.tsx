@@ -24,7 +24,7 @@ export function PartyRoster(props: HireProps | PartyProps) {
     return (
       <div className="flex h-full min-h-0 flex-col gap-1 font-mono text-[10px] uppercase leading-tight tracking-wide sm:gap-1.5 sm:text-xs sm:leading-normal">
         <p className="shrink-0 text-amber-500">
-          {selected.length}/{PARTY_CAP} HIRED
+          {selected.length}/{PARTY_CAP} PARTY
         </p>
         <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain sm:gap-1.5">
           {patrons.map((ch) => {
