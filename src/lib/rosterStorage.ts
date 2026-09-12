@@ -4,6 +4,7 @@ import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 /**
  * Multi-character roster for Town Square.
  * Legacy single-character key `mazeguild.character` is migrated once on load.
+ * Legacy nested `{ id, displayName, character }` entries are flattened.
  *
  * Creation HTML appends via the same ROSTER_KEY string — keep in sync with
  * `public/character-initialization.html`.
@@ -11,33 +12,70 @@ import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 export const ROSTER_KEY = "mazeguild.roster";
 export const LEGACY_CHARACTER_KEY = "mazeguild.character";
 
-export type RosterEntry = {
-  id: string;
-  displayName: string;
-  character: Character;
+/** Roster row is the shared companion character. */
+export type RosterEntry = Character;
+
+type LegacyNested = {
+  id?: string;
+  displayName?: string;
+  character?: Partial<Character> & Record<string, unknown>;
 };
 
-function readRaw(): RosterEntry[] {
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === "object" && !Array.isArray(v);
+}
+
+function flattenEntry(raw: unknown): Character | null {
+  if (!isPlainObject(raw)) return null;
+
+  // Legacy nested roster shape
+  if (isPlainObject(raw.character) && !("raceId" in raw && raw.raceId)) {
+    const nested = raw as LegacyNested;
+    const inner = nested.character!;
+    const id =
+      (typeof nested.id === "string" && nested.id) ||
+      (typeof inner.id === "string" && inner.id) ||
+      "";
+    const displayName =
+      (typeof nested.displayName === "string" && nested.displayName) ||
+      (typeof inner.displayName === "string" && inner.displayName) ||
+      "Companion";
+    if (!id || !inner.raceId) return null;
+    return {
+      ...(inner as Character),
+      id,
+      displayName,
+    };
+  }
+
+  if (typeof raw.raceId !== "string" || !raw.raceId) return null;
+  const id =
+    typeof raw.id === "string" && raw.id
+      ? raw.id
+      : typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `c-${Date.now()}`;
+  const displayName =
+    typeof raw.displayName === "string" && raw.displayName.trim()
+      ? raw.displayName
+      : "Companion";
+  return { ...(raw as Character), id, displayName };
+}
+
+function readRaw(): Character[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(ROSTER_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (e): e is RosterEntry =>
-        !!e &&
-        typeof e === "object" &&
-        typeof (e as RosterEntry).id === "string" &&
-        typeof (e as RosterEntry).displayName === "string" &&
-        !!(e as RosterEntry).character,
-    );
+    return parsed.map(flattenEntry).filter((e): e is Character => !!e);
   } catch {
     return [];
   }
 }
 
-function writeRaw(entries: RosterEntry[]) {
+function writeRaw(entries: Character[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(ROSTER_KEY, JSON.stringify(entries));
 }
@@ -51,7 +89,10 @@ export function migrateLegacyCharacter(): void {
     const character = JSON.parse(legacy) as Character;
     const roster = readRaw();
     const already = roster.some(
-      (e) => JSON.stringify(e.character) === JSON.stringify(character),
+      (e) =>
+        e.raceId === character.raceId &&
+        e.alignment?.alignmentId === character.alignment?.alignmentId &&
+        JSON.stringify(e.features) === JSON.stringify(character.features || []),
     );
     if (!already) {
       const named = generateUniqueFantasyName(
@@ -59,9 +100,9 @@ export function migrateLegacyCharacter(): void {
         roster.map((e) => e.displayName),
       );
       roster.push({
-        id: crypto.randomUUID(),
-        displayName: named.name,
-        character,
+        ...character,
+        id: character.id || crypto.randomUUID(),
+        displayName: character.displayName || named.name,
       });
       writeRaw(roster);
     }
@@ -71,20 +112,23 @@ export function migrateLegacyCharacter(): void {
   }
 }
 
-export function loadRoster(): RosterEntry[] {
+export function loadRoster(): Character[] {
   migrateLegacyCharacter();
-  return readRaw();
+  const roster = readRaw();
+  // Rewrite flattened shape so nested legacy does not linger
+  writeRaw(roster);
+  return roster;
 }
 
-export function saveRoster(entries: RosterEntry[]): void {
+export function saveRoster(entries: Character[]): void {
   writeRaw(entries);
 }
 
-export function getRosterEntry(id: string): RosterEntry | null {
+export function getRosterEntry(id: string): Character | null {
   return loadRoster().find((e) => e.id === id) ?? null;
 }
 
-export function upsertRosterEntry(entry: RosterEntry): void {
+export function upsertRosterEntry(entry: Character): void {
   const roster = loadRoster();
   const idx = roster.findIndex((e) => e.id === entry.id);
   if (idx >= 0) roster[idx] = entry;

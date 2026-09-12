@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { characterLabel } from "@/campaign/labels";
 import { projectFrame } from "@/replay/project";
-import type { DungeonResult, SrdCharacter } from "@/sim/types";
+import type { DungeonResult } from "@/sim/types";
+import type { Character } from "@/training/types";
 import { DungeonView } from "./DungeonView";
 import { EventLog } from "./EventLog";
 import { MiniMap } from "./MiniMap";
@@ -21,7 +22,7 @@ export function GameClient({
   party,
   onReturnToTown,
 }: {
-  party: SrdCharacter[];
+  party: Character[];
   onReturnToTown: () => void;
 }) {
   const [seed, setSeed] = useState(99);

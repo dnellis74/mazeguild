@@ -1,15 +1,29 @@
+import type { Character } from "@/training/types";
+import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 import type { Catalog } from "./catalog";
 import { baseAbilityScores } from "./abilities";
 import { normalizeEarnedFeatures } from "./features";
-import { skillById } from "./catalog";
-import type { Ability, Character } from "./types";
+import type { Ability } from "./types";
 import { ABILITY_ORDER } from "./types";
 import { featureLabel } from "./features";
 import { ensureUnlocked } from "./world";
 
 export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
   const ch = (raw || {}) as Partial<Character> & Record<string, unknown>;
+  const id =
+    typeof ch.id === "string" && ch.id
+      ? ch.id
+      : typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `c-${Date.now()}`;
+  const displayName =
+    typeof ch.displayName === "string" && ch.displayName.trim()
+      ? ch.displayName.trim()
+      : "Companion";
+
   let next: Character = {
+    id,
+    displayName,
     raceId: String(ch.raceId || ""),
     subrace: (ch.subrace as Character["subrace"]) || null,
     alignment: (ch.alignment as Character["alignment"]) || { alignmentId: "" },
@@ -27,6 +41,7 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
       rooms: {},
     },
     activeJob: (ch.activeJob as Character["activeJob"]) ?? null,
+    xp: typeof ch.xp === "number" ? ch.xp : 0,
   };
 
   if (!next.abilityScoresAssigned) {
@@ -35,7 +50,6 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
     next.abilityScores = baseAbilityScores(catalog);
   }
 
-  // Ensure all ability keys exist
   for (const ab of ABILITY_ORDER) {
     if (next.abilityScores[ab] == null) next.abilityScores[ab] = pointFallback(catalog);
   }
@@ -79,4 +93,12 @@ export function validateCharacter(ch: Character): string | null {
   return null;
 }
 
-export { skillById };
+/** Assign a display name when missing (e.g. migration). */
+export function ensureDisplayName(
+  ch: Character,
+  taken: string[],
+): Character {
+  if (ch.displayName?.trim()) return ch;
+  const named = generateUniqueFantasyName(ch.raceId, taken);
+  return { ...ch, displayName: named.name };
+}

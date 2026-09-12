@@ -14,7 +14,7 @@ const CLUB: Weapon = {
 function combatant(
   over: Partial<Combatant> & {
     id: string;
-    className: string;
+    archetype: string;
     role: Role;
   },
 ): Combatant {
@@ -44,15 +44,15 @@ function combatant(
 }
 
 const foes = [
-  combatant({ id: "gob-low", className: "Monster", role: "dps", hp: 3, maxHp: 7 }),
-  combatant({ id: "gob-high", className: "Monster", role: "dps", hp: 10, maxHp: 11 }),
+  combatant({ id: "gob-low", archetype: "Monster", role: "dps", hp: 3, maxHp: 7 }),
+  combatant({ id: "gob-high", archetype: "Monster", role: "dps", hp: 10, maxHp: 11 }),
 ];
 
 describe("chooseAction", () => {
   it("tags a caster's attack with their assigned cantrip and keeps dps targeting", () => {
     const wizard = combatant({
       id: "wiz",
-      className: "Wizard",
+      archetype: "Wizard",
       role: "dps",
       cantrip: "Fire Bolt",
     });
@@ -66,12 +66,12 @@ describe("chooseAction", () => {
   it("leaves Barbarian and Paladin as plain weapon attacks", () => {
     const barbarian = combatant({
       id: "barb",
-      className: "Barbarian",
+      archetype: "Barbarian",
       role: "tank",
     });
     const paladin = combatant({
       id: "pal",
-      className: "Paladin",
+      archetype: "Paladin",
       role: "tank",
     });
     expect(chooseAction(barbarian, [barbarian], foes)).toEqual({
@@ -87,14 +87,14 @@ describe("chooseAction", () => {
   it("still heals a wounded ally before attacking, even with a cantrip assigned", () => {
     const druid = combatant({
       id: "dru",
-      className: "Druid",
+      archetype: "Druid",
       role: "healer",
       cantrip: "Produce Flame",
       healSlots: 1,
     });
     const wounded = combatant({
       id: "ally",
-      className: "Fighter",
+      archetype: "Fighter",
       role: "tank",
       hp: 4,
       maxHp: 12,

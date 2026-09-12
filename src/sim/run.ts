@@ -1,11 +1,11 @@
-import { characterToCombatant } from "./adapter";
+import { companionToCombatant } from "./adapter";
 import { runCombat } from "./combat";
 import { pickLoot, spawnEncounter } from "./encounters";
 import { levelForXp } from "./leveling";
 import { applyXp } from "./rules";
 import { aStarPath, dirBetween, generateMaze } from "./maze";
 import { createRng, dice } from "./rng";
-import { PARTY_CAP } from "@/gen/data";
+import { PARTY_CAP } from "./constants";
 import type { DungeonInput, DungeonResult, LogEvent } from "./types";
 
 const STEP_CAP = 5000;
@@ -19,9 +19,9 @@ export function runDungeon(input: DungeonInput): DungeonResult {
   const rng = createRng(seed);
   const maze = generateMaze(rng, 20);
   const route = aStarPath(maze, maze.entrance, maze.exit);
-  const party = input.party.slice(0, PARTY_CAP).map(characterToCombatant);
+  const party = input.party.slice(0, PARTY_CAP).map(companionToCombatant);
   const partyLevels = party.map((member) => ({
-    level: levelForXp(member.className, member.xp),
+    level: levelForXp(member.xp),
   }));
 
   const log: LogEvent[] = [];
@@ -40,7 +40,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
     firstEncounterIn: stepsUntilEncounter,
     party: party.map((p) => ({
       name: p.name,
-      class: p.className,
+      summary: p.archetype,
       race: p.race,
       hp: p.hp,
       maxHp: p.maxHp,
@@ -85,7 +85,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       const livingLevels = party
         .filter((member) => member.alive)
         .map((member) => ({
-          level: levelForXp(member.className, member.xp),
+          level: levelForXp(member.xp),
         }));
       const enemies = spawnEncounter(
         rng,

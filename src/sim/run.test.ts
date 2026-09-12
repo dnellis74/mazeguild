@@ -3,11 +3,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { aStarPath } from "./maze";
 import { runDungeon } from "./run";
-import type { SrdCharacter } from "./types";
+import type { Character } from "@/training/types";
 
 const party = JSON.parse(
   readFileSync(path.join(__dirname, "../data/sample-party.json"), "utf8"),
-) as SrdCharacter[];
+) as Character[];
 
 describe("runDungeon", () => {
   it("is byte-identical for the same seed and party", () => {

@@ -8,13 +8,12 @@ import {
   type RosterEntry,
 } from "@/lib/rosterStorage";
 import { stashQuestParty } from "@/lib/questHandoff";
-import { PARTY_CAP } from "@/gen/data";
+import { PARTY_CAP } from "@/sim/constants";
 import {
   TOWN_SQUARE_AREA,
   TOWN_SQUARE_BUILDING,
 } from "@/training/townSquare";
 import type { Character } from "@/training/types";
-import type { SrdCharacter } from "@/sim/types";
 
 type CatalogLabels = {
   races: Record<string, string>;
@@ -97,30 +96,16 @@ export function TownSquareClient() {
     [exploreId, router],
   );
 
-  const startQuest = useCallback(async () => {
+  const startQuest = useCallback(() => {
     if (!canQuest || questBusy) return;
     setQuestBusy(true);
     setQuestError(null);
     try {
-      const party = await Promise.all(
-        selected.map(async (id) => {
-          const entry = getRosterEntry(id);
-          if (!entry) throw new Error(`Missing companion (${id}).`);
-          const res = await fetch("/api/training/export", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ character: entry.character }),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.character) {
-            throw new Error(data.error || `Could not ready ${entry.displayName}`);
-          }
-          return {
-            ...(data.character as SrdCharacter),
-            name: entry.displayName,
-          };
-        }),
-      );
+      const party = selected.map((id) => {
+        const entry = getRosterEntry(id);
+        if (!entry) throw new Error(`Missing companion (${id}).`);
+        return entry;
+      });
       stashQuestParty(party);
       router.push("/quest");
     } catch (err) {
@@ -244,8 +229,8 @@ export function TownSquareClient() {
                   {roster.map((entry) => {
                     const on = selected.includes(entry.id);
                     const blocked = !on && selected.length >= PARTY_CAP;
-                    const identity = companionLine(entry.character, labels);
-                    const archetypes = featureArchetypes(entry.character);
+                    const identity = companionLine(entry, labels);
+                    const archetypes = featureArchetypes(entry);
                     return (
                       <div key={entry.id} className="town-roster-item">
                         <button

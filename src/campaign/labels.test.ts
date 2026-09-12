@@ -1,26 +1,40 @@
 import { describe, expect, it } from "vitest";
 import { characterLabel } from "./labels";
-import type { SrdCharacter } from "@/sim/types";
+import type { Character } from "@/training/types";
 
-function stub(partial: Partial<SrdCharacter>): SrdCharacter {
+function stub(partial: Partial<Character>): Character {
   return {
-    race: "Human",
-    class: "Fighter",
-    hit_points: { value: 10 },
-    armor_class: { value: 10 },
-    ability_scores: {},
+    id: "c1",
+    displayName: "Companion",
+    raceId: "human",
+    alignment: { alignmentId: "lg" },
+    featurePoints: 2,
+    features: [],
+    cantrips: [],
+    spells: [],
+    abilityScores: {
+      STR: 10,
+      DEX: 10,
+      CON: 10,
+      INT: 10,
+      WIS: 10,
+      CHA: 10,
+    },
+    abilityScoresAssigned: true,
+    unlocked: { areas: {}, buildings: {}, rooms: {} },
+    activeJob: null,
     ...partial,
-  } as SrdCharacter;
+  };
 }
 
 describe("characterLabel", () => {
-  it("prefers a trimmed name", () => {
-    expect(characterLabel(stub({ name: "  Aldric  ", race: "Human", class: "Fighter" }))).toBe(
-      "Aldric",
-    );
+  it("prefers displayName", () => {
+    expect(characterLabel(stub({ displayName: "  Aldric  " }))).toBe("Aldric");
   });
 
-  it("falls back to race and class", () => {
-    expect(characterLabel(stub({ name: "", race: "Elf", class: "Wizard" }))).toBe("Elf Wizard");
+  it("falls back when name is blank", () => {
+    expect(characterLabel(stub({ displayName: "", raceId: "elf" }))).toBe(
+      "elf companion",
+    );
   });
 });

@@ -1,100 +1,161 @@
-import { CLASS_ATTACK_CANTRIP } from "./cantrips";
+import { ATTACK_CANTRIPS, defaultAttackCantrip } from "./cantrips";
 import { abilityMod } from "./rules";
 import {
-  classFallbackWeapon,
+  archetypeFallbackWeapon,
+  defaultUnarmedWeapon,
   monkUnarmedWeapon,
 } from "./weapons";
-import type {
-  Ability,
-  Combatant,
-  DiceExpr,
-  Role,
-  SrdCharacter,
-  Weapon,
-} from "./types";
+import type { Ability, Combatant, Role, Weapon } from "./types";
+import type { Character } from "@/training/types";
+import { asFeatureList } from "@/training/features";
 
 const ABILITIES: Ability[] = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 
-const TANK = new Set(["Barbarian", "Fighter", "Paladin"]);
-const HEALER = new Set(["Cleric", "Druid", "Bard"]);
-const SPELL_HEALER = new Set(["Cleric", "Druid", "Bard", "Ranger"]);
+/** Hit die by feature archetype — used only to derive starting HP. */
+const ARCHETYPE_HIT_DIE: Record<string, number> = {
+  Barbarian: 12,
+  Fighter: 10,
+  Paladin: 10,
+  Ranger: 10,
+  Bard: 8,
+  Cleric: 8,
+  Druid: 8,
+  Monk: 8,
+  Rogue: 8,
+  Warlock: 8,
+  Sorcerer: 6,
+  Wizard: 6,
+};
 
-const ATTACK_CANTRIPS = new Set(Object.values(CLASS_ATTACK_CANTRIP));
+const TANK_ARCHETYPES = new Set(["Barbarian", "Fighter", "Paladin"]);
+const HEALER_ARCHETYPES = new Set(["Cleric", "Druid", "Bard"]);
+const SPELL_HEALER_ARCHETYPES = new Set([
+  "Cleric",
+  "Druid",
+  "Bard",
+  "Ranger",
+]);
 
-function assignedAttackCantrip(ch: SrdCharacter): string | undefined {
-  const known = ch.spellcasting?.cantrips_known?.find((name) =>
-    ATTACK_CANTRIPS.has(name),
-  );
-  return known ?? CLASS_ATTACK_CANTRIP[ch.class];
+const SPELL_ABILITY: Record<string, Ability> = {
+  Bard: "CHA",
+  Cleric: "WIS",
+  Druid: "WIS",
+  Paladin: "CHA",
+  Ranger: "WIS",
+  Sorcerer: "CHA",
+  Warlock: "CHA",
+  Wizard: "INT",
+};
+
+function featureText(ch: Character): string {
+  return (ch.features || [])
+    .flatMap((f) => asFeatureList(f.feature))
+    .join(" ");
 }
 
-function parseDamage(text: string): { expr: DiceExpr; type: string } | null {
-  const m = text.match(/(\d+)d(\d+)\s+(\w+)/i);
-  if (!m) return null;
-  return {
-    expr: { count: Number(m[1]), sides: Number(m[2]) },
-    type: m[3],
-  };
+function archetypesOf(ch: Character): string[] {
+  const seen: string[] = [];
+  for (const f of ch.features || []) {
+    if (f.archetype && !seen.includes(f.archetype)) seen.push(f.archetype);
+  }
+  return seen;
 }
 
-function parseBonus(value: string | number): number {
-  if (typeof value === "number") return value;
-  return Number.parseInt(String(value).replace("+", ""), 10) || 2;
-}
-
-function roleFor(className: string): Role {
-  if (TANK.has(className)) return "tank";
-  if (HEALER.has(className)) return "healer";
+function roleFor(archetypes: string[], features: string): Role {
+  if (
+    archetypes.some((a) => HEALER_ARCHETYPES.has(a)) ||
+    /Lay on Hands/i.test(features)
+  ) {
+    return "healer";
+  }
+  if (archetypes.some((a) => TANK_ARCHETYPES.has(a))) return "tank";
   return "dps";
 }
 
-function weaponsFrom(ch: SrdCharacter): Weapon[] {
-  const details = ch.equipment?.from_class_detail ?? [];
-  const out: Weapon[] = [];
-  for (const entry of details) {
-    const stats = entry.stats;
-    if (!stats || stats.type !== "weapon" || !stats.damage) continue;
-    const parsed = parseDamage(stats.damage);
-    if (!parsed) continue;
-    const properties = stats.properties ?? [];
-    out.push({
-      name: stats.name ?? entry.item,
-      damage: parsed.expr,
-      damageType: parsed.type,
-      properties,
-      finesse: properties.some((p) => /finesse/i.test(p)),
-      ranged: properties.some((p) => /ammunition/i.test(p)),
-    });
+function hitDieFor(archetypes: string[]): number {
+  let best = 8;
+  for (const a of archetypes) {
+    const die = ARCHETYPE_HIT_DIE[a];
+    if (die != null && die > best) best = die;
   }
-  return out;
+  return best;
 }
 
-function pickWeapon(ch: SrdCharacter, className: string): Weapon {
-  const weapons = weaponsFrom(ch);
-  const melee = weapons.filter((w) => !w.ranged);
-  const pool = melee.length > 0 ? melee : weapons;
-  if (pool.length > 0) {
-    return pool.reduce((best, w) => {
-      const avg = (w.damage.count * (w.damage.sides + 1)) / 2;
-      const bestAvg = (best.damage.count * (best.damage.sides + 1)) / 2;
-      return avg > bestAvg ? w : best;
-    });
+function level1Slots(archetypes: string[]): number {
+  if (archetypes.includes("Warlock")) return 1;
+  if (
+    archetypes.some((a) =>
+      ["Bard", "Cleric", "Druid", "Sorcerer", "Wizard"].includes(a),
+    )
+  ) {
+    return 2;
   }
-  if (className === "Monk") {
-    return monkUnarmedWeapon();
-  }
-  return classFallbackWeapon(className);
+  return 0;
 }
 
-function traitsOf(ch: SrdCharacter): string {
-  return [...(ch.racial_traits ?? []), ...(ch.class_features_level_1 ?? [])].join(
-    " ",
-  );
+function pickSpellAbility(archetypes: string[]): Ability {
+  for (const a of archetypes) {
+    const ab = SPELL_ABILITY[a];
+    if (ab) return ab;
+  }
+  return "WIS";
 }
 
-/** Map an SRD 5.1 character JSON blob onto a combatant. */
-export function characterToCombatant(
-  ch: SrdCharacter,
+function assignedAttackCantrip(ch: Character): string | undefined {
+  const known = (ch.cantrips || []).find((c) => ATTACK_CANTRIPS.has(c.name));
+  if (known) return known.name;
+  for (const a of archetypesOf(ch)) {
+    const fallback = defaultAttackCantrip(a);
+    if (fallback) return fallback;
+  }
+  return undefined;
+}
+
+function pickWeapon(archetypes: string[]): Weapon {
+  if (archetypes.includes("Monk")) return monkUnarmedWeapon();
+  for (const a of archetypes) {
+    const w = archetypeFallbackWeapon(a);
+    if (w) return w;
+  }
+  return defaultUnarmedWeapon();
+}
+
+function raceLabel(raceId: string): string {
+  if (!raceId) return "Unknown";
+  return raceId
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function hasUnarmoredDefense(archetypes: string[]): "barbarian" | "monk" | null {
+  if (archetypes.includes("Barbarian")) return "barbarian";
+  if (archetypes.includes("Monk")) return "monk";
+  return null;
+}
+
+function armorClass(
+  scores: Record<Ability, number>,
+  archetypes: string[],
+): number {
+  const dex = abilityMod(scores.DEX ?? 10);
+  const unarmored = hasUnarmoredDefense(archetypes);
+  if (unarmored === "barbarian") {
+    return 10 + dex + abilityMod(scores.CON ?? 10);
+  }
+  if (unarmored === "monk") {
+    return 10 + dex + abilityMod(scores.WIS ?? 10);
+  }
+  return 10 + dex;
+}
+
+/**
+ * Map a companion onto a combat runtime fighter.
+ * Combat reads features / cantrips / spells / race / scores — not a class sheet.
+ */
+export function companionToCombatant(
+  ch: Character,
   index: number,
 ): Combatant {
   const abilities = {
@@ -106,42 +167,51 @@ export function characterToCombatant(
     CHA: 10,
   } satisfies Record<Ability, number>;
   for (const abi of ABILITIES) {
-    abilities[abi] = ch.ability_scores?.[abi]?.score ?? 10;
+    abilities[abi] = ch.abilityScores?.[abi] ?? 10;
   }
 
-  const className = ch.class;
-  const race = ch.race;
-  const traits = traitsOf(ch);
-  const spellAbility = (ch.spellcasting?.ability as Ability | undefined) ?? "WIS";
-  const slots = ch.spellcasting?.spell_slots?.["1"] ?? 0;
+  const archetypes = archetypesOf(ch);
+  const features = featureText(ch);
+  const race = raceLabel(ch.raceId);
+  const hitDie = hitDieFor(archetypes);
+  const hp = Math.max(1, hitDie + abilityMod(abilities.CON));
+  const slots = level1Slots(archetypes);
+  const spellAbility = pickSpellAbility(archetypes);
+  const primary = archetypes[0] || "Companion";
 
   return {
-    id: `pc-${index}`,
-    name: ch.name?.trim() || `${race} ${className}`,
+    id: ch.id || `pc-${index}`,
+    name: ch.displayName?.trim() || `${race} ${primary}`,
     kind: "pc",
-    className,
+    archetype: primary,
     race,
-    role: roleFor(className),
+    role: roleFor(archetypes, features),
     abilities,
-    proficiencyBonus: parseBonus(ch.proficiency_bonus),
-    ac: ch.armor_class?.value ?? 10,
-    maxHp: ch.hit_points?.value ?? 8,
-    hp: ch.hit_points?.value ?? 8,
+    proficiencyBonus: 2,
+    ac: armorClass(abilities, archetypes),
+    maxHp: hp,
+    hp,
     alive: true,
-    weapon: pickWeapon(ch, className),
+    weapon: pickWeapon(archetypes),
     cantrip: assignedAttackCantrip(ch),
-    lucky: /Lucky/i.test(traits) || race === "Halfling",
-    relentless: /Relentless Endurance/i.test(traits),
+    lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
+    relentless:
+      /Relentless Endurance/i.test(features) || /half-?orc/i.test(ch.raceId),
     relentlessUsed: false,
-    sneakAttackDice: /Sneak Attack/i.test(traits) ? 1 : 0,
-    healSlots: SPELL_HEALER.has(className) ? slots : 0,
-    layOnHands: /Lay on Hands/i.test(traits) ? 5 : 0,
+    sneakAttackDice: /Sneak Attack/i.test(features) ? 1 : 0,
+    healSlots: archetypes.some((a) => SPELL_HEALER_ARCHETYPES.has(a))
+      ? slots
+      : 0,
+    layOnHands: /Lay on Hands/i.test(features) ? 5 : 0,
     spellMod: abilityMod(abilities[spellAbility]),
     healDice: { count: 1, sides: 8 },
     xp: ch.xp ?? 0,
     xpValue: 0,
   };
 }
+
+/** @deprecated Use companionToCombatant. */
+export const characterToCombatant = companionToCombatant;
 
 export function makeMonster(opts: {
   id: string;
@@ -156,7 +226,7 @@ export function makeMonster(opts: {
     id: opts.id,
     name: opts.name,
     kind: "monster",
-    className: "Monster",
+    archetype: "Monster",
     race: "Monster",
     role: "dps",
     abilities: opts.abilities,

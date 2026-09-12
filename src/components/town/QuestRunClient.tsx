@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GameClient } from "@/components/wizardry/GameClient";
 import { clearQuestParty, readQuestParty } from "@/lib/questHandoff";
-import type { SrdCharacter } from "@/sim/types";
+import type { Character } from "@/training/types";
 
 /**
- * Maze entry: party is exported on Town Square and handed off here.
+ * Maze entry: party is handed off from Town Square.
  * No gate / gathering screen — straight into GameClient.
  */
 export function QuestRunClient() {
   const router = useRouter();
-  const [party, setParty] = useState<SrdCharacter[] | null>(() => readQuestParty());
+  const [party, setParty] = useState<Character[] | null>(() => readQuestParty());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

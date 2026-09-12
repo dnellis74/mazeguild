@@ -1,7 +1,7 @@
 # Training domain
 
 Pure rules and view DTOs for companions in the walled city: explore places,
-spend feature points, then export into the maze. UI lives outside this folder;
+spend feature points, then quest into the maze. UI lives outside this folder;
 this package should stay free of React and `localStorage`.
 
 ## Player flow
@@ -10,7 +10,7 @@ this package should stay free of React and `localStorage`.
 Town Square (/)
   ├─ Welcome a Stranger → character-initialization.html → back to /
   ├─ 1 companion selected → Enter the City (/training?id=…)
-  └─ 2+ selected → Quest (export on square → /quest maze, auto-play)
+  └─ 2+ selected → Quest (stash companions → /quest maze, auto-play)
 ```
 
 **Explore** (`TrainingClient` on `/training`) starts in the world. Crumbs mirror
@@ -30,11 +30,12 @@ directly).
 
 | Key | Where | Role |
 |-----|--------|------|
-| `mazeguild.roster` | `src/lib/rosterStorage.ts` (+ creation HTML) | Multi-companion list |
+| `mazeguild.roster` | `src/lib/rosterStorage.ts` (+ creation HTML) | Multi-companion list (`Character[]`) |
 | `mazeguild.character` | legacy | Migrated into the roster once on load |
 
-Creation assigns a race-appropriate display name (`fantasy-content-generator`,
-random gender) via `POST /api/names`. Clients must keep the roster shape in sync.
+A companion is one shared `Character` blob (`id`, `displayName`, race, features,
+scores, world unlocks, …). Town Square, training, and the maze all use it.
+Creation assigns a race-appropriate display name via `POST /api/names`.
 
 ## HTTP API
 
@@ -46,11 +47,13 @@ character blob, and call into this package.
 | `GET` | `/api/training/catalog` | — | Counts / timing summary |
 | `POST` | `/api/training/view` | `{ character, ui }` | `{ character, ui, view }` |
 | `POST` | `/api/training/action` | `{ character, ui, action }` | `{ character, ui, view, toast?, jobRunning?, navigate? }` |
-| `POST` | `/api/training/export` | `{ character }` | `{ character: SrdCharacter, label }` |
 | `POST` | `/api/names` | `{ raceId, gender?, taken? }` | `{ name, gender, race, seed }` |
 
 `navigate` is set for Town Square portal actions; the client follows it
 (`{id}` → current roster id). Feature activities start timed jobs instead.
+
+Quest handoff does **not** convert through an SRD sheet — Town Square stashes
+selected companions and `/api/run` maps them with `companionToCombatant`.
 
 ## Module map
 
@@ -63,7 +66,6 @@ character blob, and call into this package.
 | `townSquare.ts` | Portal building constants and activity → href map |
 | `actions.ts` | `applyTrainingAction` reducer |
 | `view.ts` | Sheet / world / pending-choice DTOs for the client |
-| `toSrd.ts` | Training character → maze `SrdCharacter` |
 | `abilities.ts` / `features.ts` / `magic.ts` / `origin.ts` | Point-buy, prereqs, cantrips/spells, origin prompt |
 | `training.test.ts` | Domain tests |
 
@@ -77,3 +79,4 @@ character blob, and call into this package.
 | `/character-initialization.html` | Race / alignment intake → named roster entry |
 
 Maze combat and replay live under `src/sim/` and `src/components/wizardry/`.
+Combat derives a thin `Combatant` from companion features at run time.

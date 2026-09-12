@@ -34,8 +34,13 @@ export function getWeapon(key: string): Weapon {
 }
 
 export function classFallbackWeapon(className: string): Weapon {
-  const key = DATA.class_fallback[className];
-  return key ? getWeapon(key) : getWeapon("unarmed");
+  return archetypeFallbackWeapon(className) ?? getWeapon("unarmed");
+}
+
+/** Archetype-keyed fallback; returns null when the table has no entry. */
+export function archetypeFallbackWeapon(archetype: string): Weapon | null {
+  const key = DATA.class_fallback[archetype];
+  return key ? getWeapon(key) : null;
 }
 
 export function monkUnarmedWeapon(): Weapon {

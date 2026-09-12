@@ -675,7 +675,7 @@ function onAction(e){
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             raceId: ch.raceId,
-            taken: roster.map(e => e && e.displayName).filter(Boolean),
+            taken: roster.map(e => e && (e.displayName || (e.character && e.character.displayName))).filter(Boolean),
           }),
         });
         const data = await res.json();
@@ -684,7 +684,10 @@ function onAction(e){
         console.warn('Name generation failed; using fallback.', err);
       }
 
+      const id = (crypto.randomUUID && crypto.randomUUID()) || ('c-' + Date.now());
       const payload = {
+        id,
+        displayName,
         ...structuredClone(ch),
         featurePoints: 2,
         features: [],
@@ -695,9 +698,9 @@ function onAction(e){
         spells: [],
         unlocked: { areas:{}, buildings:{}, rooms:{} },
         activeJob: null,
+        xp: 0,
       };
-      const id = (crypto.randomUUID && crypto.randomUUID()) || ('c-' + Date.now());
-      roster.push({ id, displayName, character: payload });
+      roster.push(payload);
       localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
       localStorage.removeItem(STORAGE_KEY);
       window.location.href = '/';

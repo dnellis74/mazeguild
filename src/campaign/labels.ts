@@ -1,6 +1,9 @@
-import type { SrdCharacter } from "@/sim/types";
+import type { Character } from "@/training/types";
 
-/** Display label for an SRD party member (unique-ish by name). */
-export function characterLabel(character: SrdCharacter): string {
-  return character.name?.trim() || `${character.race} ${character.class}`;
+/** Display label for a companion. */
+export function characterLabel(character: Character): string {
+  return (
+    character.displayName?.trim() ||
+    `${character.raceId || "Unknown"} companion`
+  );
 }

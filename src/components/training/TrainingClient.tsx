@@ -77,9 +77,9 @@ export function TrainingClient() {
     (ch: Character, name = displayName) => {
       if (!entryId) return;
       upsertRosterEntry({
+        ...ch,
         id: entryId,
         displayName: name,
-        character: ch,
       });
     },
     [entryId, displayName],
@@ -90,11 +90,9 @@ export function TrainingClient() {
       const next = raw.trim() || displayName;
       setDisplayName(next);
       if (!entryId || !character || !next) return;
-      upsertRosterEntry({
-        id: entryId,
-        displayName: next,
-        character,
-      });
+      const updated = { ...character, id: entryId, displayName: next };
+      setCharacter(updated);
+      upsertRosterEntry(updated);
     },
     [entryId, character, displayName],
   );
@@ -105,11 +103,9 @@ export function TrainingClient() {
       setDisplayName(raw);
       const trimmed = raw.trim();
       if (!entryId || !character || !trimmed) return;
-      upsertRosterEntry({
-        id: entryId,
-        displayName: trimmed,
-        character,
-      });
+      const updated = { ...character, id: entryId, displayName: trimmed };
+      setCharacter(updated);
+      upsertRosterEntry(updated);
     },
     [entryId, character],
   );
@@ -132,11 +128,9 @@ export function TrainingClient() {
       }
       const next = String(data.name);
       setDisplayName(next);
-      upsertRosterEntry({
-        id: entryId,
-        displayName: next,
-        character,
-      });
+      const updated = { ...character, id: entryId, displayName: next };
+      setCharacter(updated);
+      upsertRosterEntry(updated);
     } catch (err) {
       showToast(String(err instanceof Error ? err.message : err));
     } finally {
@@ -159,16 +153,21 @@ export function TrainingClient() {
         }
         throw new Error(data.error || "View failed");
       }
-      setCharacter(data.character);
+      const merged: Character = {
+        ...data.character,
+        id: entryId || data.character.id,
+        displayName: displayName || data.character.displayName || "Companion",
+      };
+      setCharacter(merged);
       setUi(data.ui);
       setView(data.view);
-      persist(data.character);
+      persist(merged);
       if (data.view?.sheet?.originStory?.text != null && nextUi.hubTab === "sheet") {
         setOriginDraft(data.ui.originDraft ?? data.view.sheet.originStory.text);
       }
       return data;
     },
-    [persist, router],
+    [persist, router, entryId, displayName],
   );
 
   const apiAction = useCallback(
@@ -199,16 +198,21 @@ export function TrainingClient() {
         router.push(href);
         return;
       }
-      setCharacter(data.character);
+      const merged: Character = {
+        ...data.character,
+        id: entryId || data.character.id,
+        displayName: displayName || data.character.displayName || "Companion",
+      };
+      setCharacter(merged);
       setUi(data.ui);
       setView(data.view);
-      persist(data.character);
+      persist(merged);
       if (data.toast) showToast(data.toast);
       if (data.view?.sheet?.originStory && data.ui.hubTab === "sheet") {
         setOriginDraft(data.ui.originDraft ?? data.view.sheet.originStory.text);
       }
     },
-    [character, ui, persist, router, showToast, entryId],
+    [character, ui, persist, router, showToast, entryId, displayName],
   );
 
   useEffect(() => {
@@ -224,10 +228,10 @@ export function TrainingClient() {
       }
       setEntryId(entry.id);
       setDisplayName(entry.displayName);
-      setCharacter(entry.character);
+      setCharacter(entry);
       setSheetReturn(initialTab === "sheet" ? "town" : "world");
       const bootUi = defaultUi({ tab: initialTab, area: areaParam });
-      void apiView(entry.character, bootUi).catch((err) => {
+      void apiView(entry, bootUi).catch((err) => {
         setBootError(String(err?.message || err));
       });
     } catch (err) {

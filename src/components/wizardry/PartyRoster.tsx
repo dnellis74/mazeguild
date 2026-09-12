@@ -1,28 +1,34 @@
-import type { PartySnapshot, SrdCharacter } from "@/sim/types";
+import type { PartySnapshot } from "@/sim/types";
+import type { Character } from "@/training/types";
 import { characterLabel } from "@/campaign/labels";
+import { companionToCombatant } from "@/sim/adapter";
 
-function fromSrd(ch: SrdCharacter): PartySnapshot {
-  const hp = ch.hit_points?.value ?? 0;
+function fromCompanion(ch: Character, index: number): PartySnapshot {
+  const combatant = companionToCombatant(ch, index);
   return {
     name: characterLabel(ch),
-    class: ch.class,
-    race: ch.race,
-    hp,
-    maxHp: hp,
-    ac: ch.armor_class?.value ?? 10,
-    xp: ch.xp ?? 0,
+    summary: combatant.archetype,
+    race: combatant.race,
+    hp: combatant.hp,
+    maxHp: combatant.maxHp,
+    ac: combatant.ac,
+    xp: combatant.xp,
   };
 }
 
-/** Side roster during a maze run (or waiting at the gate before it starts). */
+function isCompanion(row: PartySnapshot | Character): row is Character {
+  return "raceId" in row && "abilityScores" in row;
+}
+
+/** Side roster during a maze run. */
 export function PartyRoster({
   party,
 }: {
-  party: PartySnapshot[] | SrdCharacter[];
+  party: PartySnapshot[] | Character[];
 }) {
   const rows: PartySnapshot[] =
-    party.length > 0 && "hit_points" in party[0]!
-      ? (party as SrdCharacter[]).map(fromSrd)
+    party.length > 0 && isCompanion(party[0]!)
+      ? (party as Character[]).map(fromCompanion)
       : (party as PartySnapshot[]);
 
   return (
@@ -44,7 +50,7 @@ export function PartyRoster({
             </div>
             <div className="flex justify-between gap-2 text-amber-600/80">
               <span className="truncate">
-                {p.race} {p.class}
+                {p.race} {p.summary}
               </span>
               <span className="shrink-0 tabular-nums">XP {p.xp}</span>
             </div>

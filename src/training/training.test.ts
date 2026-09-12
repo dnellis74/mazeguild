@@ -3,7 +3,7 @@ import { getCatalog } from "@/training/catalog";
 import { migrateCharacter, defaultTrainingUi } from "@/training/character";
 import { applyTrainingAction } from "@/training/actions";
 import { buildTrainingView } from "@/training/view";
-import { trainingToSrd } from "@/training/toSrd";
+import { companionToCombatant } from "@/sim/adapter";
 import { buildWorld } from "@/training/world";
 import {
   TOWN_SQUARE_AREA,
@@ -77,7 +77,6 @@ describe("training API domain", () => {
     });
     expect(result.character.activeJob?.kind).toBe("area");
 
-    // Force job completion
     character = {
       ...result.character,
       activeJob: {
@@ -90,16 +89,18 @@ describe("training API domain", () => {
     expect(result.ui.worldView).toBe("buildings");
   });
 
-  it("exports a trained character to an SRD blob", () => {
+  it("maps a trained companion into a combatant from features", () => {
     const catalog = getCatalog();
     const character = migrateCharacter(catalog, {
+      id: "c-fighter",
+      displayName: "Aldric",
       raceId: "human",
       alignment: { alignmentId: "lg" },
       features: [
         {
-          skillId: "fighter-fighting-style",
+          id: "fighter-fighting-style",
           archetype: "Fighter",
-          feature: "Defense",
+          feature: ["Defense"],
           area: "Town",
           building: "Drill Yard",
           room: "Yard",
@@ -115,12 +116,12 @@ describe("training API domain", () => {
       },
       abilityScoresAssigned: true,
     });
-    const srd = trainingToSrd(catalog, character);
-    expect(srd.class).toBe("Fighter");
-    expect(srd.race).toBe("Human");
-    expect(srd.name).toBe("PLAYER");
-    expect(srd.hit_points.value).toBeGreaterThan(0);
-    expect(srd.ability_scores.STR.score).toBe(15);
+    const combatant = companionToCombatant(character, 0);
+    expect(combatant.archetype).toBe("Fighter");
+    expect(combatant.race).toBe("Human");
+    expect(combatant.name).toBe("Aldric");
+    expect(combatant.maxHp).toBeGreaterThan(0);
+    expect(combatant.abilities.STR).toBe(15);
   });
 
   it("switches the hub tab to quest without a quest view DTO", () => {

@@ -6,9 +6,9 @@ This repo is the **dungeon layer only**: a deterministic headless sim with a Wiz
 
 ## Loop
 
-1. JSON in: up to six [SRD 5.1](https://dnd.wizards.com/resources/systems-reference-document) character stat blocks plus an RNG seed.
-2. The sim generates a 20×20 maze, wanders toward the exit, and rolls encounters every 3d6 steps.
-3. Combat uses 5e SRD math. Loot is flavor only.
+1. JSON in: companions from Town Square / training (`Character`) plus an RNG seed.
+2. The sim maps each companion to a combatant from **features** (not a class sheet), generates a 20×20 maze, wanders toward the exit, and rolls encounters every 3d6 steps.
+3. Combat uses 5e-style math. Loot is flavor only.
 4. JSON out: maze, full event log, XP score.
 5. The UI replays the log. It has no game logic.
 
@@ -21,7 +21,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Set a seed, hit **RUN**, then play / step the log. Seed `99` currently exits with survivors; many other seeds TPK.
+Open [http://localhost:3000](http://localhost:3000). Welcome strangers in Town Square, train them in the city, select two or more, and **Quest**.
 
 ```bash
 npm test    # determinism checks
@@ -37,11 +37,20 @@ Every layer talks JSON. The sim, the renderer, and a future server never share l
 ```json
 {
   "seed": 99,
-  "party": [ { "name": "Pip", "class": "Monk", "race": "Halfling", "...": "SRD 5.1 stat block" } ]
+  "party": [
+    {
+      "id": "…",
+      "displayName": "Pip",
+      "raceId": "halfling",
+      "features": [{ "archetype": "Rogue", "feature": ["Sneak Attack"], "id": "…" }],
+      "abilityScores": { "STR": 8, "DEX": 16, "CON": 12, "INT": 13, "WIS": 10, "CHA": 14 },
+      "…": "same Character blob as training / roster"
+    }
+  ]
 }
 ```
 
-Party members are the objects emitted by `tools/srd_character_generator.py`. `name` is optional; the adapter invents one from race + class if it is missing.
+Party members are training companions. `companionToCombatant` derives HP, AC, role, and weapons from earned features and scores.
 
 **Output** (`DungeonResult`):
 
@@ -61,7 +70,7 @@ Headless:
 curl -s -X POST http://localhost:3000/api/run \
   -H 'content-type: application/json' \
   -d @- <<'EOF'
-{ "seed": 99, "party": [ ...six SRD characters... ] }
+{ "seed": 99, "party": [ …companions… ] }
 EOF
 ```
 
@@ -90,19 +99,19 @@ src/sim/            headless sim (no React)
   rng.ts            mulberry32; same seed → same stream
   maze.ts           recursive-backtracker 20×20
   wander.ts         weighted wander, exit-ward pull
-  rules.ts          SRD 5.1 attack / damage / healing math
+  rules.ts          attack / damage / healing math
   tactics.ts        action + target selection
   combat.ts         encounter loop
   encounters.ts     goblin / hobgoblin spawns, flavor loot
-  adapter.ts        SRD JSON → combatant
+  adapter.ts        companion → combatant (from features)
   run.ts            orchestration
   types.ts          input / output / log contracts
 
+src/training/       companion progression (shared Character type)
 src/replay/         pure log → frame projection
 src/components/wizardry/   CRT replay UI
-src/app/api/run/    POST JSON in, JSON out
+src/app/api/run/    POST companions + seed → dungeon result
 src/data/sample-party.json
-tools/srd_character_generator.py
 ```
 
 Constraints the code is built around:
@@ -114,13 +123,7 @@ Constraints the code is built around:
 
 ## Characters
 
-The generator is SRD 5.1 only (level 1, Acolyte background, SRD subraces). Ability-score assignment uses the standard array plus a class priority order — that method is **not** in the SRD; see the script docstring.
-
-```bash
-python3 tools/srd_character_generator.py --seed 7 -n 6 --out party.json
-```
-
-Paste or swap that JSON into `src/data/sample-party.json` (add a `name` field per character). The adapter reads HP, AC, ability scores, weapons, Halfling Lucky, Relentless Endurance, Sneak Attack, spell slots, and Lay on Hands.
+Companions are the training `Character` blob (roster / Town Square / maze). There is no separate party generator — assemble parties in Town Square. `companionToCombatant` reads earned features, cantrips, spells, race, and ability scores to derive HP, AC, role, weapons, Lucky, Relentless Endurance, Sneak Attack, heal slots, and Lay on Hands.
 
 ## Combat (this layer)
 
@@ -138,6 +141,6 @@ In rough order:
 
 1. Difficulty tuning so death actually threatens in a controlled way
 2. Loot with mechanical effect
-3. Persistence between runs
+3. Persistence between runs (write maze XP back onto companions)
 4. Guild / conscription (parties of up to six, including offline members)
 5. A written motivation prompt that biases **tactics only**

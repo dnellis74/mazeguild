@@ -1,5 +1,6 @@
 import { runDungeon } from "@/sim/run";
-import type { DungeonResult, SrdCharacter } from "@/sim/types";
+import type { DungeonResult } from "@/sim/types";
+import type { Character } from "@/training/types";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -20,14 +21,14 @@ export async function POST(request: Request) {
   }
   if (!Array.isArray(party) || party.length < 1) {
     return Response.json(
-      { error: "party must be a non-empty array of SRD characters" },
+      { error: "party must be a non-empty array of companions" },
       { status: 400 },
     );
   }
 
   const result: DungeonResult = runDungeon({
     seed: Math.floor(seed),
-    party: party as SrdCharacter[],
+    party: party as Character[],
   });
 
   console.log(

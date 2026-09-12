@@ -1,36 +1,36 @@
-import type { SrdCharacter } from "@/sim/types";
+import type { Character } from "@/training/types";
 
-/** Hand off an exported party from Town Square → maze without a gate screen. */
-export const QUEST_PARTY_KEY = "mazeguild.questParty";
+const QUEST_PARTY_KEY = "mazeguild.questParty";
 
 export type QuestPartyHandoff = {
-  party: SrdCharacter[];
+  party: Character[];
   createdAt: number;
 };
 
-/** Survives React Strict Mode remounts (sessionStorage take-once does not). */
-let memoryParty: SrdCharacter[] | null = null;
+/** In-memory fallback when sessionStorage is unavailable (rare). */
+let memoryParty: Character[] | null = null;
 
-export function stashQuestParty(party: SrdCharacter[]): void {
+export function stashQuestParty(party: Character[]): void {
   memoryParty = party;
   if (typeof window === "undefined") return;
   const payload: QuestPartyHandoff = { party, createdAt: Date.now() };
   sessionStorage.setItem(QUEST_PARTY_KEY, JSON.stringify(payload));
 }
 
-/** Read the stashed party without clearing (safe under Strict Mode). */
-export function readQuestParty(): SrdCharacter[] | null {
-  if (memoryParty && memoryParty.length >= 2) return memoryParty;
-  if (typeof window === "undefined") return null;
+/** Read without clearing — Strict Mode remounts must still see the party. */
+export function readQuestParty(): Character[] | null {
+  if (typeof window === "undefined") return memoryParty;
   try {
     const raw = sessionStorage.getItem(QUEST_PARTY_KEY);
-    if (!raw) return null;
+    if (!raw) return memoryParty;
     const parsed = JSON.parse(raw) as QuestPartyHandoff;
-    if (!Array.isArray(parsed?.party) || parsed.party.length < 2) return null;
+    if (!Array.isArray(parsed.party) || parsed.party.length < 1) {
+      return memoryParty;
+    }
     memoryParty = parsed.party;
     return parsed.party;
   } catch {
-    return null;
+    return memoryParty;
   }
 }
 
