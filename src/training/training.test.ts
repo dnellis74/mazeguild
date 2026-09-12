@@ -18,7 +18,7 @@ describe("training API domain", () => {
       raceId: "human",
       alignment: { alignmentId: "lg" },
     });
-    const ui = defaultTrainingUi();
+    const ui = { ...defaultTrainingUi(), hubTab: "sheet" as const };
     const view = buildTrainingView(catalog, character, ui);
     expect(view.sheet).toBeTruthy();
     expect(view.sheet?.abilities).toHaveLength(6);
@@ -76,11 +76,11 @@ describe("training API domain", () => {
     });
     expect(welcome.navigate).toBe("/character-initialization.html");
 
-    const train = applyTrainingAction(catalog, character, ui, {
+    const quest = applyTrainingAction(catalog, character, ui, {
       type: "world-select-portal",
-      portalId: "ts_train",
+      portalId: "ts_quest",
     });
-    expect(train.navigate).toBe("/training?id={id}&tab=sheet");
+    expect(quest.navigate).toBe("/");
   });
 
   it("unlocks an area via complete-job", () => {

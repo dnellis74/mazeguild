@@ -774,10 +774,14 @@
     line-height:1.4;
     text-shadow:none;
   }
-  .world-crumb button{
+  .world-crumb button,
+  .world-crumb a{
     color:var(--seal);
     text-decoration:underline;
     text-underline-offset:2px;
+  }
+  .world-crumb a{
+    font:inherit;
   }
   .world-grid{
     display:flex;

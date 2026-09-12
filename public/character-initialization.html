@@ -184,6 +184,15 @@ function computeSuggestion(){
 
 
 
+function townSquareCrumb(){
+  return `<div class="world-crumb" aria-label="Location">
+    <span>Areas</span>
+    / <span>Walled City</span>
+    / <a href="/">Town Square</a>
+    / <span>Welcome a Stranger</span>
+  </div>`;
+}
+
 function render(){
   let html = '';
   const screen = state.ui.screen;
@@ -202,7 +211,7 @@ function render(){
     console.error(err);
     html = `<div class="screen"><p class="lede">Something broke rendering this screen.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
   }
-  app.innerHTML = html + '<div class="toast" id="toast"></div>';
+  app.innerHTML = `<div class="hub"><div class="hub-body">${townSquareCrumb()}${html}</div></div><div class="toast" id="toast"></div>`;
   bindEvents();
 }
 
@@ -700,7 +709,7 @@ async function boot(){
     render();
   } catch (err) {
     console.error(err);
-    app.innerHTML = `<div class="screen"><p class="lede">Could not load creation data.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div>`;
+    app.innerHTML = `<div class="hub"><div class="hub-body">${townSquareCrumb()}<div class="screen"><p class="lede">Could not load creation data.</p><pre style="white-space:pre-wrap;font-size:12px;color:var(--ink-soft)">${esc(String(err && err.message || err))}</pre></div></div></div>`;
   }
 }
 

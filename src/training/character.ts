@@ -63,7 +63,7 @@ function pointFallback(catalog: Catalog) {
 
 export function defaultTrainingUi(): import("./types").TrainingUi {
   return {
-    hubTab: "sheet",
+    hubTab: "world",
     worldView: "areas",
     worldArea: null,
     worldBuilding: null,

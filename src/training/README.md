@@ -9,7 +9,7 @@ Rules for the character training loop live in `src/training/`. The React hub
 |---------|-------|------------------------|
 | Town Square | `/` (hub) · Explore → Walled City → Town Square | Roster hub; world portals open UIs (create / train / quest) |
 | Creation | Welcome a Stranger → `character-initialization.html` | Appends to roster, returns to `/` |
-| Train / Explore Town | `/training?id=&tab=` | Upserts that roster entry |
+| Explore | `/training?id=` · optional `&area=` from Town Square crumb | Name opens sheet; Return restores world (or Town Square) |
 | Quest | `/quest?ids=` (2+ selected) | Export each → `GameClient({ party })` → maze |
 
 Town Square is **not** a skill building. It sits beside Tavern / Cathedral / Library in

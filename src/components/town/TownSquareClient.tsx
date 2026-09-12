@@ -7,11 +7,15 @@ import {
   type RosterEntry,
 } from "@/lib/rosterStorage";
 import { PARTY_CAP } from "@/gen/data";
+import {
+  TOWN_SQUARE_AREA,
+  TOWN_SQUARE_BUILDING,
+} from "@/training/townSquare";
 
 /**
  * Town Square — adventure home.
  * 0 selected: Welcome a Stranger
- * 1 selected: Explore Town, Train
+ * 1 selected: crumb into the world (Areas / Walled City)
  * 2+ selected: Quest (party → maze)
  */
 export function TownSquareClient() {
@@ -38,32 +42,26 @@ export function TownSquareClient() {
   };
 
   const count = selected.length;
+  const exploreId = count === 1 ? selected[0]! : null;
 
-  const actions = useMemo(() => {
-    if (count === 0) return [] as { id: string; label: string; onClick: () => void }[];
-    if (count === 1) {
-      const id = selected[0]!;
-      return [
-        {
-          id: "explore",
-          label: "Explore Town",
-          onClick: () => router.push(`/training?id=${encodeURIComponent(id)}&tab=world`),
-        },
-        {
-          id: "train",
-          label: "Train",
-          onClick: () => router.push(`/training?id=${encodeURIComponent(id)}&tab=sheet`),
-        },
-      ];
-    }
-    return [
-      {
-        id: "quest",
-        label: "Quest",
-        onClick: () =>
-          router.push(`/quest?ids=${selected.map(encodeURIComponent).join(",")}`),
-      },
-    ];
+  const explore = useCallback(
+    (opts?: { area?: string }) => {
+      if (!exploreId) return;
+      const q = new URLSearchParams({ id: exploreId });
+      if (opts?.area) q.set("area", opts.area);
+      router.push(`/training?${q.toString()}`);
+    },
+    [exploreId, router],
+  );
+
+  const questAction = useMemo(() => {
+    if (count < 2) return null;
+    return {
+      id: "quest",
+      label: "Quest",
+      onClick: () =>
+        router.push(`/quest?ids=${selected.map(encodeURIComponent).join(",")}`),
+    };
   }, [count, selected, router]);
 
   if (!ready) {
@@ -83,8 +81,8 @@ export function TownSquareClient() {
       <div className="app">
         <div className="hub">
           <div className="hub-header">
-            <p className="kicker">Walled City</p>
-            <h1>Town Square</h1>
+            <p className="kicker">{TOWN_SQUARE_AREA}</p>
+            <h1>{TOWN_SQUARE_BUILDING}</h1>
             <p className="hub-meta">
               {roster.length === 0
                 ? "No one stands in the square yet."
@@ -93,6 +91,30 @@ export function TownSquareClient() {
           </div>
 
           <div className="hub-body town-square-body">
+            <div className="world-crumb" aria-label="Location">
+              {exploreId ? (
+                <>
+                  <button type="button" onClick={() => explore()}>
+                    Areas
+                  </button>
+                  {" / "}
+                  <button type="button" onClick={() => explore({ area: TOWN_SQUARE_AREA })}>
+                    {TOWN_SQUARE_AREA}
+                  </button>
+                  {" / "}
+                  <span>{TOWN_SQUARE_BUILDING}</span>
+                </>
+              ) : (
+                <>
+                  <span>Areas</span>
+                  {" / "}
+                  <span>{TOWN_SQUARE_AREA}</span>
+                  {" / "}
+                  <span>{TOWN_SQUARE_BUILDING}</span>
+                </>
+              )}
+            </div>
+
             <div className="sheet-block">
               <div className="sheet-label">Actions</div>
               <div className="origin-actions town-square-actions">
@@ -106,15 +128,20 @@ export function TownSquareClient() {
                 >
                   Welcome a Stranger
                 </button>
-                {actions.map((a) => (
-                  <button key={a.id} type="button" className="primary" onClick={a.onClick}>
-                    {a.label}
+                {questAction ? (
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={questAction.onClick}
+                  >
+                    {questAction.label}
                   </button>
-                ))}
+                ) : null}
               </div>
               {count === 0 && roster.length > 0 ? (
                 <p className="mechanic-note" style={{ marginTop: 12 }}>
-                  Select a companion to explore or train. Select two or more to quest.
+                  Select a companion, then use the crumb to explore. Select two or more to
+                  quest.
                 </p>
               ) : null}
               {count >= PARTY_CAP ? (

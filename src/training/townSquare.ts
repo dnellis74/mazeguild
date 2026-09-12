@@ -26,12 +26,6 @@ export const TOWN_SQUARE_PORTALS: TownSquarePortal[] = [
     href: "/character-initialization.html",
   },
   {
-    id: "ts_train",
-    activity: "Train",
-    description: "Open this companion's training sheet.",
-    href: "/training?id={id}&tab=sheet",
-  },
-  {
     id: "ts_quest",
     activity: "Quest",
     description: "Gather companions in the square and enter the maze.",

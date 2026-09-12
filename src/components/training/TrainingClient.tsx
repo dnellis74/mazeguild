@@ -15,7 +15,23 @@ import type {
 } from "@/training/view";
 import type { Character, TrainingAction, TrainingUi } from "@/training/types";
 
-function defaultUi(tab: "sheet" | "world" = "sheet"): TrainingUi {
+function defaultUi(opts?: {
+  tab?: "sheet" | "world";
+  area?: string | null;
+}): TrainingUi {
+  const tab = opts?.tab ?? "world";
+  const area = opts?.area?.trim() || null;
+  if (tab === "world" && area) {
+    return {
+      hubTab: "world",
+      worldView: "buildings",
+      worldArea: area,
+      worldBuilding: null,
+      worldRoom: null,
+      pendingChoice: null,
+      originDraft: null,
+    };
+  }
   return {
     hubTab: tab,
     worldView: "areas",
@@ -31,17 +47,24 @@ export function TrainingClient() {
   const router = useRouter();
   const params = useSearchParams();
   const characterId = params.get("id") || "";
+  const areaParam = params.get("area");
   const initialTab =
-    params.get("tab") === "world" ? ("world" as const) : ("sheet" as const);
+    params.get("tab") === "sheet" ? ("sheet" as const) : ("world" as const);
 
   const [entryId, setEntryId] = useState(characterId);
   const [displayName, setDisplayName] = useState("Companion");
   const [character, setCharacter] = useState<Character | null>(null);
-  const [ui, setUi] = useState<TrainingUi>(() => defaultUi(initialTab));
+  const [ui, setUi] = useState<TrainingUi>(() =>
+    defaultUi({ tab: initialTab, area: areaParam }),
+  );
   const [view, setView] = useState<TrainingView | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [bootError, setBootError] = useState<string | null>(null);
   const [originDraft, setOriginDraft] = useState("");
+  /** Sheet opened from world keeps world nav; direct sheet entry returns to Town Square. */
+  const [sheetReturn, setSheetReturn] = useState<"world" | "town">(
+    initialTab === "sheet" ? "town" : "world",
+  );
 
   const persist = useCallback(
     (ch: Character) => {
@@ -141,16 +164,17 @@ export function TrainingClient() {
       setEntryId(entry.id);
       setDisplayName(entry.displayName);
       setCharacter(entry.character);
-      const bootUi = defaultUi(initialTab);
+      setSheetReturn(initialTab === "sheet" ? "town" : "world");
+      const bootUi = defaultUi({ tab: initialTab, area: areaParam });
       void apiView(entry.character, bootUi).catch((err) => {
         setBootError(String(err?.message || err));
       });
     } catch (err) {
       setBootError(String(err instanceof Error ? err.message : err));
     }
-    // boot once per id
+    // boot once per id / entry point
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [characterId]);
+  }, [characterId, areaParam, initialTab]);
 
   useEffect(() => {
     if (!character?.activeJob) return;
@@ -173,6 +197,23 @@ export function TrainingClient() {
   }, [character?.activeJob, apiAction, showToast]);
 
   const backToSquare = () => router.push("/");
+
+  const openSheet = () => {
+    setSheetReturn("world");
+    void apiAction({ type: "hub-tab", tab: "sheet" }).catch((e) =>
+      showToast(String(e.message || e)),
+    );
+  };
+
+  const returnFromSheet = () => {
+    if (sheetReturn === "town") {
+      backToSquare();
+      return;
+    }
+    void apiAction({ type: "hub-tab", tab: "world" }).catch((e) =>
+      showToast(String(e.message || e)),
+    );
+  };
 
   if (bootError) {
     return (
@@ -217,46 +258,56 @@ export function TrainingClient() {
       ? jobProgress(character.activeJob)
       : view.job;
 
+  const onWorld = view.tab === "world";
+  const onSheet = view.tab === "sheet";
+
   return (
     <div className="stage">
       <div className="app">
         <div className="hub">
           <div className="hub-header">
-            <p className="kicker">{displayName}</p>
+            {onWorld ? (
+              <button
+                type="button"
+                className="kicker hub-name-link"
+                onClick={openSheet}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  color: "inherit",
+                  font: "inherit",
+                }}
+              >
+                {displayName}
+              </button>
+            ) : (
+              <p className="kicker">{displayName}</p>
+            )}
             <h1>{view.header.title}</h1>
             <p className="hub-meta">
               {view.header.featurePoints} feature point
               {view.header.featurePoints === 1 ? "" : "s"} left ·{" "}
-              <button
-                type="button"
-                onClick={backToSquare}
-                style={{ textDecoration: "underline", color: "var(--ink-soft)" }}
-              >
-                Town Square
-              </button>
+              {onSheet ? (
+                <button
+                  type="button"
+                  onClick={returnFromSheet}
+                  style={{ textDecoration: "underline", color: "var(--ink-soft)" }}
+                >
+                  Return
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={backToSquare}
+                  style={{ textDecoration: "underline", color: "var(--ink-soft)" }}
+                >
+                  Town Square
+                </button>
+              )}
             </p>
-          </div>
-
-          <div className="hub-tabs" role="tablist">
-            {(
-              [
-                ["sheet", "Sheet"],
-                ["world", "World"],
-              ] as const
-            ).map(([tab, label]) => (
-              <button
-                key={tab}
-                type="button"
-                className={`hub-tab ${view.tab === tab ? "is-active" : ""}`}
-                onClick={() =>
-                  void apiAction({ type: "hub-tab", tab }).catch((e) =>
-                    showToast(String(e.message || e)),
-                  )
-                }
-              >
-                {label}
-              </button>
-            ))}
           </div>
 
           <div className="hub-body">
@@ -267,7 +318,7 @@ export function TrainingClient() {
                   void apiAction(a).catch((e) => showToast(String(e.message || e)))
                 }
               />
-            ) : view.tab === "sheet" && view.sheet ? (
+            ) : onSheet && view.sheet ? (
               <SheetPanel
                 sheet={view.sheet}
                 originDraft={originDraft}
@@ -284,7 +335,7 @@ export function TrainingClient() {
                   )
                 }
               />
-            ) : view.tab === "world" && view.world ? (
+            ) : onWorld && view.world ? (
               <WorldPanel
                 world={view.world}
                 unlockNote={view.unlockNote}
