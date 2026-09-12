@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   getRosterEntry,
   loadRoster,
+  removeRosterEntry,
   upsertRosterEntry,
 } from "@/lib/rosterStorage";
 import { jobProgress } from "@/training/view";
@@ -157,12 +158,13 @@ export function TrainingClient() {
   );
 
   const apiAction = useCallback(
-    async (action: TrainingAction) => {
-      if (!character) return;
+    async (action: TrainingAction, opts?: { character?: Character }) => {
+      const ch = opts?.character ?? character;
+      if (!ch) return;
       const res = await fetch("/api/training/action", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ character, ui, action }),
+        body: JSON.stringify({ character: ch, ui, action }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -251,14 +253,35 @@ export function TrainingClient() {
   };
 
   const returnFromSheet = () => {
-    if (character) saveName(character.name);
+    if (!character) {
+      if (sheetReturn === "town") backToSquare();
+      return;
+    }
+    const next: Character = {
+      ...character,
+      name: character.name.trim() || "Companion",
+      originStory: originDraft,
+    };
+    setCharacter(next);
+    persist(next);
     if (sheetReturn === "town") {
       backToSquare();
       return;
     }
-    void apiAction({ type: "hub-tab", tab: "world" }).catch((e) =>
-      showToast(String(e.message || e)),
+    void apiAction({ type: "hub-tab", tab: "world" }, { character: next }).catch(
+      (e) => showToast(String(e.message || e)),
     );
+  };
+
+  const dismissCompanion = () => {
+    if (!character) return;
+    const label = character.name.trim() || "this companion";
+    const ok = window.confirm(
+      `Dismiss ${label}? They leave the square for good. This cannot be undone.`,
+    );
+    if (!ok) return;
+    removeRosterEntry(character.id);
+    backToSquare();
   };
 
   if (bootError) {
@@ -384,17 +407,12 @@ export function TrainingClient() {
                 sheet={view.sheet}
                 originDraft={originDraft}
                 onOriginChange={setOriginDraft}
-                onSave={() =>
-                  void apiAction({
-                    type: "save-origin-story",
-                    text: originDraft,
-                  }).catch((e) => showToast(String(e.message || e)))
-                }
                 onReset={() =>
                   void apiAction({ type: "reset-origin-prompt" }).catch((e) =>
                     showToast(String(e.message || e)),
                   )
                 }
+                onDismiss={dismissCompanion}
               />
             ) : onWorld && view.world ? (
               <WorldPanel
@@ -489,14 +507,14 @@ function SheetPanel({
   sheet,
   originDraft,
   onOriginChange,
-  onSave,
   onReset,
+  onDismiss,
 }: {
   sheet: SheetView;
   originDraft: string;
   onOriginChange: (v: string) => void;
-  onSave: () => void;
   onReset: () => void;
+  onDismiss: () => void;
 }) {
   return (
     <>
@@ -617,13 +635,18 @@ function SheetPanel({
           onChange={(e) => onOriginChange(e.target.value)}
         />
         <div className="origin-actions">
-          <button type="button" className="primary" onClick={onSave}>
-            Save
-          </button>
           <button type="button" onClick={onReset}>
             Reset to prompt
           </button>
         </div>
+      </div>
+      <div className="sheet-block sheet-block-dismiss">
+        <button type="button" className="dismiss-companion" onClick={onDismiss}>
+          Dismiss companion
+        </button>
+        <p className="mechanic-note" style={{ marginTop: 10 }}>
+          Removes them from the square permanently.
+        </p>
       </div>
     </>
   );
@@ -640,54 +663,58 @@ function WorldPanel({
   job: JobView | null;
   onAction: (a: TrainingAction) => void;
 }) {
+  const dockProgress = world.level === "activities";
   return (
-    <>
-      <div className="world-crumb">
-        {world.crumb.map((c, i) => (
-          <span key={`${c.label}-${i}`}>
-            {i ? " / " : ""}
-            {c.action ? (
+    <div className={`world-panel${dockProgress ? " world-panel--dock" : ""}`}>
+      <div className="world-panel-main">
+        <div className="world-crumb">
+          {world.crumb.map((c, i) => (
+            <span key={`${c.label}-${i}`}>
+              {i ? " / " : ""}
+              {c.action ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onAction({
+                      type: "world-nav",
+                      view: (c.view || "areas") as TrainingUi["worldView"],
+                    })
+                  }
+                >
+                  {c.label}
+                </button>
+              ) : (
+                c.label
+              )}
+            </span>
+          ))}
+        </div>
+        <div className="world-grid">
+          {world.cards.length ? (
+            world.cards.map((card, i) => (
               <button
+                key={`${card.title}-${i}`}
                 type="button"
-                onClick={() =>
-                  onAction({
-                    type: "world-nav",
-                    view: (c.view || "areas") as TrainingUi["worldView"],
-                  })
-                }
+                className={`world-card ${card.unlocked ? "is-unlocked" : ""} ${card.active ? "is-active" : ""}`}
+                disabled={card.disabled}
+                onClick={() => onAction(cardToAction(card))}
               >
-                {c.label}
+                <span className="wc-title">{card.title}</span>
+                <span className="wc-sub" style={{ whiteSpace: "pre-line" }}>
+                  {card.sub}
+                </span>
+                <span className="wc-status">{card.status}</span>
               </button>
-            ) : (
-              c.label
-            )}
-          </span>
-        ))}
+            ))
+          ) : (
+            <p className="empty-note">{world.emptyNote || "Nothing here."}</p>
+          )}
+        </div>
+        <p className="mechanic-note">{unlockNote}</p>
+        {!dockProgress && job ? <JobPanel job={job} /> : null}
       </div>
-      <div className="world-grid">
-        {world.cards.length ? (
-          world.cards.map((card, i) => (
-            <button
-              key={`${card.title}-${i}`}
-              type="button"
-              className={`world-card ${card.unlocked ? "is-unlocked" : ""} ${card.active ? "is-active" : ""}`}
-              disabled={card.disabled}
-              onClick={() => onAction(cardToAction(card))}
-            >
-              <span className="wc-title">{card.title}</span>
-              <span className="wc-sub" style={{ whiteSpace: "pre-line" }}>
-                {card.sub}
-              </span>
-              <span className="wc-status">{card.status}</span>
-            </button>
-          ))
-        ) : (
-          <p className="empty-note">{world.emptyNote || "Nothing here."}</p>
-        )}
-      </div>
-      {job ? <JobPanel job={job} /> : null}
-      <p className="mechanic-note">{unlockNote}</p>
-    </>
+      {dockProgress ? <JobPanel job={job} /> : null}
+    </div>
   );
 }
 
@@ -735,13 +762,17 @@ function DieIcon() {
   );
 }
 
-function JobPanel({ job }: { job: JobView }) {
+const IDLE_JOB_FILLS = 6;
+
+function JobPanel({ job }: { job: JobView | null }) {
+  const fills = job?.fills ?? IDLE_JOB_FILLS;
   return (
-    <div className="job-panel">
-      <div className="job-label">{job.label}</div>
-      <div className="job-title">{job.title}</div>
+    <div className={`job-panel${job ? "" : " job-panel--idle"}`}>
+      <div className="job-label">{job ? job.label : "At rest"}</div>
+      <div className="job-title">{job ? job.title : "Choose an activity"}</div>
       <div className="ticks-bar">
-        {Array.from({ length: job.fills }, (_, i) => {
+        {Array.from({ length: fills }, (_, i) => {
+          if (!job) return <span key={i} className="seg" />;
           if (i < job.filled) return <span key={i} className="seg filled" />;
           if (i === job.filled && job.partial > 0) {
             return (
@@ -756,7 +787,7 @@ function JobPanel({ job }: { job: JobView }) {
         })}
       </div>
       <div className="job-eta">
-        {job.remainingSec}s remaining · {job.fillNote}
+        {job ? `${job.remainingSec}s remaining · ${job.fillNote}` : "Idle"}
       </div>
     </div>
   );

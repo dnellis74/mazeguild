@@ -11,9 +11,6 @@ import { EventLog } from "./EventLog";
 import { MiniMap } from "./MiniMap";
 import { PartyRoster } from "./PartyRoster";
 
-const tap =
-  "inline-flex min-h-11 min-w-11 items-center justify-center border px-3 font-mono text-sm tracking-wide select-none touch-manipulation disabled:opacity-40";
-
 /** Walk pace at 1x. Combat events keep a faster cadence. */
 const STEP_MS = 500;
 const BATTLE_MS = 160;
@@ -136,23 +133,33 @@ export function GameClient({
             RETURN TO TOWN SQUARE
           </button>
         </div>
-        <label className="flex shrink-0 items-center gap-2 font-mono text-sm">
-          SEED
-          <input
-            type="number"
-            inputMode="numeric"
-            enterKeyHint="done"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            value={seed}
-            disabled={started || running}
-            onChange={(e) => setSeed(Number(e.target.value))}
-            onFocus={(e) => e.currentTarget.select()}
-            className="w-[5.5rem] border border-amber-700 bg-black px-2 text-amber-200 disabled:opacity-40"
-            aria-label="Dungeon seed"
-          />
-        </label>
+        <div className="flex shrink-0 items-center gap-3 font-mono text-sm">
+          <button
+            type="button"
+            disabled={!result}
+            onClick={download}
+            className="tracking-wide text-amber-500 underline underline-offset-2 hover:text-amber-300 disabled:opacity-40 disabled:no-underline"
+          >
+            JSON
+          </button>
+          <label className="flex items-center gap-2">
+            SEED
+            <input
+              type="number"
+              inputMode="numeric"
+              enterKeyHint="done"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              value={seed}
+              disabled={started || running}
+              onChange={(e) => setSeed(Number(e.target.value))}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-[5.5rem] border border-amber-700 bg-black px-2 text-amber-200 disabled:opacity-40"
+              aria-label="Dungeon seed"
+            />
+          </label>
+        </div>
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain py-2 phone-land:overflow-hidden lg:overflow-hidden">
@@ -230,24 +237,6 @@ export function GameClient({
           </div>
         </div>
       </main>
-
-      <nav className="relative z-20 grid shrink-0 grid-cols-4 gap-2 border-t border-amber-900/70 bg-[#050301] pt-2 pb-[max(0.5rem,var(--safe-bottom))] phone-land:flex sm:flex sm:flex-wrap">
-        <button
-          type="button"
-          onClick={goTown}
-          className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
-        >
-          TOWN SQUARE
-        </button>
-        <button
-          type="button"
-          disabled={!result}
-          onClick={download}
-          className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
-        >
-          JSON
-        </button>
-      </nav>
     </div>
   );
 }

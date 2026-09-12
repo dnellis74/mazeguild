@@ -190,7 +190,11 @@
     gap:6px;
   }
   .town-roster-name{
-    align-self:flex-start;
+    align-self:stretch;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
     margin:0;
     padding:0;
     border:none;
@@ -205,6 +209,17 @@
     text-underline-offset:3px;
     cursor:pointer;
     text-align:left;
+  }
+  .town-roster-name-text{
+    min-width:0;
+  }
+  .town-roster-hp{
+    flex-shrink:0;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    text-decoration:none;
+    text-shadow:none;
   }
   .town-roster-name:hover,
   .town-roster-name:focus-visible{
@@ -736,6 +751,26 @@
     border-bottom:1px solid var(--rule);
   }
   .sheet-block:last-child{ border-bottom:none; margin-bottom:0; }
+  .sheet-block-dismiss{
+    margin-top:8px;
+    padding-top:8px;
+  }
+  .dismiss-companion{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--rule);
+    border-radius:0;
+    background:transparent;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  .dismiss-companion:hover{
+    color:var(--ink);
+    border-color:var(--seal-dark);
+  }
   .origin-story{
     width:100%;
     min-height:10rem;
@@ -897,6 +932,34 @@
     font-variant-numeric:tabular-nums;
   }
 
+  .hub-body > .world-panel{
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .world-panel-main{
+    flex:1;
+    min-height:0;
+  }
+  .world-panel--dock .world-panel-main{
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    padding-bottom:0.5rem;
+  }
+  .world-panel--dock .job-panel{
+    flex-shrink:0;
+    margin-top:0;
+    margin-bottom:0;
+    padding-bottom:max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+  .hub-body:has(.world-panel--dock){
+    overflow:hidden;
+    padding-bottom:0;
+  }
+
   .world-crumb{
     font-size:12px;
     letter-spacing:0.08em;
@@ -975,6 +1038,9 @@
     border:1px solid var(--rule);
     color:var(--ink);
     border-radius:0;
+  }
+  .job-panel--idle{
+    opacity:0.72;
   }
   .job-panel .job-label{
     font-size:11px;

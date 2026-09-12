@@ -73,6 +73,7 @@ export type WorldCard = {
 };
 
 export type WorldView = {
+  level: TrainingUi["worldView"];
   crumb: { label: string; action?: string; view?: string }[];
   cards: WorldCard[];
   emptyNote?: string;
@@ -375,6 +376,7 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
   }
 
   return {
+    level: ui.worldView,
     crumb,
     cards,
     emptyNote:

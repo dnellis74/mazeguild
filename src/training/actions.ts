@@ -556,7 +556,6 @@ export function applyTrainingAction(
       return {
         character: { ...ch, originStory: action.text },
         ui: { ...ui, originDraft: action.text },
-        toast: "Origin story saved.",
       };
     case "reset-origin-prompt": {
       const prompt = buildOriginPrompt(catalog, ch);

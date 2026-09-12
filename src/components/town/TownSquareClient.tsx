@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import {
   getRosterEntry,
   loadRoster,
+  upsertRosterEntry,
 } from "@/lib/rosterStorage";
 import { stashQuestParty } from "@/lib/questHandoff";
+import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
 import {
   TOWN_SQUARE_AREA,
@@ -84,6 +86,7 @@ export function TownSquareClient() {
   const exploreId = count === 1 ? selected[0]! : null;
   const canEnterCity = count === 1;
   const canQuest = count >= 2;
+  const canHeal = count === 1;
 
   const explore = useCallback(
     (opts?: { area?: string }) => {
@@ -94,6 +97,14 @@ export function TownSquareClient() {
     },
     [exploreId, router],
   );
+
+  const healInFountain = useCallback(() => {
+    if (!exploreId) return;
+    const entry = getRosterEntry(exploreId);
+    if (!entry) return;
+    upsertRosterEntry({ ...entry, hp: null });
+    refresh();
+  }, [exploreId, refresh]);
 
   const startQuest = useCallback(() => {
     if (!canQuest || questBusy) return;
@@ -199,6 +210,14 @@ export function TownSquareClient() {
                 <button
                   type="button"
                   className="primary"
+                  disabled={!canHeal}
+                  onClick={healInFountain}
+                >
+                  Heal in Fountain
+                </button>
+                <button
+                  type="button"
+                  className="primary"
                   disabled={!canQuest || questBusy}
                   onClick={() => void startQuest()}
                 >
@@ -230,6 +249,7 @@ export function TownSquareClient() {
                     const blocked = !on && selected.length >= PARTY_CAP;
                     const identity = companionLine(entry, labels);
                     const archetypes = featureArchetypes(entry);
+                    const vitals = companionToPartySnapshot(entry, 0);
                     return (
                       <div key={entry.id} className="town-roster-item">
                         <button
@@ -241,7 +261,10 @@ export function TownSquareClient() {
                             )
                           }
                         >
-                          {entry.name}
+                          <span className="town-roster-name-text">{entry.name}</span>
+                          <span className="town-roster-hp">
+                            {vitals.hp}/{vitals.maxHp} HP
+                          </span>
                         </button>
                         <button
                           type="button"
