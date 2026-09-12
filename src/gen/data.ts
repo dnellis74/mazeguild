@@ -111,5 +111,5 @@ export const TANK_CLASSES = ["Barbarian", "Fighter", "Paladin"] as const;
 export const HEALER_CLASSES = ["Cleric", "Druid", "Bard"] as const;
 
 export const PARTY_CAP = 4;
-/** How many adventurers sit in the tavern for the player to pick from. */
-export const TAVERN_CAP = 12;
+/** Max characters a single `/api/party` generate request may return. */
+export const GENERATE_CAP = 12;

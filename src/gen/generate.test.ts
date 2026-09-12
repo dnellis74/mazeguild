@@ -30,7 +30,7 @@ describe("parsePartyInput", () => {
     expect(parsed.ok).toBe(false);
   });
 
-  it("allows a tavern-sized count", () => {
+  it("allows a generator-sized count", () => {
     const parsed = parsePartyInput({ seed: 2, count: 12, balanced: false });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
@@ -90,7 +90,7 @@ describe("generateParty", () => {
     expect(ch.spellcasting?.ability).toBe("WIS");
   });
 
-  it("can fill a tavern hall", () => {
+  it("can fill a large request hall", () => {
     const hall = generateParty(opts({ seed: 9, count: 12, balanced: false }));
     expect(hall).toHaveLength(12);
     expect(new Set(hall.map((p) => p.name)).size).toBe(12);

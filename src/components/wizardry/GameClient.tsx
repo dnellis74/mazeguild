@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { characterLabel } from "@/campaign/tavern";
+import { characterLabel } from "@/campaign/labels";
 import { projectFrame } from "@/replay/project";
 import type { DungeonResult, SrdCharacter } from "@/sim/types";
 import { DungeonView } from "./DungeonView";
@@ -16,9 +16,7 @@ const tap =
 const STEP_MS = 500;
 const BATTLE_MS = 160;
 
-/**
- * Maze run UI. Party is chosen in Town Square — no tavern hire screen.
- */
+/** Maze run UI. Party is chosen in Town Square. */
 export function GameClient({
   party,
   onReturnToTown,
@@ -59,7 +57,7 @@ export function GameClient({
       }
       setResult(data);
       setCursor(0);
-      setPlaying(false);
+      setPlaying(true);
       setStarted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "maze run failed");
@@ -152,7 +150,6 @@ export function GameClient({
             {inMaze && frame && result ? (
               <>
                 <DungeonView
-                  scene="maze"
                   maze={result.maze}
                   pos={frame.pos}
                   facing={frame.facing}
@@ -162,23 +159,17 @@ export function GameClient({
                 <MiniMap maze={result.maze} frame={frame} />
               </>
             ) : (
-              <DungeonView scene="town" />
+              <div
+                className="flex min-h-0 flex-1 items-center justify-center border border-amber-900/60 bg-black/80 font-mono text-xs tracking-[0.2em] text-amber-600"
+                aria-busy={running}
+              >
+                {running ? "GENERATING MAZE…" : "LOADING…"}
+              </div>
             )}
           </div>
 
           <aside className="col-start-2 row-start-1 min-h-0 overflow-hidden">
-            {inMaze && frame ? (
-              <PartyRoster party={frame.party} />
-            ) : (
-              <PartyRoster
-                mode="hire"
-                patrons={party}
-                selected={party.map(characterLabel)}
-                disabled={[]}
-                onInspect={() => {}}
-                busy={running}
-              />
-            )}
+            <PartyRoster party={inMaze && frame ? frame.party : party} />
           </aside>
 
           <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
@@ -213,17 +204,15 @@ export function GameClient({
               />
             ) : null}
             {inMaze && result ? (
-              cursor === 0 && !playing ? (
-                <TownLog lines={["Press PLAY to see the party's fate."]} />
-              ) : (
-                <EventLog log={result.log} cursor={cursor} />
-              )
+              <EventLog log={result.log} cursor={cursor} />
             ) : (
               <TownLog
                 lines={
-                  running
-                    ? ["The maze is being prepared…"]
-                    : ["The party gathers at the gate…"]
+                  error
+                    ? [error]
+                    : running
+                      ? ["The maze is being generated…"]
+                      : ["Descending into the maze…"]
                 }
               />
             )}
@@ -232,34 +221,21 @@ export function GameClient({
       </main>
 
       <nav className="relative z-20 grid shrink-0 grid-cols-4 gap-2 border-t border-amber-900/70 bg-[#050301] pt-2 pb-[max(0.5rem,var(--safe-bottom))] phone-land:flex sm:flex sm:flex-wrap">
-        {inMaze ? (
-          <>
-            <button
-              type="button"
-              onClick={onReturnToTown}
-              className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
-            >
-              TOWN SQUARE
-            </button>
-            <button
-              type="button"
-              disabled={!result}
-              onClick={download}
-              className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
-            >
-              JSON
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => void enterMaze()}
-            disabled={running}
-            className={`${tap} col-span-4 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
-          >
-            {running ? "…" : "ENTER MAZE"}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onReturnToTown}
+          className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
+        >
+          TOWN SQUARE
+        </button>
+        <button
+          type="button"
+          disabled={!result}
+          onClick={download}
+          className={`${tap} col-span-2 border-amber-700 phone-land:flex-1 sm:flex-1`}
+        >
+          JSON
+        </button>
       </nav>
     </div>
   );

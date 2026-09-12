@@ -3,15 +3,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  getRosterEntry,
   loadRoster,
   type RosterEntry,
 } from "@/lib/rosterStorage";
+import { stashQuestParty } from "@/lib/questHandoff";
 import { PARTY_CAP } from "@/gen/data";
 import {
   TOWN_SQUARE_AREA,
   TOWN_SQUARE_BUILDING,
 } from "@/training/townSquare";
 import type { Character } from "@/training/types";
+import type { SrdCharacter } from "@/sim/types";
 
 type CatalogLabels = {
   races: Record<string, string>;
@@ -47,6 +50,8 @@ export function TownSquareClient() {
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [labels, setLabels] = useState<CatalogLabels | null>(null);
+  const [questBusy, setQuestBusy] = useState(false);
+  const [questError, setQuestError] = useState<string | null>(null);
 
   useEffect(() => {
     setRoster(loadRoster());
@@ -92,10 +97,37 @@ export function TownSquareClient() {
     [exploreId, router],
   );
 
-  const startQuest = useCallback(() => {
-    if (!canQuest) return;
-    router.push(`/quest?ids=${selected.map(encodeURIComponent).join(",")}`);
-  }, [canQuest, selected, router]);
+  const startQuest = useCallback(async () => {
+    if (!canQuest || questBusy) return;
+    setQuestBusy(true);
+    setQuestError(null);
+    try {
+      const party = await Promise.all(
+        selected.map(async (id) => {
+          const entry = getRosterEntry(id);
+          if (!entry) throw new Error(`Missing companion (${id}).`);
+          const res = await fetch("/api/training/export", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ character: entry.character }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.character) {
+            throw new Error(data.error || `Could not ready ${entry.displayName}`);
+          }
+          return {
+            ...(data.character as SrdCharacter),
+            name: entry.displayName,
+          };
+        }),
+      );
+      stashQuestParty(party);
+      router.push("/quest");
+    } catch (err) {
+      setQuestError(err instanceof Error ? err.message : "Could not start quest");
+      setQuestBusy(false);
+    }
+  }, [canQuest, questBusy, selected, router]);
 
   const helperNote = useMemo(() => {
     if (roster.length === 0) return null;
@@ -183,12 +215,17 @@ export function TownSquareClient() {
                 <button
                   type="button"
                   className="primary"
-                  disabled={!canQuest}
-                  onClick={startQuest}
+                  disabled={!canQuest || questBusy}
+                  onClick={() => void startQuest()}
                 >
-                  Quest
+                  {questBusy ? "Entering maze…" : "Quest"}
                 </button>
               </div>
+              {questError ? (
+                <p className="mechanic-note" style={{ marginTop: 12 }}>
+                  {questError}
+                </p>
+              ) : null}
               {helperNote ? (
                 <p className="mechanic-note" style={{ marginTop: 12 }}>
                   {helperNote}

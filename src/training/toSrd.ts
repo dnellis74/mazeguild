@@ -40,7 +40,7 @@ function level1Slots(className: string): number {
   return 0;
 }
 
-/** Map a training character onto the SRD blob the tavern / maze expect. */
+/** Map a training character onto the SRD blob the maze expects. */
 export function trainingToSrd(catalog: Catalog, ch: Character): SrdCharacter {
   const race = raceById(catalog, ch.raceId);
   const align = alignmentById(catalog, ch.alignment.alignmentId);

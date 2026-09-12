@@ -1,35 +1,24 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Share_Tech_Mono } from "next/font/google";
 import { QuestRunClient } from "@/components/town/QuestRunClient";
-
-const crt = Share_Tech_Mono({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-crt",
-});
 
 export const metadata: Metadata = {
   title: "Quest · guildmaze",
   description: "Enter the maze with your selected companions.",
 };
 
+function MazeBoot() {
+  return (
+    <div className="crt flex min-h-[70dvh] items-center justify-center bg-[#050301] font-mono text-amber-500">
+      DESCENDING…
+    </div>
+  );
+}
+
 export default function QuestPage() {
   return (
-    <div className={`${crt.variable} ${crt.className} training-page`}>
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/character-creation.css" />
-      <Suspense
-        fallback={
-          <div className="stage">
-            <div className="app">
-              <div className="screen">
-                <p className="lede">Gathering the party…</p>
-              </div>
-            </div>
-          </div>
-        }
-      >
+    <div className="training-page bg-[#050301] text-amber-300">
+      <Suspense fallback={<MazeBoot />}>
         <QuestRunClient />
       </Suspense>
     </div>

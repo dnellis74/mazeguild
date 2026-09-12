@@ -1,7 +1,7 @@
 import { getCatalog } from "@/training/catalog";
 import { migrateCharacter, validateCharacter } from "@/training/character";
 import { trainingToSrd } from "@/training/toSrd";
-import { characterLabel } from "@/campaign/tavern";
+import { characterLabel } from "@/campaign/labels";
 
 export async function POST(request: Request) {
   let body: unknown;

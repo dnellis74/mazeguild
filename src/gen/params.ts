@@ -3,7 +3,7 @@ import {
   CLASS_NAMES,
   PARTY_CAP,
   RACE_NAMES,
-  TAVERN_CAP,
+  GENERATE_CAP,
   RACES,
 } from "./data";
 
@@ -12,7 +12,7 @@ export type PartyGenInput = {
   seed: number;
   /** Independent seed for the party. Defaults to `seed` (same as the maze). */
   partySeed?: number;
-  /** How many to generate. Defaults to party size (4), max 12 (tavern hall). */
+  /** How many to generate. Defaults to party size (4), max 12. */
   count?: number;
   /** At least one tank and one healer when count >= 2. Defaults to true. */
   balanced?: boolean;
@@ -69,7 +69,7 @@ export function parsePartyInput(
     ) {
       return { ok: false, error: "count must be an integer >= 1" };
     }
-    count = Math.min(body.count, TAVERN_CAP);
+    count = Math.min(body.count, GENERATE_CAP);
   }
 
   let balanced = true;

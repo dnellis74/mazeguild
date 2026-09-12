@@ -9,8 +9,8 @@ this package should stay free of React and `localStorage`.
 ```
 Town Square (/)
   ├─ Welcome a Stranger → character-initialization.html → back to /
-  ├─ 1 companion selected → crumb into the world (/training?id=…)
-  └─ 2+ selected → Quest (/quest?ids=…) → maze
+  ├─ 1 companion selected → Enter the City (/training?id=…)
+  └─ 2+ selected → Quest (export on square → /quest maze, auto-play)
 ```
 
 **Explore** (`TrainingClient` on `/training`) starts in the world. Crumbs mirror
@@ -73,7 +73,7 @@ character blob, and call into this package.
 |--------------|------|
 | `/` · `TownSquareClient` | Roster hub |
 | `/training` · `TrainingClient` | World + sheet for one companion |
-| `/quest` · `QuestRunClient` | Export party → `GameClient` |
+| `/quest` · `QuestRunClient` | Takes stashed party → `GameClient` (maze auto-starts) |
 | `/character-initialization.html` | Race / alignment intake → named roster entry |
 
 Maze combat and replay live under `src/sim/` and `src/components/wizardry/`.

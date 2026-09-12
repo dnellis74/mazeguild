@@ -10,7 +10,6 @@ const MONSTER_SPRITES: Record<string, string> = {
   Hobgoblin: "/monsters/hobgoblin.png",
   Bugbear: "/monsters/bugbear.png",
 };
-const TAVERN_SRC = "/places/tavern.jpg";
 
 function hasWall(
   maze: DungeonResult["maze"],
@@ -56,75 +55,22 @@ function monsterSpriteKey(name: string): string | null {
   return keys.find((k) => new RegExp(`\\b${k}\\b`, "i").test(name)) ?? null;
 }
 
-function drawDeadEnd(
-  ctx: CanvasRenderingContext2D,
-  cssW: number,
-  cssH: number,
-  mural: HTMLImageElement | null,
-) {
-  ctx.fillStyle = "#050301";
-  ctx.fillRect(0, 0, cssW, cssH);
-  ctx.strokeStyle = AMBER;
-  ctx.lineWidth = Math.max(1.25, cssW / 280);
-
-  const near = rect(0, cssW, cssH);
-  const far = rect(1.15, cssW, cssH);
-
-  ctx.beginPath();
-  ctx.moveTo(near.x, near.y);
-  ctx.lineTo(far.x, far.y);
-  ctx.moveTo(near.x, near.y + near.h);
-  ctx.lineTo(far.x, far.y + far.h);
-  ctx.moveTo(near.x + near.w, near.y);
-  ctx.lineTo(far.x + far.w, far.y);
-  ctx.moveTo(near.x + near.w, near.y + near.h);
-  ctx.lineTo(far.x + far.w, far.y + far.h);
-  ctx.stroke();
-  ctx.strokeRect(far.x, far.y, far.w, far.h);
-
-  if (mural && mural.naturalWidth > 0) {
-    const pad = Math.max(2, cssW * 0.01);
-    const box = {
-      x: far.x + pad,
-      y: far.y + pad,
-      w: far.w - pad * 2,
-      h: far.h - pad * 2,
-    };
-    const scale = Math.max(
-      box.w / mural.naturalWidth,
-      box.h / mural.naturalHeight,
-    );
-    const sw = box.w / scale;
-    const sh = box.h / scale;
-    const sx = (mural.naturalWidth - sw) / 2;
-    const sy = (mural.naturalHeight - sh) / 2;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(mural, sx, sy, sw, sh, box.x, box.y, box.w, box.h);
-    ctx.strokeStyle = AMBER;
-    ctx.strokeRect(far.x, far.y, far.w, far.h);
-  }
-}
-
 export function DungeonView({
   maze,
   pos,
   facing,
   inCombat,
   enemies,
-  scene = "maze",
 }: {
-  maze?: DungeonResult["maze"];
-  pos?: Pos;
-  facing?: Dir;
+  maze: DungeonResult["maze"];
+  pos: Pos;
+  facing: Dir;
   inCombat?: boolean;
   enemies?: string[];
-  scene?: "maze" | "town";
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const monsterRefs = useRef<Record<string, HTMLImageElement>>({});
-  const tavernRef = useRef<HTMLImageElement | null>(null);
   const [assets, setAssets] = useState(0);
 
   useEffect(() => {
@@ -147,21 +93,9 @@ export function DungeonView({
       return img;
     });
 
-    const tavern = new Image();
-    tavern.src = TAVERN_SRC;
-    tavern.onload = () => {
-      tavernRef.current = tavern;
-      mark();
-    };
-    if (tavern.complete && tavern.naturalWidth > 0) {
-      tavernRef.current = tavern;
-      mark();
-    }
-
     return () => {
       alive = false;
       for (const img of monsterImgs) img.onload = null;
-      tavern.onload = null;
     };
   }, []);
 
@@ -180,13 +114,6 @@ export function DungeonView({
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      if (scene === "town") {
-        drawDeadEnd(ctx, cssW, cssH, tavernRef.current);
-        return;
-      }
-
-      if (!maze || !pos || !facing) return;
 
       ctx.fillStyle = "#050301";
       ctx.fillRect(0, 0, cssW, cssH);
@@ -298,7 +225,7 @@ export function DungeonView({
     ro.observe(wrap);
     draw();
     return () => ro.disconnect();
-  }, [scene, maze, pos, facing, inCombat, assets, (enemies ?? []).join("\0")]);
+  }, [maze, pos, facing, inCombat, assets, (enemies ?? []).join("\0")]);
 
   return (
     <div
@@ -309,11 +236,9 @@ export function DungeonView({
         ref={canvasRef}
         className="block h-full w-full touch-none"
         aria-label={
-          scene === "town"
-            ? "First-person view of the town square street"
-            : inCombat
-              ? `First-person dungeon view, fighting ${(enemies ?? []).join(", ") || "monsters"}`
-              : "First-person dungeon view"
+          inCombat
+            ? `First-person dungeon view, fighting ${(enemies ?? []).join(", ") || "monsters"}`
+            : "First-person dungeon view"
         }
       />
     </div>
