@@ -8,7 +8,7 @@ this package should stay free of React and `localStorage`.
 
 ```
 Town Square (/)
-  ├─ Welcome a Stranger → character-initialization.html → back to /
+  ├─ Welcome a Stranger → character-initialization.html → POST /api/companions → /
   ├─ 1 companion selected → Enter the City (/training?id=…)
   └─ 2+ selected → Quest (stash companions → /quest maze, auto-play)
 ```
@@ -21,63 +21,49 @@ directly).
 **Town Square** is both:
 
 1. The adventure hub at `/` (roster, Welcome, Quest).
-2. A building under **Walled City** on the world map — always unlocked, listed
-   beside Tavern / Cathedral / Library. Selecting it returns to the roster hub
-   at `/` (character selection). Portal activity defs in `townSquare.ts` back
-   hub actions such as Welcome a Stranger.
+2. A building under **Walled City** on the world map — selecting it returns to `/`.
 
 ## Persistence
 
 | Key | Where | Role |
 |-----|--------|------|
-| `mazeguild.roster` | `src/lib/rosterStorage.ts` (+ creation HTML) | Multi-companion list (`Character[]`) |
-| `mazeguild.character` | legacy | Migrated into the roster once on load |
+| `mazeguild.roster` | `src/lib/rosterStorage.ts` | Multi-companion list (`Character[]`) |
 
-A companion is one shared `Character` blob (`id`, `name`, race, features,
-scores, world unlocks, `xp` / `hp`, …). Town Square, training, and the maze
-all use it. Creation finishes by appending a **fresh empty companion** (no quiz
-draft fields). Maze XP/HP write back onto the roster when returning to town.
+A companion is one shared `Character` blob. Creation finishes via
+`createEmptyCompanion` (`POST /api/companions`). Maze XP/HP write back onto the
+roster when returning to town.
 
 ## HTTP API
-
-Thin routes under `src/app/api/training/` that load the catalog, migrate the
-character blob, and call into this package.
 
 | Method | Path | Body | Returns |
 |--------|------|------|---------|
 | `GET` | `/api/training/catalog` | — | Counts / timing summary |
 | `POST` | `/api/training/view` | `{ character, ui }` | `{ character, ui, view }` |
 | `POST` | `/api/training/action` | `{ character, ui, action }` | `{ character, ui, view, toast?, jobRunning?, navigate? }` |
+| `POST` | `/api/companions` | `{ raceId, alignmentId, … }` | `{ companion }` |
 | `POST` | `/api/names` | `{ raceId, gender?, taken? }` | `{ name, gender, race, seed }` |
-
-`navigate` is set for Town Square portal actions; the client follows it
-(`{id}` → current roster id). Feature activities start timed jobs instead.
-
-Quest handoff does **not** convert through an SRD sheet — Town Square stashes
-selected companions and `/api/run` maps them with `companionToCombatant`.
 
 ## Module map
 
 | File | Responsibility |
 |------|----------------|
 | `types.ts` | Character, UI state, actions, jobs |
-| `catalog.ts` | Load `public/data` (skills, races, timing, …) |
+| `companion.ts` | Empty companion factory + labels |
+| `catalog.ts` | Load `public/data` |
 | `character.ts` | Migrate / validate / default UI |
-| `world.ts` | Area → building → room tree from skills; inject Town Square; unlock helpers |
-| `townSquare.ts` | Portal building constants and activity → href map |
+| `world.ts` | Area → building → room tree; inject Town Square |
+| `townSquare.ts` | Hub building constants |
 | `actions.ts` | `applyTrainingAction` reducer |
-| `view.ts` | Sheet / world / pending-choice DTOs for the client |
-| `abilities.ts` / `features.ts` / `magic.ts` / `origin.ts` | Point-buy, prereqs, cantrips/spells, origin prompt |
-| `training.test.ts` | Domain tests |
+| `view.ts` | Sheet / world DTOs |
+| `abilities.ts` / `features.ts` / `magic.ts` / `origin.ts` | Point-buy, prereqs, magic, origin |
 
-## Related UI (not in this folder)
+## Related UI
 
 | Route / file | Role |
 |--------------|------|
 | `/` · `TownSquareClient` | Roster hub |
-| `/training` · `TrainingClient` | World + sheet for one companion |
-| `/quest` · `QuestRunClient` | Takes stashed party → `GameClient` (maze auto-starts) |
-| `/character-initialization.html` | Race / alignment intake → named roster entry |
+| `/training` · `TrainingClient` | World + sheet |
+| `/quest` · `QuestPageClient` | Stashed party → maze |
+| `/character-initialization.html` | Race / alignment → `POST /api/companions` |
 
-Maze combat and replay live under `src/sim/` and `src/components/wizardry/`.
-Combat derives a thin `Combatant` from companion features at run time.
+Maze combat: `companionToCombatant` in `src/sim/`.

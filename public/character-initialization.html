@@ -281,9 +281,9 @@ function renderQuiz(){
       <button class="back" data-action="back">&#8249; Back</button>
       <span class="progress">${step+1} of ${RACE_QUESTIONS.length}</span>
     </div>
-    <div class="ticks">${ticks}</div>
     <h2>${q.text}</h2>
     <div class="option-list">${options}</div>
+    <div class="ticks">${ticks}</div>
   </div>`;
 }
 
@@ -448,9 +448,9 @@ function renderAlignQuiz(){
       <button class="back" data-action="back">&#8249; Back</button>
       <span class="progress">${step+1} of ${questions.length}</span>
     </div>
-    <div class="ticks">${ticks}</div>
     <h2>${q.text}</h2>
     <div class="option-list">${options}</div>
+    <div class="ticks">${ticks}</div>
   </div>`;
 }
 
@@ -668,6 +668,30 @@ function onAction(e){
 
       let name = `${align?.name || '?'} ${race?.name || 'Stranger'}`;
       try {
+        const res = await fetch('/api/companions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            raceId: ch.raceId,
+            alignmentId: ch.alignment.alignmentId,
+            subrace: ch.subrace || null,
+            definingExperience: ch.alignment.definingExperience || null,
+            taken: roster.map(e => e && e.name).filter(Boolean),
+          }),
+        });
+        const data = await res.json();
+        if(!res.ok || !data.companion){
+          throw new Error(data.error || 'Could not create companion');
+        }
+        roster.push(data.companion);
+        localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+        window.location.href = '/';
+        return;
+      } catch (err) {
+        console.warn('Companion create failed; using local fallback.', err);
+      }
+
+      try {
         const res = await fetch('/api/names', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -683,7 +707,6 @@ function onAction(e){
       }
 
       const id = (crypto.randomUUID && crypto.randomUUID()) || ('c-' + Date.now());
-      /** Fresh companion — keep in sync with Character in src/training/types.ts */
       const companion = {
         id,
         name,

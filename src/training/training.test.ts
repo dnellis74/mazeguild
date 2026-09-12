@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getCatalog } from "@/training/catalog";
 import { migrateCharacter, defaultTrainingUi } from "@/training/character";
+import { createEmptyCompanion } from "@/training/companion";
 import { applyTrainingAction } from "@/training/actions";
 import { buildTrainingView } from "@/training/view";
 import { companionToCombatant } from "@/sim/adapter";
@@ -10,20 +11,15 @@ import {
   TOWN_SQUARE_BUILDING,
 } from "@/training/townSquare";
 
-function baseCompanion(over: Record<string, unknown> = {}) {
-  return {
-    id: "c-test",
-    name: "Test",
-    raceId: "human",
-    alignment: { alignmentId: "lg" },
-    ...over,
-  };
-}
-
 describe("training API domain", () => {
   it("builds a sheet view for a minimal character", () => {
     const catalog = getCatalog();
-    const character = migrateCharacter(catalog, baseCompanion());
+    const character = createEmptyCompanion(catalog, {
+      id: "c-test",
+      name: "Test",
+      raceId: "human",
+      alignment: { alignmentId: "lg" },
+    });
     const ui = { ...defaultTrainingUi(), hubTab: "sheet" as const };
     const view = buildTrainingView(catalog, character, ui);
     expect(view.sheet).toBeTruthy();
@@ -44,7 +40,12 @@ describe("training API domain", () => {
 
   it("sends Town Square selection to the character roster hub", () => {
     const catalog = getCatalog();
-    const character = migrateCharacter(catalog, baseCompanion());
+    const character = createEmptyCompanion(catalog, {
+      id: "c-test",
+      name: "Test",
+      raceId: "human",
+      alignment: { alignmentId: "lg" },
+    });
     expect(character.unlocked.buildings[`${TOWN_SQUARE_AREA}::${TOWN_SQUARE_BUILDING}`]).toBe(
       true,
     );
@@ -68,10 +69,12 @@ describe("training API domain", () => {
 
   it("unlocks an area via complete-job", () => {
     const catalog = getCatalog();
-    let character = migrateCharacter(
-      catalog,
-      baseCompanion({ id: "c-elf", name: "Elowen", raceId: "elf", alignment: { alignmentId: "ng" } }),
-    );
+    let character = createEmptyCompanion(catalog, {
+      id: "c-elf",
+      name: "Elowen",
+      raceId: "elf",
+      alignment: { alignmentId: "ng" },
+    });
     let ui = defaultTrainingUi();
     ui.hubTab = "world";
 
@@ -97,9 +100,13 @@ describe("training API domain", () => {
     const catalog = getCatalog();
     const character = migrateCharacter(
       catalog,
-      baseCompanion({
-        id: "c-fighter",
-        name: "Aldric",
+      {
+        ...createEmptyCompanion(catalog, {
+          id: "c-fighter",
+          name: "Aldric",
+          raceId: "human",
+          alignment: { alignmentId: "lg" },
+        }),
         features: [
           {
             id: "fighter-fighting-style",
@@ -119,7 +126,7 @@ describe("training API domain", () => {
           CHA: 8,
         },
         abilityScoresAssigned: true,
-      }),
+      },
     );
     const combatant = companionToCombatant(character, 0);
     expect(combatant.archetype).toBe("Fighter");
@@ -134,15 +141,5 @@ describe("training API domain", () => {
     expect(() =>
       migrateCharacter(catalog, { raceId: "human", alignment: { alignmentId: "lg" } }),
     ).toThrow(/missing id/i);
-  });
-
-  it("switches the hub tab to quest without a quest view DTO", () => {
-    const catalog = getCatalog();
-    const character = migrateCharacter(catalog, baseCompanion());
-    const ui = { ...defaultTrainingUi(), hubTab: "quest" as const };
-    const view = buildTrainingView(catalog, character, ui);
-    expect(view.tab).toBe("quest");
-    expect(view.sheet).toBeNull();
-    expect(view.world).toBeNull();
   });
 });

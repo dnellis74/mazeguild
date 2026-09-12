@@ -1,21 +1,15 @@
 /** Shared training / character-creation types. Pure data — no DOM. */
 
-export type Ability = "STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA";
+export type {
+  Ability,
+} from "@/lib/abilities";
+export {
+  ABILITY_ORDER,
+  ABILITY_FULL_NAME,
+  ABILITY_SHORT_NAME,
+} from "@/lib/abilities";
 
-export const ABILITY_ORDER: Ability[] = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
-
-export const ABILITY_FULL_NAME: Record<Ability, string> = {
-  STR: "Strength",
-  DEX: "Dexterity",
-  CON: "Constitution",
-  INT: "Intelligence",
-  WIS: "Wisdom",
-  CHA: "Charisma",
-};
-
-export const ABILITY_SHORT_NAME: Record<string, Ability> = Object.fromEntries(
-  Object.entries(ABILITY_FULL_NAME).map(([short, full]) => [full, short as Ability]),
-) as Record<string, Ability>;
+import type { Ability } from "@/lib/abilities";
 
 export type FeatureRef = string | string[];
 
@@ -120,7 +114,7 @@ export type Character = {
 };
 
 export type TrainingUi = {
-  hubTab: "sheet" | "world" | "quest";
+  hubTab: "sheet" | "world";
   worldView: "areas" | "buildings" | "rooms" | "activities";
   worldArea: string | null;
   worldBuilding: string | null;
@@ -162,7 +156,6 @@ export type TrainingAction =
   | { type: "world-select-building"; building: string }
   | { type: "world-select-room"; room: string }
   | { type: "world-select-activity"; skillId: string }
-  | { type: "world-select-portal"; portalId: string }
   | { type: "world-select-cantrip"; archetype: string }
   | { type: "world-select-spell"; archetype: string }
   | { type: "confirm-favored-enemy"; enemy: string }

@@ -4,7 +4,6 @@ import type { Character, Skill } from "./types";
 import {
   TOWN_SQUARE_AREA,
   TOWN_SQUARE_BUILDING,
-  TOWN_SQUARE_ROOM,
 } from "./townSquare";
 
 export type WorldActivity = {
@@ -72,11 +71,11 @@ export function buildWorld(catalog: Catalog): WorldArea[] {
   );
 }
 
-/** Town Square is a portal building, not derived from skills.json. */
+/** Town Square hub exit — selecting it navigates to `/`. */
 export function injectTownSquare(areas: WorldArea[]): WorldArea[] {
   const square: WorldBuilding = {
     name: TOWN_SQUARE_BUILDING,
-    rooms: [{ name: TOWN_SQUARE_ROOM, activities: [] }],
+    rooms: [],
   };
 
   const result = areas.map((a) => {
@@ -102,10 +101,7 @@ export function grantTownSquareAccess(ch: Character): Character {
         ...unlocked.buildings,
         [buildingKey(TOWN_SQUARE_AREA, TOWN_SQUARE_BUILDING)]: true,
       },
-      rooms: {
-        ...unlocked.rooms,
-        [roomKey(TOWN_SQUARE_AREA, TOWN_SQUARE_BUILDING, TOWN_SQUARE_ROOM)]: true,
-      },
+      rooms: { ...unlocked.rooms },
     },
   };
 }

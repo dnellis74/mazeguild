@@ -33,10 +33,6 @@ export function getWeapon(key: string): Weapon {
   return toWeapon(def);
 }
 
-export function classFallbackWeapon(className: string): Weapon {
-  return archetypeFallbackWeapon(className) ?? getWeapon("unarmed");
-}
-
 /** Archetype-keyed fallback; returns null when the table has no entry. */
 export function archetypeFallbackWeapon(archetype: string): Weapon | null {
   const key = DATA.class_fallback[archetype];

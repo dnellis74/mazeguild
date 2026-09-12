@@ -1,4 +1,4 @@
-export { companionToCombatant, characterToCombatant } from "./adapter";
+export { companionToCombatant, companionToPartySnapshot } from "./adapter";
 export { runDungeon } from "./run";
 export { createRng } from "./rng";
 export { PARTY_CAP } from "./constants";

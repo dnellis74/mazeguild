@@ -9,10 +9,9 @@ import type { Character } from "@/training/types";
 import type { DungeonResult } from "@/sim/types";
 
 /**
- * Maze entry: party is handed off from Town Square.
- * No gate / gathering screen — straight into GameClient.
+ * Maze entry: party handed off from Town Square → GameClient.
  */
-export function QuestRunClient() {
+export function QuestPageClient() {
   const router = useRouter();
   const [party, setParty] = useState<Character[] | null>(() => readQuestParty());
   const [error, setError] = useState<string | null>(null);

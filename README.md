@@ -141,6 +141,6 @@ In rough order:
 
 1. Difficulty tuning so death actually threatens in a controlled way
 2. Loot with mechanical effect
-3. Persistence between runs (write maze XP back onto companions)
-4. Guild / conscription (parties of up to six, including offline members)
-5. A written motivation prompt that biases **tactics only**
+3. Guild / conscription (parties of up to six, including offline members)
+4. A written motivation prompt that biases **tactics only**
+5. Town rest / heal for companions returning from the maze at 0 HP

@@ -249,7 +249,10 @@
   .ticks{
     display:flex;
     gap:5px;
-    margin-bottom:22px;
+    margin-top:16px;
+    padding-top:12px;
+    padding-bottom:max(0.75rem, env(safe-area-inset-bottom, 0px));
+    flex-shrink:0;
   }
   .tick{
     width:22px;
@@ -265,12 +268,20 @@
     display:flex;
     flex-direction:column;
     gap:10px;
+    flex:1 1 auto;
+    min-height:0;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    padding-bottom:4px;
   }
   @media (min-width:640px){
     .option-list{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:12px;
+      align-content:start;
     }
   }
   .option{
@@ -317,6 +328,7 @@
     font-size:12px;
     font-style:normal;
     letter-spacing:0.04em;
+    flex-shrink:0;
     color:var(--ink-soft);
     line-height:1.5;
     max-width:36ch;
@@ -523,10 +535,12 @@
     text-shadow:none;
   }
   .confirm-actions{
-    margin-top:auto;
-    padding-top:24px;
+    margin-top:16px;
+    padding-top:16px;
+    padding-bottom:max(0.75rem, env(safe-area-inset-bottom, 0px));
     display:flex;
     gap:10px;
+    flex-shrink:0;
   }
   .confirm-actions button{
     flex:1;
@@ -693,6 +707,8 @@
   .hub-body{
     flex:1;
     min-height:0;
+    display:flex;
+    flex-direction:column;
     overflow-x:hidden;
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
@@ -702,6 +718,16 @@
     margin-inline:auto;
     padding:1rem 0 1.5rem;
     animation: fadeIn .22s ease both;
+  }
+  /* Creation screens nested in hub-body must fill and own scrolling. */
+  .hub-body > .screen{
+    flex:1;
+    min-height:0;
+    width:100%;
+    max-width:none;
+    margin-inline:0;
+    padding-top:0.5rem;
+    padding-bottom:0;
   }
 
   .sheet-block{

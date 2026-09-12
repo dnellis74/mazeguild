@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { QuestRunClient } from "@/components/town/QuestRunClient";
+import { QuestPageClient } from "./QuestPageClient";
 
 export const metadata: Metadata = {
   title: "Quest · guildmaze",
@@ -19,7 +19,7 @@ export default function QuestPage() {
   return (
     <div className="training-page bg-[#050301] text-amber-300">
       <Suspense fallback={<MazeBoot />}>
-        <QuestRunClient />
+        <QuestPageClient />
       </Suspense>
     </div>
   );

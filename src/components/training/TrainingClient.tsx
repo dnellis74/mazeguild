@@ -702,8 +702,6 @@ function cardToAction(card: WorldView["cards"][number]): TrainingAction {
       return { type: "world-select-room", room: String(d.room) };
     case "world-select-activity":
       return { type: "world-select-activity", skillId: String(d.skillId) };
-    case "world-select-portal":
-      return { type: "world-select-portal", portalId: String(d.portalId) };
     case "world-select-cantrip":
       return { type: "world-select-cantrip", archetype: String(d.archetype) };
     case "world-select-spell":

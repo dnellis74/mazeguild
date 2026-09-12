@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   getRosterEntry,
   loadRoster,
-  type RosterEntry,
 } from "@/lib/rosterStorage";
 import { stashQuestParty } from "@/lib/questHandoff";
 import { PARTY_CAP } from "@/sim/constants";
@@ -45,7 +44,7 @@ function featureArchetypes(ch: Character): string {
  */
 export function TownSquareClient() {
   const router = useRouter();
-  const [roster, setRoster] = useState<RosterEntry[]>([]);
+  const [roster, setRoster] = useState<Character[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [labels, setLabels] = useState<CatalogLabels | null>(null);

@@ -2,18 +2,12 @@ import type { Character } from "@/training/types";
 import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 
 /**
- * Multi-character roster for Town Square.
- * Legacy single-character key `mazeguild.character` is migrated once on load.
- * Legacy nested `{ id, displayName, character }` and `displayName` fields flatten to `name`.
- *
- * Creation HTML appends via the same ROSTER_KEY string — keep in sync with
- * `public/character-initialization.html`.
+ * Multi-character roster for Town Square (`Character[]` in localStorage).
+ * Legacy nested / displayName / single-character keys migrate once when needed.
  */
 export const ROSTER_KEY = "mazeguild.roster";
-export const LEGACY_CHARACTER_KEY = "mazeguild.character";
-
-/** Roster row is the shared companion character. */
-export type RosterEntry = Character;
+const LEGACY_CHARACTER_KEY = "mazeguild.character";
+const ROSTER_FLAT_FLAG = "mazeguild.roster.flat";
 
 type LegacyNested = {
   id?: string;
@@ -33,10 +27,20 @@ function pickName(...candidates: unknown[]): string {
   return "";
 }
 
+function isLegacyShape(raw: unknown): boolean {
+  if (!isPlainObject(raw)) return true;
+  if (isPlainObject(raw.character) && !(typeof raw.raceId === "string" && raw.raceId)) {
+    return true;
+  }
+  if (typeof raw.displayName === "string") return true;
+  if (typeof raw.id !== "string" || !raw.id) return true;
+  if (typeof raw.name !== "string" || !raw.name.trim()) return true;
+  return false;
+}
+
 function flattenEntry(raw: unknown): Character | null {
   if (!isPlainObject(raw)) return null;
 
-  // Legacy nested roster shape
   if (isPlainObject(raw.character) && !(typeof raw.raceId === "string" && raw.raceId)) {
     const nested = raw as LegacyNested;
     const inner = nested.character!;
@@ -75,14 +79,13 @@ function flattenEntry(raw: unknown): Character | null {
   return { ...rest, id, name };
 }
 
-function readRaw(): Character[] {
+function readRaw(): unknown[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(ROSTER_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map(flattenEntry).filter((e): e is Character => !!e);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -91,16 +94,15 @@ function readRaw(): Character[] {
 function writeRaw(entries: Character[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(ROSTER_KEY, JSON.stringify(entries));
+  localStorage.setItem(ROSTER_FLAT_FLAG, "1");
 }
 
-/** Import legacy single-character save into the roster if present. */
-export function migrateLegacyCharacter(): void {
-  if (typeof window === "undefined") return;
+function migrateLegacyCharacter(roster: Character[]): Character[] {
+  if (typeof window === "undefined") return roster;
   try {
     const legacy = localStorage.getItem(LEGACY_CHARACTER_KEY);
-    if (!legacy) return;
+    if (!legacy) return roster;
     const character = JSON.parse(legacy) as Character & { displayName?: string };
-    const roster = readRaw();
     const already = roster.some(
       (e) =>
         e.raceId === character.raceId &&
@@ -113,23 +115,34 @@ export function migrateLegacyCharacter(): void {
         roster.map((e) => e.name),
       );
       const name = pickName(character.name, character.displayName) || named.name;
-      roster.push({
-        ...character,
-        id: character.id || crypto.randomUUID(),
-        name,
-      });
-      writeRaw(roster);
+      roster = [
+        ...roster,
+        {
+          ...character,
+          id: character.id || crypto.randomUUID(),
+          name,
+        },
+      ];
     }
     localStorage.removeItem(LEGACY_CHARACTER_KEY);
   } catch {
     // leave legacy key alone if corrupt
   }
+  return roster;
 }
 
 export function loadRoster(): Character[] {
-  migrateLegacyCharacter();
-  const roster = readRaw();
-  writeRaw(roster);
+  if (typeof window === "undefined") return [];
+  const raw = readRaw();
+  const needsFlatten =
+    localStorage.getItem(ROSTER_FLAT_FLAG) !== "1" ||
+    raw.some(isLegacyShape);
+  let roster = raw.map(flattenEntry).filter((e): e is Character => !!e);
+  const beforeLegacy = roster.length;
+  roster = migrateLegacyCharacter(roster);
+  if (needsFlatten || roster.length !== beforeLegacy) {
+    writeRaw(roster);
+  }
   return roster;
 }
 
@@ -172,6 +185,3 @@ export function applyQuestAftermath(
   }
   if (changed) writeRaw(roster);
 }
-
-/** @deprecated Use roster helpers. Kept for a few call sites during migration. */
-export const CHARACTER_STORAGE_KEY = LEGACY_CHARACTER_KEY;

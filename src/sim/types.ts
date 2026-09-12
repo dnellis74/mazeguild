@@ -11,7 +11,7 @@ export type Maze = {
   exit: Pos;
 };
 
-export type Ability = "STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA";
+export type Ability = import("@/lib/abilities").Ability;
 
 export type DiceExpr = { count: number; sides: number };
 

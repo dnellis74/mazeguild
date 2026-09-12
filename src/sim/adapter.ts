@@ -1,3 +1,4 @@
+import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
 import { ATTACK_CANTRIPS, defaultAttackCantrip } from "./cantrips";
 import { abilityMod } from "./rules";
 import {
@@ -5,11 +6,10 @@ import {
   defaultUnarmedWeapon,
   monkUnarmedWeapon,
 } from "./weapons";
-import type { Ability, Combatant, Role, Weapon } from "./types";
+import type { Combatant, PartySnapshot, Role, Weapon } from "./types";
 import type { Character } from "@/training/types";
 import { asFeatureList } from "@/training/features";
-
-const ABILITIES: Ability[] = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+import { characterLabel, titleCaseId } from "@/training/companion";
 
 /** Hit die by feature archetype — used only to derive starting HP. */
 const ARCHETYPE_HIT_DIE: Record<string, number> = {
@@ -120,15 +120,6 @@ function pickWeapon(archetypes: string[]): Weapon {
   return defaultUnarmedWeapon();
 }
 
-function raceLabel(raceId: string): string {
-  if (!raceId) return "Unknown";
-  return raceId
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(" ");
-}
-
 function hasUnarmoredDefense(archetypes: string[]): "barbarian" | "monk" | null {
   if (archetypes.includes("Barbarian")) return "barbarian";
   if (archetypes.includes("Monk")) return "monk";
@@ -166,13 +157,13 @@ export function companionToCombatant(
     WIS: 10,
     CHA: 10,
   } satisfies Record<Ability, number>;
-  for (const abi of ABILITIES) {
+  for (const abi of ABILITY_ORDER) {
     abilities[abi] = ch.abilityScores?.[abi] ?? 10;
   }
 
   const archetypes = archetypesOf(ch);
   const features = featureText(ch);
-  const race = raceLabel(ch.raceId);
+  const race = titleCaseId(ch.raceId);
   const hitDie = hitDieFor(archetypes);
   const maxHp = Math.max(1, hitDie + abilityMod(abilities.CON));
   const hp =
@@ -214,8 +205,21 @@ export function companionToCombatant(
   };
 }
 
-/** @deprecated Use companionToCombatant. */
-export const characterToCombatant = companionToCombatant;
+export function companionToPartySnapshot(
+  ch: Character,
+  index: number,
+): PartySnapshot {
+  const combatant = companionToCombatant(ch, index);
+  return {
+    name: characterLabel(ch),
+    summary: combatant.archetype,
+    race: combatant.race,
+    hp: combatant.hp,
+    maxHp: combatant.maxHp,
+    ac: combatant.ac,
+    xp: combatant.xp,
+  };
+}
 
 export function makeMonster(opts: {
   id: string;

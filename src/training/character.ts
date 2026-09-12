@@ -4,13 +4,11 @@ import { baseAbilityScores } from "./abilities";
 import { normalizeEarnedFeatures } from "./features";
 import type { Ability } from "./types";
 import { ABILITY_ORDER } from "./types";
-import { featureLabel } from "./features";
 import { ensureUnlocked } from "./world";
 
 /**
- * Normalize a companion blob from storage / API.
- * Intake writes a clean Character; this fills defaults and keeps world unlocks valid.
- * Preserves `id` and `name` when present — never invents a new identity for known companions.
+ * Normalize a companion from storage / API.
+ * Intake uses createEmptyCompanion; this validates identity and fills training defaults.
  */
 export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
   const ch = (raw || {}) as Partial<Character> & Record<string, unknown>;
@@ -57,35 +55,24 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
           : undefined,
   };
 
-  if (!next.abilityScoresAssigned) {
-    next.abilityScores = baseAbilityScores(catalog);
-  } else if (!next.abilityScores) {
+  if (!next.abilityScoresAssigned || !next.abilityScores) {
     next.abilityScores = baseAbilityScores(catalog);
   }
 
   for (const ab of ABILITY_ORDER) {
-    if (next.abilityScores[ab] == null) next.abilityScores[ab] = pointFallback(catalog);
+    if (next.abilityScores[ab] == null) {
+      next.abilityScores[ab] = catalog.abilityMods?.pointBuy?.startingScore ?? 8;
+    }
+  }
+
+  // Drop corrupt activity jobs that lack a skill id (legacy).
+  if (next.activeJob?.kind === "activity" && !next.activeJob.skillId) {
+    next.activeJob = null;
   }
 
   next = ensureUnlocked(next);
   next = normalizeEarnedFeatures(catalog, next);
-
-  if (next.activeJob?.kind === "activity" && !next.activeJob.skillId) {
-    const job = next.activeJob;
-    const match = catalog.skills.find(
-      (s) =>
-        s.activity === job.activity &&
-        featureLabel(s.feature) === featureLabel(job.feature),
-    );
-    if (match) next.activeJob = { ...job, skillId: match.id };
-    else next.activeJob = null;
-  }
-
   return next;
-}
-
-function pointFallback(catalog: Catalog) {
-  return catalog.abilityMods?.pointBuy?.startingScore ?? 8;
 }
 
 export function defaultTrainingUi(): import("./types").TrainingUi {

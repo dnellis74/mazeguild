@@ -18,8 +18,6 @@ import { buildOriginPrompt } from "./origin";
 import { jobProgress } from "./view";
 import {
   isTownSquareBuilding,
-  isTownSquareLocation,
-  townSquarePortalById,
   TOWN_SQUARE_AREA,
 } from "./townSquare";
 import {
@@ -438,20 +436,6 @@ export function applyTrainingAction(
         };
       }
       return startJob(catalog, ch, ui, jobBase);
-    }
-    case "world-select-portal": {
-      if (
-        !isTownSquareLocation({
-          worldArea: ui.worldArea,
-          worldBuilding: ui.worldBuilding,
-          worldRoom: ui.worldRoom,
-        })
-      ) {
-        return { character: ch, ui, toast: "Not in Town Square." };
-      }
-      const portal = townSquarePortalById(action.portalId);
-      if (!portal) return { character: ch, ui, toast: "Unknown activity." };
-      return { character: ch, ui, navigate: portal.href };
     }
     case "confirm-favored-enemy": {
       const pending = ui.pendingChoice;

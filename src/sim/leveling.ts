@@ -41,8 +41,3 @@ export function levelForXp(xp: number): number {
   }
   return level;
 }
-
-/** @deprecated Prefer levelForXp(xp). Kept for call sites that still pass an archetype. */
-export function hitDieSides(_archetype: string): number {
-  return 8;
-}

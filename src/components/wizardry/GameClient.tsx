@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { characterLabel } from "@/campaign/labels";
+import { companionToPartySnapshot } from "@/sim/adapter";
+import { characterLabel } from "@/training/companion";
 import { projectFrame } from "@/replay/project";
 import type { DungeonResult } from "@/sim/types";
 import type { Character } from "@/training/types";
@@ -36,6 +37,11 @@ export function GameClient({
 
   const partyKey = useMemo(
     () => party.map((ch) => characterLabel(ch)).join("|"),
+    [party],
+  );
+
+  const rosterSnapshot = useMemo(
+    () => party.map((ch, i) => companionToPartySnapshot(ch, i)),
     [party],
   );
 
@@ -174,7 +180,7 @@ export function GameClient({
           </div>
 
           <aside className="col-start-2 row-start-1 min-h-0 overflow-hidden">
-            <PartyRoster party={inMaze && frame ? frame.party : party} />
+            <PartyRoster party={inMaze && frame ? frame.party : rosterSnapshot} />
           </aside>
 
           <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">

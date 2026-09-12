@@ -20,9 +20,6 @@ import {
 import { originStoryText } from "./origin";
 import {
   isTownSquareBuilding,
-  isTownSquareLocation,
-  TOWN_SQUARE_PORTALS,
-  TOWN_SQUARE_ROOM,
 } from "./townSquare";
 import {
   areaKey,
@@ -296,40 +293,12 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
   } else {
     crumb.push({ label: "Areas", action: "world-nav", view: "areas" });
     crumb.push({ label: ui.worldArea || "", action: "world-nav", view: "buildings" });
-    if (isTownSquareBuilding(ui.worldBuilding)) {
-      crumb.push({ label: ui.worldBuilding || "" });
-    } else {
-      crumb.push({
-        label: ui.worldBuilding || "",
-        action: "world-nav",
-        view: "rooms",
-      });
-      crumb.push({ label: ui.worldRoom || "" });
-    }
-
-    if (
-      isTownSquareLocation({
-        worldArea: ui.worldArea,
-        worldBuilding: ui.worldBuilding,
-        worldRoom: ui.worldRoom ?? TOWN_SQUARE_ROOM,
-      })
-    ) {
-      for (const portal of TOWN_SQUARE_PORTALS) {
-        cards.push({
-          action: "world-select-portal",
-          title: portal.activity,
-          sub: portal.description,
-          status: "Open",
-          unlocked: true,
-          data: { portalId: portal.id },
-        });
-      }
-      return {
-        crumb,
-        cards,
-        emptyNote: undefined,
-      };
-    }
+    crumb.push({
+      label: ui.worldBuilding || "",
+      action: "world-nav",
+      view: "rooms",
+    });
+    crumb.push({ label: ui.worldRoom || "" });
 
     const area = world.find((a) => a.name === ui.worldArea);
     const building = area?.buildings.find((b) => b.name === ui.worldBuilding);

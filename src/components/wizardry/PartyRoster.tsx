@@ -1,40 +1,11 @@
 import type { PartySnapshot } from "@/sim/types";
-import type { Character } from "@/training/types";
-import { characterLabel } from "@/campaign/labels";
-import { companionToCombatant } from "@/sim/adapter";
 
-function fromCompanion(ch: Character, index: number): PartySnapshot {
-  const combatant = companionToCombatant(ch, index);
-  return {
-    name: characterLabel(ch),
-    summary: combatant.archetype,
-    race: combatant.race,
-    hp: combatant.hp,
-    maxHp: combatant.maxHp,
-    ac: combatant.ac,
-    xp: combatant.xp,
-  };
-}
-
-function isCompanion(row: PartySnapshot | Character): row is Character {
-  return "raceId" in row && "abilityScores" in row;
-}
-
-/** Side roster during a maze run. */
-export function PartyRoster({
-  party,
-}: {
-  party: PartySnapshot[] | Character[];
-}) {
-  const rows: PartySnapshot[] =
-    party.length > 0 && isCompanion(party[0]!)
-      ? (party as Character[]).map(fromCompanion)
-      : (party as PartySnapshot[]);
-
+/** Side roster during a maze run (snapshots only). */
+export function PartyRoster({ party }: { party: PartySnapshot[] }) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-1 font-mono text-[10px] uppercase leading-tight tracking-wide sm:gap-1.5 sm:text-xs sm:leading-normal">
       <p className="shrink-0 text-amber-500">PARTY</p>
-      {rows.map((p) => {
+      {party.map((p) => {
         const dead = p.hp <= 0;
         const pct = p.maxHp > 0 ? p.hp / p.maxHp : 0;
         return (
