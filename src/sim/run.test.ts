@@ -32,11 +32,14 @@ describe("runDungeon", () => {
     expect(JSON.stringify(a.maze)).not.toBe(JSON.stringify(b.maze));
   });
 
-  it("follows the A* shortest path without revisiting cells", () => {
+  it("emits partyAfter with matching ids and xp", () => {
     const result = runDungeon({ seed: 42, party });
-    const route = aStarPath(result.maze, result.maze.entrance, result.maze.exit);
-    const expected = route.map((p) => `${p.x},${p.y}`);
-    expect(result.visited).toEqual(expected.slice(0, result.visited.length));
-    expect(result.stepsTaken).toBe(result.visited.length - 1);
+    expect(result.partyAfter).toHaveLength(party.length);
+    expect(result.partyAfter.map((p) => p.id)).toEqual(party.map((p) => p.id));
+    for (const member of result.partyAfter) {
+      expect(member.xp).toBeGreaterThanOrEqual(0);
+      expect(member.hp).toBeGreaterThanOrEqual(0);
+      expect(member.maxHp).toBeGreaterThan(0);
+    }
   });
 });

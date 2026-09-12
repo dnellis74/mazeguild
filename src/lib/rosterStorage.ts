@@ -4,7 +4,7 @@ import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 /**
  * Multi-character roster for Town Square.
  * Legacy single-character key `mazeguild.character` is migrated once on load.
- * Legacy nested `{ id, displayName, character }` entries are flattened.
+ * Legacy nested `{ id, displayName, character }` and `displayName` fields flatten to `name`.
  *
  * Creation HTML appends via the same ROSTER_KEY string — keep in sync with
  * `public/character-initialization.html`.
@@ -17,6 +17,7 @@ export type RosterEntry = Character;
 
 type LegacyNested = {
   id?: string;
+  name?: string;
   displayName?: string;
   character?: Partial<Character> & Record<string, unknown>;
 };
@@ -25,26 +26,38 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
 }
 
+function pickName(...candidates: unknown[]): string {
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c.trim();
+  }
+  return "";
+}
+
 function flattenEntry(raw: unknown): Character | null {
   if (!isPlainObject(raw)) return null;
 
   // Legacy nested roster shape
-  if (isPlainObject(raw.character) && !("raceId" in raw && raw.raceId)) {
+  if (isPlainObject(raw.character) && !(typeof raw.raceId === "string" && raw.raceId)) {
     const nested = raw as LegacyNested;
     const inner = nested.character!;
     const id =
       (typeof nested.id === "string" && nested.id) ||
       (typeof inner.id === "string" && inner.id) ||
       "";
-    const displayName =
-      (typeof nested.displayName === "string" && nested.displayName) ||
-      (typeof inner.displayName === "string" && inner.displayName) ||
-      "Companion";
+    const name = pickName(
+      nested.name,
+      nested.displayName,
+      inner.name,
+      inner.displayName,
+    );
     if (!id || !inner.raceId) return null;
+    const { displayName: _drop, ...rest } = inner as Character & {
+      displayName?: string;
+    };
     return {
-      ...(inner as Character),
+      ...rest,
       id,
-      displayName,
+      name: name || "Companion",
     };
   }
 
@@ -55,11 +68,11 @@ function flattenEntry(raw: unknown): Character | null {
       : typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `c-${Date.now()}`;
-  const displayName =
-    typeof raw.displayName === "string" && raw.displayName.trim()
-      ? raw.displayName
-      : "Companion";
-  return { ...(raw as Character), id, displayName };
+  const name = pickName(raw.name, raw.displayName) || "Companion";
+  const { displayName: _drop, ...rest } = raw as Character & {
+    displayName?: string;
+  };
+  return { ...rest, id, name };
 }
 
 function readRaw(): Character[] {
@@ -86,7 +99,7 @@ export function migrateLegacyCharacter(): void {
   try {
     const legacy = localStorage.getItem(LEGACY_CHARACTER_KEY);
     if (!legacy) return;
-    const character = JSON.parse(legacy) as Character;
+    const character = JSON.parse(legacy) as Character & { displayName?: string };
     const roster = readRaw();
     const already = roster.some(
       (e) =>
@@ -97,12 +110,13 @@ export function migrateLegacyCharacter(): void {
     if (!already) {
       const named = generateUniqueFantasyName(
         character.raceId,
-        roster.map((e) => e.displayName),
+        roster.map((e) => e.name),
       );
+      const name = pickName(character.name, character.displayName) || named.name;
       roster.push({
         ...character,
         id: character.id || crypto.randomUUID(),
-        displayName: character.displayName || named.name,
+        name,
       });
       writeRaw(roster);
     }
@@ -115,7 +129,6 @@ export function migrateLegacyCharacter(): void {
 export function loadRoster(): Character[] {
   migrateLegacyCharacter();
   const roster = readRaw();
-  // Rewrite flattened shape so nested legacy does not linger
   writeRaw(roster);
   return roster;
 }
@@ -138,6 +151,26 @@ export function upsertRosterEntry(entry: Character): void {
 
 export function removeRosterEntry(id: string): void {
   writeRaw(loadRoster().filter((e) => e.id !== id));
+}
+
+/** Copy maze XP / HP onto roster companions (matched by id). */
+export function applyQuestAftermath(
+  updates: Array<{ id: string; xp: number; hp: number }>,
+): void {
+  if (updates.length === 0) return;
+  const roster = loadRoster();
+  let changed = false;
+  for (const u of updates) {
+    const idx = roster.findIndex((e) => e.id === u.id);
+    if (idx < 0) continue;
+    roster[idx] = {
+      ...roster[idx]!,
+      xp: u.xp,
+      hp: u.hp,
+    };
+    changed = true;
+  }
+  if (changed) writeRaw(roster);
 }
 
 /** @deprecated Use roster helpers. Kept for a few call sites during migration. */

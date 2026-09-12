@@ -140,4 +140,12 @@ export type DungeonResult = {
   stepsTaken: number;
   cellsVisited: number;
   visited: string[];
+  /** Final combatant XP/HP to write back onto companions in the roster. */
+  partyAfter: Array<{
+    id: string;
+    name: string;
+    xp: number;
+    hp: number;
+    maxHp: number;
+  }>;
 };

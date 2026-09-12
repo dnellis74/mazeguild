@@ -31,7 +31,11 @@ export async function POST(request: Request) {
     const view = buildTrainingView(catalog, character, ui);
     return Response.json({ character, ui, view });
   } catch (err) {
-    console.error(JSON.stringify({ msg: "training_view_error", err: String(err) }));
+    const message = err instanceof Error ? err.message : String(err);
+    if (/missing id|missing name/i.test(message)) {
+      return Response.json({ error: message, redirect: "/" }, { status: 400 });
+    }
+    console.error(JSON.stringify({ msg: "training_view_error", err: message }));
     return Response.json({ error: "Failed to build view" }, { status: 500 });
   }
 }

@@ -23,7 +23,7 @@ export function GameClient({
   onReturnToTown,
 }: {
   party: Character[];
-  onReturnToTown: () => void;
+  onReturnToTown: (partyAfter?: DungeonResult["partyAfter"]) => void;
 }) {
   const [seed, setSeed] = useState(99);
   const [result, setResult] = useState<DungeonResult | null>(null);
@@ -38,6 +38,10 @@ export function GameClient({
     () => party.map((ch) => characterLabel(ch)).join("|"),
     [party],
   );
+
+  const goTown = useCallback(() => {
+    onReturnToTown(result?.partyAfter);
+  }, [onReturnToTown, result]);
 
   const enterMaze = useCallback(async () => {
     if (party.length < 2) {
@@ -120,7 +124,7 @@ export function GameClient({
           </h1>
           <button
             type="button"
-            onClick={onReturnToTown}
+            onClick={goTown}
             className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500 underline-offset-2 hover:text-amber-300"
           >
             RETURN TO TOWN SQUARE
@@ -224,7 +228,7 @@ export function GameClient({
       <nav className="relative z-20 grid shrink-0 grid-cols-4 gap-2 border-t border-amber-900/70 bg-[#050301] pt-2 pb-[max(0.5rem,var(--safe-bottom))] phone-land:flex sm:flex sm:flex-wrap">
         <button
           type="button"
-          onClick={onReturnToTown}
+          onClick={goTown}
           className={`${tap} col-span-2 border-amber-400 bg-amber-900/40 text-amber-100 phone-land:flex-1 sm:flex-1`}
         >
           TOWN SQUARE

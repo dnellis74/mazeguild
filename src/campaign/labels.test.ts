@@ -5,7 +5,7 @@ import type { Character } from "@/training/types";
 function stub(partial: Partial<Character>): Character {
   return {
     id: "c1",
-    displayName: "Companion",
+    name: "Companion",
     raceId: "human",
     alignment: { alignmentId: "lg" },
     featurePoints: 2,
@@ -23,17 +23,18 @@ function stub(partial: Partial<Character>): Character {
     abilityScoresAssigned: true,
     unlocked: { areas: {}, buildings: {}, rooms: {} },
     activeJob: null,
+    xp: 0,
     ...partial,
   };
 }
 
 describe("characterLabel", () => {
-  it("prefers displayName", () => {
-    expect(characterLabel(stub({ displayName: "  Aldric  " }))).toBe("Aldric");
+  it("prefers name", () => {
+    expect(characterLabel(stub({ name: "  Aldric  " }))).toBe("Aldric");
   });
 
   it("falls back when name is blank", () => {
-    expect(characterLabel(stub({ displayName: "", raceId: "elf" }))).toBe(
+    expect(characterLabel(stub({ name: "", raceId: "elf" }))).toBe(
       "elf companion",
     );
   });

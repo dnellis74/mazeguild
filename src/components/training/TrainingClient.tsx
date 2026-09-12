@@ -53,7 +53,6 @@ export function TrainingClient() {
     params.get("tab") === "sheet" ? ("sheet" as const) : ("world" as const);
 
   const [entryId, setEntryId] = useState(characterId);
-  const [displayName, setDisplayName] = useState("Companion");
   const [character, setCharacter] = useState<Character | null>(null);
   const [ui, setUi] = useState<TrainingUi>(() =>
     defaultUi({ tab: initialTab, area: areaParam }),
@@ -74,49 +73,42 @@ export function TrainingClient() {
   }, []);
 
   const persist = useCallback(
-    (ch: Character, name = displayName) => {
-      if (!entryId) return;
-      upsertRosterEntry({
-        ...ch,
-        id: entryId,
-        displayName: name,
-      });
+    (ch: Character) => {
+      if (!ch.id) return;
+      upsertRosterEntry(ch);
     },
-    [entryId, displayName],
+    [],
   );
 
-  const saveDisplayName = useCallback(
+  const saveName = useCallback(
     (raw: string) => {
-      const next = raw.trim() || displayName;
-      setDisplayName(next);
-      if (!entryId || !character || !next) return;
-      const updated = { ...character, id: entryId, displayName: next };
+      if (!character) return;
+      const next = raw.trim() || character.name || "Companion";
+      const updated = { ...character, name: next };
       setCharacter(updated);
-      upsertRosterEntry(updated);
+      persist(updated);
     },
-    [entryId, character, displayName],
+    [character, persist],
   );
 
   /** Persist as the user types so a refresh/HMR remount cannot drop an unblurred edit. */
-  const onDisplayNameChange = useCallback(
+  const onNameChange = useCallback(
     (raw: string) => {
-      setDisplayName(raw);
-      const trimmed = raw.trim();
-      if (!entryId || !character || !trimmed) return;
-      const updated = { ...character, id: entryId, displayName: trimmed };
+      if (!character) return;
+      const updated = { ...character, name: raw };
       setCharacter(updated);
-      upsertRosterEntry(updated);
+      if (raw.trim()) persist({ ...updated, name: raw.trim() });
     },
-    [entryId, character],
+    [character, persist],
   );
 
-  const rollDisplayName = useCallback(async () => {
-    if (!character || !entryId || nameRolling) return;
+  const rollName = useCallback(async () => {
+    if (!character || nameRolling) return;
     setNameRolling(true);
     try {
       const taken = loadRoster()
-        .filter((e) => e.id !== entryId)
-        .map((e) => e.displayName);
+        .filter((e) => e.id !== character.id)
+        .map((e) => e.name);
       const res = await fetch("/api/names", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -127,16 +119,15 @@ export function TrainingClient() {
         throw new Error(data.error || "Could not roll a name");
       }
       const next = String(data.name);
-      setDisplayName(next);
-      const updated = { ...character, id: entryId, displayName: next };
+      const updated = { ...character, name: next };
       setCharacter(updated);
-      upsertRosterEntry(updated);
+      persist(updated);
     } catch (err) {
       showToast(String(err instanceof Error ? err.message : err));
     } finally {
       setNameRolling(false);
     }
-  }, [character, entryId, nameRolling, showToast]);
+  }, [character, nameRolling, showToast, persist]);
 
   const apiView = useCallback(
     async (ch: Character, nextUi: TrainingUi) => {
@@ -153,21 +144,16 @@ export function TrainingClient() {
         }
         throw new Error(data.error || "View failed");
       }
-      const merged: Character = {
-        ...data.character,
-        id: entryId || data.character.id,
-        displayName: displayName || data.character.displayName || "Companion",
-      };
-      setCharacter(merged);
+      setCharacter(data.character);
       setUi(data.ui);
       setView(data.view);
-      persist(merged);
+      persist(data.character);
       if (data.view?.sheet?.originStory?.text != null && nextUi.hubTab === "sheet") {
         setOriginDraft(data.ui.originDraft ?? data.view.sheet.originStory.text);
       }
       return data;
     },
-    [persist, router, entryId, displayName],
+    [persist, router],
   );
 
   const apiAction = useCallback(
@@ -198,21 +184,16 @@ export function TrainingClient() {
         router.push(href);
         return;
       }
-      const merged: Character = {
-        ...data.character,
-        id: entryId || data.character.id,
-        displayName: displayName || data.character.displayName || "Companion",
-      };
-      setCharacter(merged);
+      setCharacter(data.character);
       setUi(data.ui);
       setView(data.view);
-      persist(merged);
+      persist(data.character);
       if (data.toast) showToast(data.toast);
       if (data.view?.sheet?.originStory && data.ui.hubTab === "sheet") {
         setOriginDraft(data.ui.originDraft ?? data.view.sheet.originStory.text);
       }
     },
-    [character, ui, persist, router, showToast, entryId, displayName],
+    [character, ui, persist, router, showToast, entryId],
   );
 
   useEffect(() => {
@@ -227,7 +208,6 @@ export function TrainingClient() {
         return;
       }
       setEntryId(entry.id);
-      setDisplayName(entry.displayName);
       setCharacter(entry);
       setSheetReturn(initialTab === "sheet" ? "town" : "world");
       const bootUi = defaultUi({ tab: initialTab, area: areaParam });
@@ -271,7 +251,7 @@ export function TrainingClient() {
   };
 
   const returnFromSheet = () => {
-    saveDisplayName(displayName);
+    if (character) saveName(character.name);
     if (sheetReturn === "town") {
       backToSquare();
       return;
@@ -337,9 +317,9 @@ export function TrainingClient() {
               <div className="name-field">
                 <input
                   className="name-field-input"
-                  value={displayName}
-                  onChange={(e) => onDisplayNameChange(e.target.value)}
-                  onBlur={(e) => saveDisplayName(e.target.value)}
+                  value={character.name}
+                  onChange={(e) => onNameChange(e.target.value)}
+                  onBlur={(e) => saveName(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.currentTarget.blur();
@@ -351,7 +331,7 @@ export function TrainingClient() {
                 <button
                   type="button"
                   className="name-field-die"
-                  onClick={() => void rollDisplayName()}
+                  onClick={() => void rollName()}
                   disabled={nameRolling}
                   aria-label="Roll a race-appropriate name"
                   title="Roll a new name"
@@ -365,7 +345,7 @@ export function TrainingClient() {
                 className="name-field-link"
                 onClick={openSheet}
               >
-                {displayName}
+                {character.name}
               </button>
             )}
             <p className="hub-meta">
@@ -530,6 +510,10 @@ function SheetPanel({
         <div className="points-pill">
           <strong>{sheet.featurePoints}</strong> of 2 remaining
         </div>
+      </div>
+      <div className="sheet-block">
+        <div className="sheet-label">Experience</div>
+        <div className="sheet-value">{sheet.xp.toLocaleString()} XP</div>
       </div>
       <div className="sheet-block">
         <div className="sheet-label">Abilities</div>

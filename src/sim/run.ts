@@ -155,5 +155,12 @@ export function runDungeon(input: DungeonInput): DungeonResult {
     stepsTaken,
     cellsVisited: visited.size,
     visited: [...visited],
+    partyAfter: party.map((p) => ({
+      id: p.id,
+      name: p.name,
+      xp: p.xp,
+      hp: p.hp,
+      maxHp: p.maxHp,
+    })),
   };
 }

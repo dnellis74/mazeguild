@@ -33,9 +33,10 @@ directly).
 | `mazeguild.roster` | `src/lib/rosterStorage.ts` (+ creation HTML) | Multi-companion list (`Character[]`) |
 | `mazeguild.character` | legacy | Migrated into the roster once on load |
 
-A companion is one shared `Character` blob (`id`, `displayName`, race, features,
-scores, world unlocks, …). Town Square, training, and the maze all use it.
-Creation assigns a race-appropriate display name via `POST /api/names`.
+A companion is one shared `Character` blob (`id`, `name`, race, features,
+scores, world unlocks, `xp` / `hp`, …). Town Square, training, and the maze
+all use it. Creation finishes by appending a **fresh empty companion** (no quiz
+draft fields). Maze XP/HP write back onto the roster when returning to town.
 
 ## HTTP API
 

@@ -53,6 +53,7 @@ export type TrainingView = {
 export type SheetView = {
   identity: { value: string; sub: string };
   featurePoints: number;
+  xp: number;
   abilities: { ab: string; score: number; mod: string }[];
   abilitiesNote: string;
   definingExperience: { scenario: string; reaction: string } | null;
@@ -156,6 +157,7 @@ function buildSheetView(catalog: Catalog, ch: Character, ui: TrainingUi): SheetV
       sub: `${ch.subrace ? ch.subrace.label + " · " : ""}`,
     },
     featurePoints: ch.featurePoints,
+    xp: ch.xp ?? 0,
     abilities: ABILITY_ORDER.map((ab) => {
       const score = scores?.[ab] ?? start;
       return {

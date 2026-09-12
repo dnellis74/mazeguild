@@ -57,7 +57,11 @@ export async function POST(request: Request) {
       navigate: result.navigate || null,
     });
   } catch (err) {
-    console.error(JSON.stringify({ msg: "training_action_error", err: String(err) }));
+    const message = err instanceof Error ? err.message : String(err);
+    if (/missing id|missing name/i.test(message)) {
+      return Response.json({ error: message, redirect: "/" }, { status: 400 });
+    }
+    console.error(JSON.stringify({ msg: "training_action_error", err: message }));
     return Response.json({ error: "Failed to apply action" }, { status: 500 });
   }
 }

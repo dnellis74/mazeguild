@@ -16,8 +16,8 @@
 <script>
 
 
-/** Keep in sync with LEGACY_CHARACTER_KEY / migration in src/lib/rosterStorage.ts */
-const STORAGE_KEY = 'mazeguild.character';
+/** Keep in sync with ROSTER_KEY in src/lib/rosterStorage.ts */
+const ROSTER_KEY = 'mazeguild.roster';
 
 /** Debug: show quiz option weights under each answer. Flip to false to hide. */
 const DEBUG_SHOW_WEIGHTS = true;
@@ -660,49 +660,53 @@ function onAction(e){
     const btn = e.currentTarget;
     if(btn) btn.disabled = true;
     void (async () => {
-      /** Keep in sync with ROSTER_KEY in src/lib/rosterStorage.ts */
-      const ROSTER_KEY = 'mazeguild.roster';
       let roster = [];
       try {
         roster = JSON.parse(localStorage.getItem(ROSTER_KEY) || '[]');
         if(!Array.isArray(roster)) roster = [];
       } catch { roster = []; }
 
-      let displayName = `${align?.name || '?'} ${race?.name || 'Stranger'}`;
+      let name = `${align?.name || '?'} ${race?.name || 'Stranger'}`;
       try {
         const res = await fetch('/api/names', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             raceId: ch.raceId,
-            taken: roster.map(e => e && (e.displayName || (e.character && e.character.displayName))).filter(Boolean),
+            taken: roster.map(e => e && e.name).filter(Boolean),
           }),
         });
         const data = await res.json();
-        if(res.ok && data && data.name) displayName = String(data.name);
+        if(res.ok && data && data.name) name = String(data.name);
       } catch (err) {
         console.warn('Name generation failed; using fallback.', err);
       }
 
       const id = (crypto.randomUUID && crypto.randomUUID()) || ('c-' + Date.now());
-      const payload = {
+      /** Fresh companion — keep in sync with Character in src/training/types.ts */
+      const companion = {
         id,
-        displayName,
-        ...structuredClone(ch),
+        name,
+        raceId: ch.raceId,
+        subrace: ch.subrace || null,
+        alignment: {
+          alignmentId: ch.alignment.alignmentId,
+          definingExperience: ch.alignment.definingExperience || null,
+        },
         featurePoints: 2,
         features: [],
-        originStory: null,
-        abilityScores: null,
-        abilityScoresAssigned: false,
         cantrips: [],
         spells: [],
+        abilityScores: { STR:8, DEX:8, CON:8, INT:8, WIS:8, CHA:8 },
+        abilityScoresAssigned: false,
+        originStory: null,
         unlocked: { areas:{}, buildings:{}, rooms:{} },
         activeJob: null,
         xp: 0,
+        hp: null,
       };
-      roster.push(payload);
+      roster.push(companion);
       localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
-      localStorage.removeItem(STORAGE_KEY);
       window.location.href = '/';
     })();
   }

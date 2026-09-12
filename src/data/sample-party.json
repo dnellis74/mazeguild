@@ -1,7 +1,7 @@
 [
   {
     "id": "sample-fighter",
-    "displayName": "Aldric",
+    "name": "Aldric",
     "raceId": "human",
     "alignment": { "alignmentId": "lg" },
     "featurePoints": 0,
@@ -30,7 +30,7 @@
   },
   {
     "id": "sample-cleric",
-    "displayName": "Mira",
+    "name": "Mira",
     "raceId": "dwarf",
     "alignment": { "alignmentId": "ng" },
     "featurePoints": 0,
@@ -59,7 +59,7 @@
   },
   {
     "id": "sample-rogue",
-    "displayName": "Pip",
+    "name": "Pip",
     "raceId": "halfling",
     "alignment": { "alignmentId": "cn" },
     "featurePoints": 0,
@@ -88,7 +88,7 @@
   },
   {
     "id": "sample-wizard",
-    "displayName": "Elowen",
+    "name": "Elowen",
     "raceId": "elf",
     "alignment": { "alignmentId": "nn" },
     "featurePoints": 0,

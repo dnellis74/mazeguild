@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GameClient } from "@/components/wizardry/GameClient";
 import { clearQuestParty, readQuestParty } from "@/lib/questHandoff";
+import { applyQuestAftermath } from "@/lib/rosterStorage";
 import type { Character } from "@/training/types";
+import type { DungeonResult } from "@/sim/types";
 
 /**
  * Maze entry: party is handed off from Town Square.
@@ -25,7 +27,12 @@ export function QuestRunClient() {
     setError("No party ready. Select companions in Town Square and Quest again.");
   }, [party]);
 
-  const returnToTown = () => {
+  const returnToTown = (partyAfter?: DungeonResult["partyAfter"]) => {
+    if (partyAfter?.length) {
+      applyQuestAftermath(
+        partyAfter.map((p) => ({ id: p.id, xp: p.xp, hp: p.hp })),
+      );
+    }
     clearQuestParty();
     router.push("/");
   };
@@ -38,7 +45,7 @@ export function QuestRunClient() {
         <button
           type="button"
           className="border border-amber-400 bg-amber-900/40 px-4 py-3 text-amber-100"
-          onClick={returnToTown}
+          onClick={() => returnToTown()}
         >
           TOWN SQUARE
         </button>

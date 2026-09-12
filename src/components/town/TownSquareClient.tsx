@@ -242,7 +242,7 @@ export function TownSquareClient() {
                             )
                           }
                         >
-                          {entry.displayName}
+                          {entry.name}
                         </button>
                         <button
                           type="button"

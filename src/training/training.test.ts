@@ -10,13 +10,20 @@ import {
   TOWN_SQUARE_BUILDING,
 } from "@/training/townSquare";
 
+function baseCompanion(over: Record<string, unknown> = {}) {
+  return {
+    id: "c-test",
+    name: "Test",
+    raceId: "human",
+    alignment: { alignmentId: "lg" },
+    ...over,
+  };
+}
+
 describe("training API domain", () => {
   it("builds a sheet view for a minimal character", () => {
     const catalog = getCatalog();
-    const character = migrateCharacter(catalog, {
-      raceId: "human",
-      alignment: { alignmentId: "lg" },
-    });
+    const character = migrateCharacter(catalog, baseCompanion());
     const ui = { ...defaultTrainingUi(), hubTab: "sheet" as const };
     const view = buildTrainingView(catalog, character, ui);
     expect(view.sheet).toBeTruthy();
@@ -37,10 +44,7 @@ describe("training API domain", () => {
 
   it("sends Town Square selection to the character roster hub", () => {
     const catalog = getCatalog();
-    const character = migrateCharacter(catalog, {
-      raceId: "human",
-      alignment: { alignmentId: "lg" },
-    });
+    const character = migrateCharacter(catalog, baseCompanion());
     expect(character.unlocked.buildings[`${TOWN_SQUARE_AREA}::${TOWN_SQUARE_BUILDING}`]).toBe(
       true,
     );
@@ -64,10 +68,10 @@ describe("training API domain", () => {
 
   it("unlocks an area via complete-job", () => {
     const catalog = getCatalog();
-    let character = migrateCharacter(catalog, {
-      raceId: "elf",
-      alignment: { alignmentId: "ng" },
-    });
+    let character = migrateCharacter(
+      catalog,
+      baseCompanion({ id: "c-elf", name: "Elowen", raceId: "elf", alignment: { alignmentId: "ng" } }),
+    );
     let ui = defaultTrainingUi();
     ui.hubTab = "world";
 
@@ -91,31 +95,32 @@ describe("training API domain", () => {
 
   it("maps a trained companion into a combatant from features", () => {
     const catalog = getCatalog();
-    const character = migrateCharacter(catalog, {
-      id: "c-fighter",
-      displayName: "Aldric",
-      raceId: "human",
-      alignment: { alignmentId: "lg" },
-      features: [
-        {
-          id: "fighter-fighting-style",
-          archetype: "Fighter",
-          feature: ["Defense"],
-          area: "Town",
-          building: "Drill Yard",
-          room: "Yard",
+    const character = migrateCharacter(
+      catalog,
+      baseCompanion({
+        id: "c-fighter",
+        name: "Aldric",
+        features: [
+          {
+            id: "fighter-fighting-style",
+            archetype: "Fighter",
+            feature: ["Defense"],
+            area: "Town",
+            building: "Drill Yard",
+            room: "Yard",
+          },
+        ],
+        abilityScores: {
+          STR: 15,
+          DEX: 14,
+          CON: 13,
+          INT: 10,
+          WIS: 12,
+          CHA: 8,
         },
-      ],
-      abilityScores: {
-        STR: 15,
-        DEX: 14,
-        CON: 13,
-        INT: 10,
-        WIS: 12,
-        CHA: 8,
-      },
-      abilityScoresAssigned: true,
-    });
+        abilityScoresAssigned: true,
+      }),
+    );
     const combatant = companionToCombatant(character, 0);
     expect(combatant.archetype).toBe("Fighter");
     expect(combatant.race).toBe("Human");
@@ -124,12 +129,16 @@ describe("training API domain", () => {
     expect(combatant.abilities.STR).toBe(15);
   });
 
+  it("rejects companions without identity", () => {
+    const catalog = getCatalog();
+    expect(() =>
+      migrateCharacter(catalog, { raceId: "human", alignment: { alignmentId: "lg" } }),
+    ).toThrow(/missing id/i);
+  });
+
   it("switches the hub tab to quest without a quest view DTO", () => {
     const catalog = getCatalog();
-    const character = migrateCharacter(catalog, {
-      raceId: "human",
-      alignment: { alignmentId: "lg" },
-    });
+    const character = migrateCharacter(catalog, baseCompanion());
     const ui = { ...defaultTrainingUi(), hubTab: "quest" as const };
     const view = buildTrainingView(catalog, character, ui);
     expect(view.tab).toBe("quest");

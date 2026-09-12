@@ -79,11 +79,12 @@ export type ActiveJob = {
 
 /**
  * Shared companion blob — Town Square, training, and maze quest all use this.
- * `id` / `displayName` live on the character (not a separate roster wrapper).
+ * `id` / `name` live on the character (not a separate roster wrapper).
  */
 export type Character = {
   id: string;
-  displayName: string;
+  /** Given name — the only place the companion’s name is stored. */
+  name: string;
   raceId: string;
   subrace?: { subraceId: string; label: string } | null;
   alignment: {
@@ -109,8 +110,13 @@ export type Character = {
     rooms: Record<string, boolean>;
   };
   activeJob: ActiveJob | null;
-  /** Maze / adventure XP (optional; defaults to 0). */
-  xp?: number;
+  /** Maze / adventure XP. */
+  xp: number;
+  /**
+   * Current hit points. Omitted / null means “full” (derived max from features).
+   * Written back from the maze when returning to town.
+   */
+  hp?: number | null;
 };
 
 export type TrainingUi = {

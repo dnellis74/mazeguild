@@ -174,14 +174,18 @@ export function companionToCombatant(
   const features = featureText(ch);
   const race = raceLabel(ch.raceId);
   const hitDie = hitDieFor(archetypes);
-  const hp = Math.max(1, hitDie + abilityMod(abilities.CON));
+  const maxHp = Math.max(1, hitDie + abilityMod(abilities.CON));
+  const hp =
+    typeof ch.hp === "number" && Number.isFinite(ch.hp)
+      ? Math.min(Math.max(0, Math.floor(ch.hp)), maxHp)
+      : maxHp;
   const slots = level1Slots(archetypes);
   const spellAbility = pickSpellAbility(archetypes);
   const primary = archetypes[0] || "Companion";
 
   return {
     id: ch.id || `pc-${index}`,
-    name: ch.displayName?.trim() || `${race} ${primary}`,
+    name: ch.name?.trim() || `${race} ${primary}`,
     kind: "pc",
     archetype: primary,
     race,
@@ -189,9 +193,9 @@ export function companionToCombatant(
     abilities,
     proficiencyBonus: 2,
     ac: armorClass(abilities, archetypes),
-    maxHp: hp,
+    maxHp,
     hp,
-    alive: true,
+    alive: hp > 0,
     weapon: pickWeapon(archetypes),
     cantrip: assignedAttackCantrip(ch),
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),

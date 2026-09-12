@@ -40,7 +40,7 @@ Every layer talks JSON. The sim, the renderer, and a future server never share l
   "party": [
     {
       "id": "…",
-      "displayName": "Pip",
+      "name": "Pip",
       "raceId": "halfling",
       "features": [{ "archetype": "Rogue", "feature": ["Sneak Attack"], "id": "…" }],
       "abilityScores": { "STR": 8, "DEX": 16, "CON": 12, "INT": 13, "WIS": 10, "CHA": 14 },
