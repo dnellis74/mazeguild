@@ -1,0 +1,38 @@
+---
+description: Stop the :3000 next/vite HMR server before agent work; restart after
+alwaysApply: true
+---
+
+# Dev server CPU guard (port 3000)
+
+`next dev` / Vite HMR on **port 3000** burns a lot of CPU while the agent works. Treat it as a session bracket:
+
+## Before any substantive work
+
+1. Free port 3000 (ignore errors if nothing is listening):
+
+```bash
+lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true
+```
+
+2. Then proceed with the task.
+
+Skip this only for pure Q&A with no shell, edits, tests, or builds.
+
+## After the task is done
+
+Restart the app’s dev server from the repo root, in the background (do not block on it):
+
+```bash
+npm run dev
+```
+
+Use `block_until_ms: 0` (or equivalent) so the agent does not wait on the watcher.
+
+If the user already said they do not want the server restarted, leave it stopped.
+
+## Notes
+
+- This repo’s script is `npm run dev` → `next dev` (Turbopack/HMR), not a separate Vite app — still kill **:3000**.
+- Do not kill unrelated long-running processes on other ports.
+- Prefer one stop at the start of the turn’s work and one restart when finishing; do not flap the server between every tiny edit.

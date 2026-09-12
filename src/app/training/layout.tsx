@@ -1,16 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, IBM_Plex_Sans, Share_Tech_Mono } from "next/font/google";
-
-const display = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-});
-
-const body = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-ibm",
-});
+import { Share_Tech_Mono } from "next/font/google";
 
 const crt = Share_Tech_Mono({
   weight: "400",
@@ -24,10 +13,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Theme split:
- * - Sheet / World: paper ledger via `/css/character-creation.css` (`.training-page`, `.hub`)
- * - Quest: CRT flipped only under `.stage-quest` / `.app-quest` / `.quest-adventure`
- *   (QuestClient mounts GameClient there)
+ * Theme: CRT amber to match the maze GameClient.
+ * Sheet / World use character-creation.css; Quest mounts GameClient under
+ * `.stage-quest` / `.quest-adventure` (scanlines come from GameClient there).
  */
 export default function TrainingLayout({
   children,
@@ -35,9 +23,7 @@ export default function TrainingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`${display.variable} ${body.variable} ${crt.variable} training-page`}
-    >
+    <div className={`${crt.variable} ${crt.className} training-page`}>
       {/* eslint-disable-next-line @next/next/no-css-tags */}
       <link rel="stylesheet" href="/css/character-creation.css" />
       {children}
