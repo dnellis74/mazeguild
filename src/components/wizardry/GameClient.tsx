@@ -243,7 +243,7 @@ export function GameClient({
     (sheetDisabled || selected.length >= PARTY_SIZE);
 
   return (
-    <div className="crt flex h-full min-h-0 max-h-full flex-col overflow-hidden bg-[#050301] px-[max(1rem,var(--safe-left))] pt-[max(0.5rem,var(--safe-top))] pr-[max(1rem,var(--safe-right))] text-amber-300">
+    <div className="crt flex h-full min-h-0 max-h-full w-full flex-col overflow-hidden bg-[#050301] pb-[max(0.5rem,var(--safe-bottom))] text-amber-300">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-800/70 pb-2 select-none">
         <div className="min-w-0">
           <p className="hidden font-mono text-[10px] tracking-[0.28em] text-amber-600 lg:block">
