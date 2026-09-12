@@ -153,7 +153,7 @@ function buildSheetView(catalog: Catalog, ch: Character, ui: TrainingUi): SheetV
   return {
     identity: {
       value: `${align?.name || "?"} ${race?.name || "?"}`,
-      sub: `${ch.subrace ? ch.subrace.label + " · " : ""}No class — features come from the World.`,
+      sub: `${ch.subrace ? ch.subrace.label + " · " : ""}`,
     },
     featurePoints: ch.featurePoints,
     abilities: ABILITY_ORDER.map((ab) => {

@@ -181,6 +181,36 @@
   .town-square-actions{
     flex-wrap:wrap;
   }
+  .town-roster{
+    gap:14px;
+  }
+  .town-roster-item{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .town-roster-name{
+    align-self:flex-start;
+    margin:0;
+    padding:0;
+    border:none;
+    background:none;
+    font-family:var(--font-display);
+    font-weight:400;
+    font-size:16px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--seal);
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .town-roster-name:hover,
+  .town-roster-name:focus-visible{
+    color:var(--ink);
+    outline:none;
+  }
   .town-roster .choice-card:disabled{
     opacity:.45;
   }

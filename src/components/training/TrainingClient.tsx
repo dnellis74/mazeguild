@@ -89,7 +89,7 @@ export function TrainingClient() {
     (raw: string) => {
       const next = raw.trim() || displayName;
       setDisplayName(next);
-      if (!entryId || !character) return;
+      if (!entryId || !character || !next) return;
       upsertRosterEntry({
         id: entryId,
         displayName: next,
@@ -97,6 +97,21 @@ export function TrainingClient() {
       });
     },
     [entryId, character, displayName],
+  );
+
+  /** Persist as the user types so a refresh/HMR remount cannot drop an unblurred edit. */
+  const onDisplayNameChange = useCallback(
+    (raw: string) => {
+      setDisplayName(raw);
+      const trimmed = raw.trim();
+      if (!entryId || !character || !trimmed) return;
+      upsertRosterEntry({
+        id: entryId,
+        displayName: trimmed,
+        character,
+      });
+    },
+    [entryId, character],
   );
 
   const rollDisplayName = useCallback(async () => {
@@ -252,6 +267,7 @@ export function TrainingClient() {
   };
 
   const returnFromSheet = () => {
+    saveDisplayName(displayName);
     if (sheetReturn === "town") {
       backToSquare();
       return;
@@ -318,8 +334,8 @@ export function TrainingClient() {
                 <input
                   className="name-field-input"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  onBlur={() => saveDisplayName(displayName)}
+                  onChange={(e) => onDisplayNameChange(e.target.value)}
+                  onBlur={(e) => saveDisplayName(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.currentTarget.blur();

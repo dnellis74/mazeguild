@@ -247,25 +247,36 @@ export function TownSquareClient() {
                     const identity = companionLine(entry.character, labels);
                     const archetypes = featureArchetypes(entry.character);
                     return (
-                      <button
-                        key={entry.id}
-                        type="button"
-                        className={`choice-card${on ? " is-selected" : ""}`}
-                        disabled={blocked}
-                        onClick={() => toggle(entry.id)}
-                        aria-pressed={on}
-                      >
-                        <span className="choice-title">{entry.displayName}</span>
-                        <span className="choice-sub">{identity}</span>
-                        {archetypes ? (
-                          <span className="choice-sub">{archetypes}</span>
-                        ) : (
-                          <span className="choice-sub">No features yet</span>
-                        )}
-                        <span className="choice-sub">
-                          {on ? "Selected" : blocked ? "Party full" : "Tap to select"}
-                        </span>
-                      </button>
+                      <div key={entry.id} className="town-roster-item">
+                        <button
+                          type="button"
+                          className="town-roster-name"
+                          onClick={() =>
+                            router.push(
+                              `/training?id=${encodeURIComponent(entry.id)}&tab=sheet`,
+                            )
+                          }
+                        >
+                          {entry.displayName}
+                        </button>
+                        <button
+                          type="button"
+                          className={`choice-card${on ? " is-selected" : ""}`}
+                          disabled={blocked}
+                          onClick={() => toggle(entry.id)}
+                          aria-pressed={on}
+                        >
+                          <span className="choice-sub">{identity}</span>
+                          {archetypes ? (
+                            <span className="choice-sub">{archetypes}</span>
+                          ) : (
+                            <span className="choice-sub">No features yet</span>
+                          )}
+                          <span className="choice-sub">
+                            {on ? "Selected" : blocked ? "Party full" : "Tap to select"}
+                          </span>
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
