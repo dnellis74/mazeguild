@@ -727,6 +727,8 @@ function onAction(e){
         activeJob: null,
         xp: 0,
         hp: null,
+        hitDiceTotal: 1,
+        hitDiceRemaining: 1,
       };
       roster.push(companion);
       localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));

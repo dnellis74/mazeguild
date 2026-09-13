@@ -48,27 +48,10 @@ function allyCount(actor: Combatant, party: Combatant[]): number {
   return party.filter((p) => p.alive && p.id !== actor.id).length;
 }
 
-function initiative(rng: Rng, c: Combatant): number {
+function rollInitiativeScore(rng: Rng, c: Combatant): number {
   let roll = d(rng, 20);
   if (c.lucky && roll === 1) roll = d(rng, 20);
   return roll + abilityMod(c.abilities.DEX);
-}
-
-/** Damage type for the ability/weapon used on this attack. */
-function damageTypeForAttack(actor: Combatant, used: string): string {
-  if (actor.cantrip && used === actor.cantrip) {
-    const type = getCantrip(actor.cantrip)?.damage?.type;
-    if (type) return type;
-  }
-  if (actor.spell && used === actor.spell) {
-    const type = getSpell(actor.spell)?.damage?.type;
-    if (type) return type;
-  }
-  if (actor.attackSpell && used === actor.attackSpell) {
-    const type = getSpell(actor.attackSpell)?.damage?.type;
-    if (type) return type;
-  }
-  return actor.weapon.damageType;
 }
 
 /** Start-of-turn refresh: reaction, Shield AC, Rage clock, death saves. */
@@ -113,6 +96,24 @@ function clearEncounterState(combatants: Combatant[]): void {
     if (c.raging) endRage(c);
     if (c.concentratingOn) endConcentration(c);
   }
+}
+
+
+/** Damage type for the ability/weapon used on this attack. */
+function damageTypeForAttack(actor: Combatant, used: string): string {
+  if (actor.cantrip && used === actor.cantrip) {
+    const type = getCantrip(actor.cantrip)?.damage?.type;
+    if (type) return type;
+  }
+  if (actor.spell && used === actor.spell) {
+    const type = getSpell(actor.spell)?.damage?.type;
+    if (type) return type;
+  }
+  if (actor.attackSpell && used === actor.attackSpell) {
+    const type = getSpell(actor.attackSpell)?.damage?.type;
+    if (type) return type;
+  }
+  return actor.weapon.damageType;
 }
 
 /**
@@ -591,8 +592,174 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
 }
 
 /**
+ * Combat continues while at least one PC and one enemy still have `alive`.
+ * Dying/unconscious PCs remain `alive` until death saves finish them — they
+ * do not alone end the fight.
+ */
+export function combatShouldEnd(
+  party: Combatant[],
+  enemies: Combatant[],
+): boolean {
+  return !party.some((p) => p.alive) || !enemies.some((e) => e.alive);
+}
+
+/**
+ * SRD step 1 — Determine surprise.
+ * Intentional stub: the sim has no Stealth rolls, passive Perception, or
+ * ambush model yet. Returns an empty set so takeTurns can already honor
+ * "surprised → no actions on first turn" once a real check fills this set.
+ */
+export function determineSurprise(
+  _party: Combatant[],
+  _enemies: Combatant[],
+): Set<string> {
+  return new Set();
+}
+
+/**
+ * SRD step 2 — Establish positions.
+ * Intentional no-op: this sim has no positional/geometric model by design.
+ * Targeting uses living-foe / ally lists (Sleep, Burning Hands, etc.), not
+ * grid placement.
+ */
+export function establishPositions(
+  _party: Combatant[],
+  _enemies: Combatant[],
+): void {
+  /* no-op */
+}
+
+/**
+ * SRD step 3 — Roll initiative.
+ * Preserves existing behavior exactly: each *living* combatant rolls their
+ * own d20+DEX (Lucky may reroll a natural 1); ties break by encounter-join
+ * index. Identical monsters are NOT grouped onto one shared roll.
+ *
+ * Also preserves the current (non-SRD) habit of calling this every round
+ * rather than once per fight — changing that would shift RNG consumption.
+ */
+export function rollInitiative(
+  rng: Rng,
+  party: Combatant[],
+  enemies: Combatant[],
+): Combatant[] {
+  const actors = [...party, ...enemies].filter((c) => c.alive);
+  const order = actors.map((c, index) => ({
+    c,
+    index,
+    init: rollInitiativeScore(rng, c),
+  }));
+  order.sort((a, b) => b.init - a.init || a.index - b.index);
+  return order.map(({ c }) => c);
+}
+
+type TakeTurnsArgs = {
+  rng: Rng;
+  party: Combatant[];
+  enemies: Combatant[];
+  order: Combatant[];
+  round: number;
+  log: LogEvent[];
+  surprised: Set<string>;
+};
+
+/**
+ * SRD step 4 — Take turns (one round, in initiative order).
+ * Per-actor start-of-turn effects (death saves, Rage clock, reaction reset,
+ * condition expiry) stay here via beginTurn — not in beginNextRound.
+ */
+export function takeTurns(args: TakeTurnsArgs): void {
+  const { rng, party, enemies, order, round, log, surprised } = args;
+
+  log.push({
+    event: "round_start",
+    round,
+    order: order.map((c) => c.name),
+  });
+
+  for (const actor of order) {
+    if (!actor.alive) continue;
+    if (combatShouldEnd(party, enemies)) break;
+
+    beginTurn(actor, round, rng, log);
+
+    // Unconscious: still occupy a turn slot (beginTurn ran) but take no actions.
+    // (Nat-20 death save may have cleared unconscious above.)
+    if (hasCondition(actor, "unconscious")) continue;
+
+    // Surprised: no actions on first turn (stub set is always empty today).
+    if (round === 1 && surprised.has(actor.id)) continue;
+
+    const allies = actor.kind === "pc" ? party : enemies;
+    const foes = actor.kind === "pc" ? enemies : party;
+    const ctx: TurnCtx = {
+      rng,
+      actor,
+      allies,
+      foes,
+      party,
+      enemies,
+      round,
+      log,
+    };
+
+    // Bonus action first (PCs only; enemies have no bonus actions yet).
+    if (actor.kind === "pc") {
+      const bonus = chooseBonusAction(actor, allies, foes);
+      if (!resolveIntent(ctx, bonus)) break;
+    }
+
+    if (!actor.alive) continue;
+    if (combatShouldEnd(party, enemies)) break;
+
+    // Action slot — chosen after bonus so spent slots / healed HP are visible.
+    const action =
+      actor.kind === "pc"
+        ? chooseAction(actor, allies, foes)
+        : chooseEnemyAction(rng, party);
+    if (!resolveIntent(ctx, action)) break;
+  }
+}
+
+/**
+ * SRD step 5 — Begin the next round (round boundary only).
+ * Increments the round counter and reports whether the fight continues.
+ * Does not re-apply per-actor turn-start effects (those live in takeTurns).
+ */
+export function beginNextRound(
+  previousRound: number,
+  party: Combatant[],
+  enemies: Combatant[],
+): { round: number; continueFight: boolean } {
+  if (combatShouldEnd(party, enemies)) {
+    return { round: previousRound, continueFight: false };
+  }
+  const round = previousRound + 1;
+  if (round > 100) {
+    return { round, continueFight: false };
+  }
+  return { round, continueFight: true };
+}
+
+/**
+ * Callable SRD combat phases — object form so tests can spy call order
+ * without fighting same-module binding.
+ */
+export const combatPhases = {
+  determineSurprise,
+  establishPositions,
+  rollInitiative,
+  takeTurns,
+  beginNextRound,
+};
+
+/**
  * One encounter. Mutates HP. Appends to the shared log.
  * Returns true if any party member is still alive.
+ *
+ * Structured to mirror the SRD 5.1 combat procedure:
+ *   1. determine surprise → 2. establish positions → 3. roll initiative →
+ *   4. take turns → 5. begin next round (repeat until the fight ends).
  *
  * Turn structure: each living actor may resolve a bonus-action intent, then
  * an action intent (fixed AI order: bonus first — simplification of SRD
@@ -604,65 +771,28 @@ export function runCombat(
   enemies: Combatant[],
   log: LogEvent[],
 ): boolean {
+  const surprised = combatPhases.determineSurprise(party, enemies);
+  combatPhases.establishPositions(party, enemies);
+
   let round = 0;
-  while (party.some((p) => p.alive) && enemies.some((e) => e.alive)) {
-    round += 1;
-    if (round > 100) break;
+  while (true) {
+    const next = combatPhases.beginNextRound(round, party, enemies);
+    round = next.round;
+    if (!next.continueFight) break;
 
-    const actors = [...party, ...enemies].filter((c) => c.alive);
-    const order = actors.map((c, index) => ({
-      c,
-      index,
-      init: initiative(rng, c),
-    }));
-    order.sort((a, b) => b.init - a.init || a.index - b.index);
-
-    log.push({
-      event: "round_start",
+    // Initiative is re-rolled each round (existing behavior; see rollInitiative).
+    const order = combatPhases.rollInitiative(rng, party, enemies);
+    combatPhases.takeTurns({
+      rng,
+      party,
+      enemies,
+      order,
       round,
-      order: order.map(({ c }) => c.name),
+      log,
+      surprised,
     });
-
-    for (const { c: actor } of order) {
-      if (!actor.alive) continue;
-      if (!party.some((p) => p.alive) || !enemies.some((e) => e.alive)) break;
-
-      beginTurn(actor, round, rng, log);
-
-      // Unconscious: still occupy a turn slot (beginTurn ran) but take no actions.
-      // (Nat-20 death save may have cleared unconscious above.)
-      if (hasCondition(actor, "unconscious")) continue;
-
-      const allies = actor.kind === "pc" ? party : enemies;
-      const foes = actor.kind === "pc" ? enemies : party;
-      const ctx: TurnCtx = {
-        rng,
-        actor,
-        allies,
-        foes,
-        party,
-        enemies,
-        round,
-        log,
-      };
-
-      // Bonus action first (PCs only; enemies have no bonus actions yet).
-      if (actor.kind === "pc") {
-        const bonus = chooseBonusAction(actor, allies, foes);
-        if (!resolveIntent(ctx, bonus)) break;
-      }
-
-      if (!actor.alive) continue;
-      if (!party.some((p) => p.alive) || !enemies.some((e) => e.alive)) break;
-
-      // Action slot — chosen after bonus so spent slots / healed HP are visible.
-      const action =
-        actor.kind === "pc"
-          ? chooseAction(actor, allies, foes)
-          : chooseEnemyAction(rng, party);
-      if (!resolveIntent(ctx, action)) break;
-    }
   }
+
   clearEncounterState([...party, ...enemies]);
   return party.some((p) => p.alive);
 }

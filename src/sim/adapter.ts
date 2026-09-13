@@ -1,6 +1,6 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
 import { pickLearnedAttackCantrip, pickLearnedStabilizeCantrip } from "./cantrips";
-import { DYING_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
 import {
   getSpell,
   pickLearnedAttackSpell,
@@ -29,6 +29,7 @@ import type { Combatant, PartySnapshot, Role, Weapon } from "./types";
 import type { Character } from "@/training/types";
 import { asFeatureList } from "@/training/features";
 import { characterLabel, titleCaseId } from "@/training/companion";
+import { hitDiceTotalFor } from "@/training/townRest";
 
 /** Hit die by feature archetype — used only to derive starting HP. */
 const ARCHETYPE_HIT_DIE: Record<string, number> = {
@@ -99,6 +100,8 @@ function hitDieFor(archetypes: string[]): number {
   }
   return best;
 }
+
+export { hitDieFor };
 
 function level1Slots(archetypes: string[]): number {
   if (archetypes.includes("Warlock")) return 1;
@@ -246,6 +249,17 @@ export function companionToCombatant(
   const level = levelForXp(ch.xp ?? 0);
   const isBarbarian = archetypes.includes("Barbarian");
   const hasSecondWind = /\bSecond Wind\b/i.test(features);
+  const hitDiceTotal = Math.max(
+    1,
+    typeof ch.hitDiceTotal === "number" && Number.isFinite(ch.hitDiceTotal)
+      ? Math.floor(ch.hitDiceTotal)
+      : hitDiceTotalFor(ch),
+  );
+  const hitDiceRemaining =
+    typeof ch.hitDiceRemaining === "number" && Number.isFinite(ch.hitDiceRemaining)
+      ? Math.min(hitDiceTotal, Math.max(0, Math.floor(ch.hitDiceRemaining)))
+      : hitDiceTotal;
+  const hitDieSides = hitDieFor(archetypes);
 
   return {
     id: ch.id || `pc-${index}`,
@@ -278,6 +292,9 @@ export function companionToCombatant(
     greatWeaponFighting: fightingStyles.includes("Great Weapon Fighting"),
     secondWindAvailable: hasSecondWind,
     secondWindLevel: hasSecondWind ? level : 0,
+    hitDiceTotal,
+    hitDiceRemaining,
+    hitDieSides,
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
     relentless:
       /Relentless Endurance/i.test(features) || /half-?orc/i.test(ch.raceId),
@@ -348,6 +365,7 @@ export function makeMonster(opts: {
     hp: opts.hp,
     alive: true,
     ...DYING_DEFAULTS,
+    ...HIT_DICE_DEFAULTS,
     weapon: opts.weapon,
     fightingStyles: [],
     archery: false,

@@ -3,6 +3,7 @@ import type { Catalog } from "./catalog";
 import { baseAbilityScores } from "./abilities";
 import { normalizeEarnedFeatures } from "./features";
 import { ensureCharacterEquipment, normalizeEquipment } from "@/sim/loadout";
+import { hitDiceTotalFor } from "./townRest";
 import type { Ability } from "./types";
 import { ABILITY_ORDER } from "./types";
 import { ensureUnlocked } from "./world";
@@ -56,6 +57,17 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
           : undefined,
     equipment: normalizeEquipment(ch.equipment),
   };
+
+  const hitDiceTotal = hitDiceTotalFor(next);
+  const rawRemaining = ch.hitDiceRemaining;
+  next.hitDiceTotal =
+    typeof ch.hitDiceTotal === "number" && Number.isFinite(ch.hitDiceTotal)
+      ? Math.max(1, Math.floor(ch.hitDiceTotal))
+      : hitDiceTotal;
+  next.hitDiceRemaining =
+    typeof rawRemaining === "number" && Number.isFinite(rawRemaining)
+      ? Math.min(next.hitDiceTotal, Math.max(0, Math.floor(rawRemaining)))
+      : next.hitDiceTotal;
 
   if (!next.abilityScoresAssigned || !next.abilityScores) {
     next.abilityScores = baseAbilityScores(catalog);

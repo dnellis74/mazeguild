@@ -22,6 +22,8 @@ describe("createEmptyCompanion", () => {
     expect(ch.abilityScoresAssigned).toBe(false);
     expect(ch.xp).toBe(0);
     expect(ch.hp).toBeNull();
+    expect(ch.hitDiceTotal).toBe(1);
+    expect(ch.hitDiceRemaining).toBe(1);
     expect(ch.unlocked.areas["Walled City"]).toBe(true);
   });
 });

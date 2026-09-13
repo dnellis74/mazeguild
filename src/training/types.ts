@@ -116,9 +116,16 @@ export type Character = {
   xp: number;
   /**
    * Current hit points. Omitted / null means “full” (derived max from features).
-   * Written back from the maze when returning to town.
+   * Maze runs may write a numeric HP; return-to-town clears back to null (full).
    */
   hp?: number | null;
+  /**
+   * Hit Dice pool (one die per level). Spent during short rests after each
+   * won encounter; return-to-town always restores remaining to total (full
+   * town recovery — not the SRD half-total long-rest regain).
+   */
+  hitDiceTotal?: number;
+  hitDiceRemaining?: number;
   /**
    * Four named inventory fields. Omitted / all-null until the outfitter runs
    * (first feature earned). armor/mainHand ids resolve via equipment.json;

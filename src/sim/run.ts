@@ -5,6 +5,7 @@ import { levelForXp } from "./leveling";
 import { applyXp } from "./rules";
 import { aStarPath, dirBetween, generateMaze } from "./maze";
 import { createRng, dice } from "./rng";
+import { applyShortRest } from "./shortRest";
 import { PARTY_CAP } from "./constants";
 import type { DungeonInput, DungeonResult, LogEvent } from "./types";
 
@@ -122,6 +123,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
           xpGained: gained,
           loot: pickLoot(rng),
         });
+        applyShortRest(rng, party, log);
       }
       stepsUntilEncounter = dice(rng, 6, 8);
       log.push({ event: "next_encounter_in", steps: stepsUntilEncounter });

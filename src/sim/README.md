@@ -13,8 +13,9 @@ runDungeon(seed, party)
   │
   └─ walk the path
        ├─ every N steps (6d8): spawnEncounter → runCombat
+       ├─ on win: XP + short rest (Hit Dice heal, Second Wind, Warlock slots)
        ├─ on wipe / exit / step cap: close the log
-       └─ partyAfter: HP/XP to write back to companions
+       └─ partyAfter: HP/XP (town return fully restores HP + Hit Dice)
 ```
 
 `run.ts` owns the dungeon loop. It never resolves attacks itself — that lives in combat + rules.
@@ -36,15 +37,23 @@ runDungeon(seed, party)
 
 ## Combat turn shape
 
+Structured to mirror the SRD 5.1 procedure (`combat.ts`):
+
 ```
-for each round:
-  roll initiative for living actors
-  for each actor in init order:
-    beginTurn          // clear reactionUsed, tempAcBonus; expire conditions
-    if unconscious → skip action
-    chooseAction / chooseEnemyAction → Intent
-    resolve intent:
-      heal | control | save AoE | auto spell | attack (+ optional reaction)
+determineSurprise()       // stub — no Stealth/Perception yet
+establishPositions()      // stub — no geometry by design
+loop:
+  beginNextRound()        // round++ / end check
+  rollInitiative()        // currently re-rolled each round (see note)
+  takeTurns()             // beginTurn + bonus + action per actor
+```
+
+```
+for each living actor in initiative order:
+  beginTurn          // clear reactionUsed, tempAcBonus; expire conditions; death saves
+  chooseBonusAction / chooseAction → Intent
+  resolve intent:
+    heal | control | save AoE | auto spell | attack (+ optional reaction)
 ```
 
 There is **no position model** inside an encounter. “Area” spells hit every living foe (or rank by current HP for Sleep / Color Spray). Allies are never caught in PC AoEs — a deliberate RAW simplification.

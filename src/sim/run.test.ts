@@ -42,4 +42,17 @@ describe("runDungeon", () => {
       expect(member.maxHp).toBeGreaterThan(0);
     }
   });
+
+  it("takes a short rest after each won encounter", () => {
+    const result = runDungeon({ seed: 42, party });
+    const wins = result.log.filter((e) => e.event === "encounter_won");
+    const rests = result.log.filter((e) => e.event === "short_rest");
+    expect(wins.length).toBeGreaterThan(0);
+    expect(rests.length).toBe(wins.length);
+    for (let i = 0; i < wins.length; i++) {
+      const winIdx = result.log.indexOf(wins[i]!);
+      const restIdx = result.log.indexOf(rests[i]!);
+      expect(restIdx).toBe(winIdx + 1);
+    }
+  });
 });

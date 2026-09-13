@@ -45,6 +45,8 @@ export function createEmptyCompanion(
     activeJob: null,
     xp: 0,
     hp: null,
+    hitDiceTotal: 1,
+    hitDiceRemaining: 1,
     equipment: emptyEquipment(),
   };
   return ensureUnlocked(companion);

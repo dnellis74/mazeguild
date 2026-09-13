@@ -35,7 +35,7 @@ import {
 import { rageDamageForLevel, ragesForLevel } from "./leveling";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
-import { DYING_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -70,6 +70,7 @@ function basePc(over: Partial<Combatant> = {}): Combatant {
     hp: 8,
     alive: true,
     ...DYING_DEFAULTS,
+    ...HIT_DICE_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,
@@ -120,6 +121,7 @@ function foe(ac = 10): Combatant {
     hp: 7,
     alive: true,
     ...DYING_DEFAULTS,
+    ...HIT_DICE_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,

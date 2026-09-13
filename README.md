@@ -148,4 +148,4 @@ In rough order:
 2. Loot with mechanical effect
 3. Guild / conscription (parties of up to six, including offline members)
 4. A written motivation prompt that biases **tactics only**
-5. Town rest / heal for companions returning from the maze at 0 HP
+5. Automatic full recovery on return to town (HP, Hit Dice, rest resources)

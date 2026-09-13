@@ -9,7 +9,7 @@ import {
 } from "./rules";
 import { chooseAction } from "./tactics";
 import { runDungeon } from "./run";
-import { DYING_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
 import { readFileSync } from "node:fs";
@@ -39,6 +39,7 @@ function pc(over: Partial<Combatant> = {}): Combatant {
     hp: 20,
     alive: true,
     ...DYING_DEFAULTS,
+    ...HIT_DICE_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,

@@ -1,5 +1,6 @@
 import type { Character } from "@/training/types";
 import { generateUniqueFantasyName } from "@/lib/fantasyNames";
+import { restoreAfterTownReturn } from "@/training/townRest";
 
 /**
  * Multi-character roster for Town Square (`Character[]` in localStorage).
@@ -166,9 +167,13 @@ export function removeRosterEntry(id: string): void {
   writeRaw(loadRoster().filter((e) => e.id !== id));
 }
 
-/** Copy maze XP / HP onto roster companions (matched by id). */
+/**
+ * Apply maze XP and full town recovery to roster companions (matched by id).
+ * HP / Hit Dice / rest resources are restored unconditionally — maze HP is
+ * not persisted (see restoreAfterTownReturn).
+ */
 export function applyQuestAftermath(
-  updates: Array<{ id: string; xp: number; hp: number }>,
+  updates: Array<{ id: string; xp: number }>,
 ): void {
   if (updates.length === 0) return;
   const roster = loadRoster();
@@ -176,11 +181,7 @@ export function applyQuestAftermath(
   for (const u of updates) {
     const idx = roster.findIndex((e) => e.id === u.id);
     if (idx < 0) continue;
-    roster[idx] = {
-      ...roster[idx]!,
-      xp: u.xp,
-      hp: u.hp,
-    };
+    roster[idx] = restoreAfterTownReturn(roster[idx]!, u.xp);
     changed = true;
   }
   if (changed) writeRaw(roster);

@@ -32,9 +32,7 @@ export function QuestPageClient() {
 
   const returnToTown = (partyAfter?: DungeonResult["partyAfter"]) => {
     if (partyAfter?.length) {
-      applyQuestAftermath(
-        partyAfter.map((p) => ({ id: p.id, xp: p.xp, hp: p.hp })),
-      );
+      applyQuestAftermath(partyAfter.map((p) => ({ id: p.id, xp: p.xp })));
     }
     clearQuestParty();
     router.push("/");

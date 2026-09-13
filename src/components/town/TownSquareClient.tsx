@@ -103,7 +103,6 @@ export function TownSquareClient() {
     (c) => earnedArchetypes(c).length > 0,
   );
   const canQuest = count >= 2 && partyTrained;
-  const canHeal = count === 1;
 
   const explore = useCallback(
     (opts?: { area?: string }) => {
@@ -114,14 +113,6 @@ export function TownSquareClient() {
     },
     [exploreId, router],
   );
-
-  const healInFountain = useCallback(() => {
-    if (!exploreId) return;
-    const entry = getRosterEntry(exploreId);
-    if (!entry) return;
-    upsertRosterEntry({ ...entry, hp: null });
-    refresh();
-  }, [exploreId, refresh]);
 
   const startQuest = useCallback(() => {
     if (!canQuest || questBusy) return;
@@ -236,14 +227,6 @@ export function TownSquareClient() {
                   onClick={() => explore({ area: TOWN_SQUARE_AREA })}
                 >
                   Enter the City
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  disabled={!canHeal}
-                  onClick={healInFountain}
-                >
-                  Heal in Fountain
                 </button>
                 <button
                   type="button"

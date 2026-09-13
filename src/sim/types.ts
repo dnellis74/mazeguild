@@ -102,10 +102,16 @@ export type Combatant = {
   archery: boolean;
   /** Great Weapon Fighting: reroll 1–2 on qualifying melee damage dice. */
   greatWeaponFighting: boolean;
-  /** Second Wind available (once per short rest ≈ once per run). */
+  /** Second Wind available (once per short rest; rests after each encounter). */
   secondWindAvailable: boolean;
   /** Fighter level contribution to Second Wind (1d10 + level). */
   secondWindLevel: number;
+  /** Hit Dice pool total (one per level). */
+  hitDiceTotal: number;
+  /** Hit Dice remaining to spend on short rests. */
+  hitDiceRemaining: number;
+  /** Hit die size for this combatant (e.g. 10 for Fighter). */
+  hitDieSides: number;
   lucky: boolean;
   relentless: boolean;
   relentlessUsed: boolean;
@@ -281,6 +287,18 @@ export type LogEvent =
       event: "encounter_won";
       xpGained: number;
       loot: string;
+    }
+  | {
+      event: "short_rest";
+      heals: Array<{
+        name: string;
+        amount: number;
+        hpAfter: number;
+        hitDiceSpent: number;
+        hitDiceRemaining: number;
+      }>;
+      secondWindRestored: string[];
+      warlockSlotsRestored: string[];
     }
   | { event: "next_encounter_in"; steps: number }
   | { event: "exit_reached"; steps: number; pos: Pos }

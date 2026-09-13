@@ -51,6 +51,23 @@ export function describeEvent(e: LogEvent): string | null {
       return `${e.name} gains ${e.amount} xp (${e.xpAfter} total).`;
     case "encounter_won":
       return `Victory. +${e.xpGained} xp. Loot: ${e.loot}.`;
+    case "short_rest": {
+      const bits: string[] = [];
+      for (const h of e.heals) {
+        bits.push(
+          `${h.name} spends ${h.hitDiceSpent} Hit Dice to recover ${h.amount} hp`,
+        );
+      }
+      if (e.secondWindRestored.length) {
+        bits.push(`Second Wind ready: ${e.secondWindRestored.join(", ")}`);
+      }
+      if (e.warlockSlotsRestored.length) {
+        bits.push(`Warlock slots restored: ${e.warlockSlotsRestored.join(", ")}`);
+      }
+      return bits.length
+        ? `Short rest. ${bits.join(". ")}.`
+        : "Short rest.";
+    }
     case "next_encounter_in":
       return `Next encounter in ${e.steps} steps.`;
     case "exit_reached":
