@@ -3,6 +3,8 @@
  * Welcome / Quest live on `/` (TownSquareClient), not as in-world portals.
  */
 
+/** UI label for the top-level areas list (`worldView: "areas"`). */
+export const AREAS_DISPLAY_NAME = "Town Gate";
 export const TOWN_SQUARE_AREA = "Walled City";
 export const TOWN_SQUARE_BUILDING = "Town Square";
 

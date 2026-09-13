@@ -11,6 +11,7 @@ import { stashQuestParty } from "@/lib/questHandoff";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
 import {
+  AREAS_DISPLAY_NAME,
   TOWN_SQUARE_AREA,
   TOWN_SQUARE_BUILDING,
 } from "@/training/townSquare";
@@ -166,7 +167,7 @@ export function TownSquareClient() {
               {canEnterCity ? (
                 <>
                   <button type="button" onClick={() => explore()}>
-                    Areas
+                    {AREAS_DISPLAY_NAME}
                   </button>
                   {" / "}
                   <button type="button" onClick={() => explore({ area: TOWN_SQUARE_AREA })}>
@@ -177,7 +178,7 @@ export function TownSquareClient() {
                 </>
               ) : (
                 <>
-                  <span>Areas</span>
+                  <span>{AREAS_DISPLAY_NAME}</span>
                   {" / "}
                   <span>{TOWN_SQUARE_AREA}</span>
                   {" / "}

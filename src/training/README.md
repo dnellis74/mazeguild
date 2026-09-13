@@ -14,7 +14,7 @@ Town Square (/)
 ```
 
 **Explore** (`TrainingClient` on `/training`) starts in the world. Crumbs mirror
-location (`Areas / Walled City / …`). Tap the companion’s name for the sheet;
+location (`Town Gate / Walled City / …`). Tap the companion’s name for the sheet;
 **Return** restores the world spot (or Town Square if the sheet was opened
 directly).
 

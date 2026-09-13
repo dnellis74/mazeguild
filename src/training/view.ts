@@ -19,6 +19,7 @@ import {
 } from "./magic";
 import { originStoryText } from "./origin";
 import {
+  AREAS_DISPLAY_NAME,
   isTownSquareBuilding,
 } from "./townSquare";
 import {
@@ -211,7 +212,7 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
   const cards: WorldCard[] = [];
 
   if (ui.worldView === "areas") {
-    crumb.push({ label: "Areas of the realm" });
+    crumb.push({ label: AREAS_DISPLAY_NAME });
     for (const area of world) {
       const unlocked = !!ch.unlocked.areas[areaKey(area.name)];
       const working = job?.kind === "area" && job.area === area.name;
@@ -231,7 +232,7 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
       });
     }
   } else if (ui.worldView === "buildings") {
-    crumb.push({ label: "Areas", action: "world-nav", view: "areas" });
+    crumb.push({ label: AREAS_DISPLAY_NAME, action: "world-nav", view: "areas" });
     crumb.push({ label: ui.worldArea || "" });
     const area = world.find((a) => a.name === ui.worldArea);
     for (const b of area?.buildings || []) {
@@ -260,7 +261,7 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
       });
     }
   } else if (ui.worldView === "rooms") {
-    crumb.push({ label: "Areas", action: "world-nav", view: "areas" });
+    crumb.push({ label: AREAS_DISPLAY_NAME, action: "world-nav", view: "areas" });
     crumb.push({ label: ui.worldArea || "", action: "world-nav", view: "buildings" });
     crumb.push({ label: ui.worldBuilding || "" });
     const area = world.find((a) => a.name === ui.worldArea);
@@ -292,7 +293,7 @@ function buildWorldView(catalog: Catalog, ch: Character, ui: TrainingUi): WorldV
       });
     }
   } else {
-    crumb.push({ label: "Areas", action: "world-nav", view: "areas" });
+    crumb.push({ label: AREAS_DISPLAY_NAME, action: "world-nav", view: "areas" });
     crumb.push({ label: ui.worldArea || "", action: "world-nav", view: "buildings" });
     crumb.push({
       label: ui.worldBuilding || "",
