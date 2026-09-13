@@ -13,12 +13,16 @@ import {
   resolveSave,
   spellSaveDC,
   rollSpellDamage,
+  modifyDamageByTraits,
+  beginRage,
+  endRage,
 } from "./rules";
 import {
   getSpell,
   pickLearnedControlSpell,
   pickLearnedSaveSpell,
 } from "./spells";
+import { ragesForLevel } from "./leveling";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
 
@@ -61,6 +65,11 @@ function basePc(over: Partial<Combatant> = {}): Combatant {
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: 0,
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
@@ -94,6 +103,11 @@ function foe(ac = 10): Combatant {
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: 0,
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
@@ -417,7 +431,7 @@ describe("resolveHpPool (Sleep)", () => {
     target.hp = 10;
     target.maxHp = 10;
     target.condition = { name: "unconscious", expiresRound: 99 };
-    applyDamage(target, 1);
+    applyDamage(target, 1, "slashing");
     expect(target.condition).toBeNull();
     expect(target.hp).toBe(9);
   });
@@ -523,6 +537,107 @@ describe("resolveHpPool (Color Spray)", () => {
     );
     expect(pool).toBe(12);
     expect(affected.map((c) => c.id)).toEqual(["a"]);
+  });
+});
+
+describe("damage traits + Rage", () => {
+  it("halves resistant damage rounded down (odd amounts)", () => {
+    const target = foe(10);
+    target.hp = 20;
+    target.maxHp = 20;
+    target.resistances = ["slashing"];
+    expect(modifyDamageByTraits(target, 5, "slashing")).toBe(2);
+    expect(applyDamage(target, 5, "slashing")).toBe(2);
+    expect(target.hp).toBe(18);
+  });
+
+  it("passes through unrelated damage types unchanged", () => {
+    const target = foe(10);
+    target.hp = 20;
+    target.resistances = ["slashing"];
+    expect(applyDamage(target, 5, "fire")).toBe(5);
+    expect(target.hp).toBe(15);
+  });
+
+  it("doubles vulnerable damage", () => {
+    const target = foe(10);
+    target.hp = 20;
+    target.vulnerabilities = ["fire"];
+    expect(applyDamage(target, 5, "fire")).toBe(10);
+    expect(target.hp).toBe(10);
+  });
+
+  it("immunity zeroes damage", () => {
+    const target = foe(10);
+    target.hp = 20;
+    target.immunities = ["poison"];
+    expect(applyDamage(target, 9, "poison")).toBe(0);
+    expect(target.hp).toBe(20);
+  });
+
+  it("resist + vuln to the same type cancel to normal damage", () => {
+    const target = foe(10);
+    target.hp = 20;
+    target.resistances = ["fire"];
+    target.vulnerabilities = ["fire"];
+    expect(modifyDamageByTraits(target, 7, "fire")).toBe(7);
+    expect(applyDamage(target, 7, "fire")).toBe(7);
+    expect(target.hp).toBe(13);
+  });
+
+  it("beginRage grants B/P/S resistance; non-raging takes full", () => {
+    const raging = basePc({
+      archetype: "Barbarian",
+      ragesRemaining: 2,
+      hp: 20,
+      maxHp: 20,
+    });
+    beginRage(raging);
+    expect(raging.raging).toBe(true);
+    expect(raging.ragesRemaining).toBe(1);
+    expect(applyDamage(raging, 5, "slashing")).toBe(2);
+
+    const calm = basePc({
+      archetype: "Barbarian",
+      ragesRemaining: 2,
+      hp: 20,
+      maxHp: 20,
+    });
+    expect(applyDamage(calm, 5, "slashing")).toBe(5);
+  });
+
+  it("endRage strips B/P/S resistance", () => {
+    const barb = basePc({ ragesRemaining: 1, hp: 20, maxHp: 20 });
+    beginRage(barb);
+    endRage(barb);
+    expect(barb.raging).toBe(false);
+    expect(applyDamage(barb, 5, "piercing")).toBe(5);
+  });
+
+  it("companionToCombatant gives Barbarians 2 rages at level 1", () => {
+    expect(ragesForLevel(1)).toBe(2);
+    const barb = wizardCharacter([], []);
+    barb.id = "barb-1";
+    barb.name = "Grok";
+    barb.features = [
+      {
+        id: "barb-rage",
+        feature: ["Rage"],
+        archetype: "Barbarian",
+      },
+    ];
+    barb.abilityScores = {
+      STR: 16,
+      DEX: 14,
+      CON: 14,
+      INT: 8,
+      WIS: 10,
+      CHA: 8,
+    };
+    barb.xp = 0;
+    const c = companionToCombatant(barb, 0, createRng(1));
+    expect(c.ragesRemaining).toBe(2);
+    expect(c.raging).toBe(false);
   });
 });
 

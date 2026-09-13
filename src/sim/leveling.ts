@@ -41,3 +41,23 @@ export function levelForXp(xp: number): number {
   }
   return level;
 }
+
+/**
+ * Barbarian Rage uses at a given level (leveling.json "Rages" column).
+ * Non-Barbarians / missing rows → 0. "Unlimited" → a large finite cap.
+ */
+export function ragesForLevel(level: number): number {
+  const rows = TABLES.Barbarian?.levels ?? [];
+  let rages = 0;
+  for (const row of rows) {
+    const rowLevel = parseLevel(row.Level ?? "1st");
+    if (rowLevel > level) break;
+    const text = (row.Rages ?? "0").trim();
+    if (/^unlimited$/i.test(text)) {
+      rages = 999;
+    } else {
+      rages = Number.parseInt(text, 10) || 0;
+    }
+  }
+  return rages;
+}

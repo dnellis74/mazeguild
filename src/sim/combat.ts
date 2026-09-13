@@ -3,6 +3,8 @@ import {
   abilityMod,
   applyDamage,
   applyHeal,
+  beginRage,
+  endRage,
   expireConditionIfDue,
   hasCondition,
   resolveAttack,
@@ -14,6 +16,7 @@ import {
   setCondition,
   type AttackResult,
 } from "./rules";
+import { getCantrip } from "./cantrips";
 import {
   getSpell,
   isCombatAutoSpell,
@@ -38,11 +41,36 @@ function initiative(rng: Rng, c: Combatant): number {
   return roll + abilityMod(c.abilities.DEX);
 }
 
-/** Start-of-turn refresh: reaction recharges; Shield AC bonus ends. */
+/** Damage type for the ability/weapon used on this attack. */
+function damageTypeForAttack(actor: Combatant, used: string): string {
+  if (actor.cantrip && used === actor.cantrip) {
+    const type = getCantrip(actor.cantrip)?.damage?.type;
+    if (type) return type;
+  }
+  if (actor.spell && used === actor.spell) {
+    const type = getSpell(actor.spell)?.damage?.type;
+    if (type) return type;
+  }
+  return actor.weapon.damageType;
+}
+
+/** Start-of-turn refresh: reaction recharges; Shield AC bonus ends; Rage may start. */
 function beginTurn(actor: Combatant, round: number): void {
   expireConditionIfDue(actor, round);
   actor.reactionUsed = false;
   actor.tempAcBonus = 0;
+  // Rage: auto-enter at start of turn if uses remain (bonus-action / duration
+  // clock simplified — see end of runCombat).
+  if (!actor.raging && actor.ragesRemaining > 0) {
+    beginRage(actor);
+  }
+}
+
+/** Clear Rage at encounter end (persist-until-unconscious / end-of-fight model). */
+function clearEncounterRage(combatants: Combatant[]): void {
+  for (const c of combatants) {
+    if (c.raging) endRage(c);
+  }
 }
 
 /**
@@ -219,7 +247,11 @@ export function runCombat(
               damageFull,
               pushOnFail,
             });
-            applyDamage(target, result.damage);
+            const applied = applyDamage(
+              target,
+              result.damage,
+              spell.damage.type,
+            );
             log.push({
               event: "save",
               round,
@@ -231,7 +263,7 @@ export function runCombat(
               total: result.total,
               success: result.success,
               damageFull: result.damageFull,
-              damage: result.damage,
+              damage: applied,
               targetHpAfter: target.hp,
               pushed: result.pushed || undefined,
             });
@@ -260,10 +292,10 @@ export function runCombat(
         isCombatAutoSpell(intent.ability)
       ) {
         const spell = getSpell(intent.ability);
-        if (spell) {
+        if (spell?.damage) {
           actor.spellSlots -= 1;
           const result = resolveAutoSpell(rng, spell);
-          applyDamage(target, result.damage);
+          const applied = applyDamage(target, result.damage, spell.damage.type);
           log.push({
             event: "attack",
             round,
@@ -271,7 +303,7 @@ export function runCombat(
             target: target.name,
             hit: true,
             crit: false,
-            damage: result.damage,
+            damage: applied,
             targetHpAfter: target.hp,
             used,
           });
@@ -298,7 +330,8 @@ export function runCombat(
       }
 
       if (result.hit) {
-        applyDamage(target, result.damage);
+        const dtype = damageTypeForAttack(actor, used);
+        const applied = applyDamage(target, result.damage, dtype);
         log.push({
           event: "attack",
           round,
@@ -306,7 +339,7 @@ export function runCombat(
           target: target.name,
           hit: true,
           crit: result.crit,
-          damage: result.damage,
+          damage: applied,
           targetHpAfter: target.hp,
           used,
           reaction,
@@ -328,5 +361,6 @@ export function runCombat(
       }
     }
   }
+  clearEncounterRage([...party, ...enemies]);
   return party.some((p) => p.alive);
 }

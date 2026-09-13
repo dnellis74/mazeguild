@@ -320,18 +320,77 @@ export function rollSpellDamage(rng: Rng, spell: SpellEntry): number {
   return dice(rng, die.count, die.sides);
 }
 
-export function applyDamage(target: Combatant, amount: number): void {
-  target.hp = Math.max(0, target.hp - amount);
+const RAGE_RESISTANCES = ["bludgeoning", "piercing", "slashing"] as const;
+
+/**
+ * Apply immunities / resistance / vulnerability to a raw damage amount.
+ * Order: immunity → 0; else if both resist+vuln → cancel (normal); else
+ * resist halves (floor) or vulnerability doubles. Multiple sources of the
+ * same trait do not stack (membership in the array is enough once).
+ */
+export function modifyDamageByTraits(
+  target: Combatant,
+  amount: number,
+  damageType: string,
+): number {
+  if (amount <= 0) return 0;
+  const type = damageType.toLowerCase();
+  if (target.immunities.some((t) => t.toLowerCase() === type)) return 0;
+  const resist = target.resistances.some((t) => t.toLowerCase() === type);
+  const vuln = target.vulnerabilities.some((t) => t.toLowerCase() === type);
+  if (resist && vuln) return amount;
+  if (resist) return Math.floor(amount / 2);
+  if (vuln) return amount * 2;
+  return amount;
+}
+
+/**
+ * Reduce HP by amount after resistance/immunity/vulnerability for damageType.
+ * Returns the actual HP lost (post-mitigation).
+ */
+export function applyDamage(
+  target: Combatant,
+  amount: number,
+  damageType: string,
+): number {
+  const applied = modifyDamageByTraits(target, amount, damageType);
+  target.hp = Math.max(0, target.hp - applied);
   // Sleep: taking any damage wakes the sleeper (SRD).
-  if (amount > 0 && target.condition?.name === "unconscious") {
+  if (applied > 0 && target.condition?.name === "unconscious") {
     clearCondition(target);
   }
   if (target.hp === 0 && target.relentless && !target.relentlessUsed) {
     target.hp = 1;
     target.relentlessUsed = true;
-    return;
+    return applied;
   }
-  if (target.hp === 0) target.alive = false;
+  if (target.hp === 0) {
+    target.alive = false;
+    if (target.raging) endRage(target);
+  }
+  return applied;
+}
+
+/** Enter Rage: B/P/S resistance; costs one rage use. */
+export function beginRage(actor: Combatant): void {
+  if (actor.raging || actor.ragesRemaining <= 0) return;
+  actor.ragesRemaining -= 1;
+  actor.raging = true;
+  for (const type of RAGE_RESISTANCES) {
+    if (!actor.resistances.some((t) => t.toLowerCase() === type)) {
+      actor.resistances.push(type);
+    }
+  }
+}
+
+/** End Rage and strip the B/P/S resistances Rage added. */
+export function endRage(actor: Combatant): void {
+  if (!actor.raging) return;
+  actor.raging = false;
+  const drop = new Set<string>(RAGE_RESISTANCES);
+  actor.resistances = actor.resistances.filter(
+    (t) => !drop.has(t.toLowerCase()),
+  );
 }
 
 export function applyHeal(target: Combatant, amount: number): void {

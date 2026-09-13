@@ -31,6 +31,11 @@ function pc(over: Partial<Combatant> & { id: string }): Combatant {
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: 0,
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
@@ -64,6 +69,11 @@ function goblin(over: Partial<Combatant> = {}): Combatant {
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: 0,
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
@@ -579,5 +589,57 @@ describe("runCombat Burning Hands / Thunderwave", () => {
 
     expect(log.some((e) => e.event === "save")).toBe(false);
     expect(wizard.spellSlots).toBe(0);
+  });
+});
+
+describe("runCombat Rage resistance", () => {
+  it("halves weapon damage against a raging Barbarian", () => {
+    const barb = pc({
+      id: "barb",
+      archetype: "Barbarian",
+      hp: 30,
+      maxHp: 30,
+      ragesRemaining: 2,
+      abilities: { STR: 16, DEX: 18, CON: 14, INT: 8, WIS: 10, CHA: 8 },
+    });
+    const foe = goblin({
+      abilities: { STR: 18, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+      maxHp: 100,
+      hp: 100,
+      weapon: {
+        name: "Scimitar",
+        damage: { count: 1, sides: 6 },
+        damageType: "slashing",
+        properties: [],
+        finesse: false,
+        ranged: false,
+      },
+    });
+    const log: LogEvent[] = [];
+    // barb high init → beginRage, then attack; foe target-pick then attacks.
+    // foe: d20=10 (+6)=16 vs AC 12 hit; d6=1 + STR4 = 5 → resist → 2
+    const seq = [
+      0.95, // barb init
+      0, // foe init
+      0.1, // barb attack (miss AC 15)
+      0.5, // foe chooseEnemyAction target pick
+      0.45, // foe d20=10
+      0.0, // d6=1
+    ];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [barb], [foe], log);
+
+    const hit = log.find(
+      (e) =>
+        e.event === "attack" &&
+        e.actor === "Goblin" &&
+        e.target === "barb" &&
+        e.hit === true,
+    );
+    expect(hit).toMatchObject({ damage: 2 });
+    expect(barb.ragesRemaining).toBe(1);
+    expect(barb.raging).toBe(false); // cleared at encounter end
   });
 });

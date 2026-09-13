@@ -43,6 +43,11 @@ function combatant(
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: 0,
     ...over,
   };
 }

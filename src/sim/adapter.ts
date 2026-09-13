@@ -7,6 +7,7 @@ import {
   pickLearnedSaveSpell,
 } from "./spells";
 import { abilityMod } from "./rules";
+import { levelForXp, ragesForLevel } from "./leveling";
 import type { Rng } from "./rng";
 import {
   archetypeFallbackWeapon,
@@ -177,6 +178,8 @@ export function companionToCombatant(
   const controlSpell = pickLearnedControlSpell(ch.spells);
   const saveSpell = pickLearnedSaveSpell(ch.spells);
   const reactionSpell = pickLearnedReactionSpell(ch.spells, "before_damage");
+  const level = levelForXp(ch.xp ?? 0);
+  const isBarbarian = archetypes.includes("Barbarian");
 
   return {
     id: ch.id || `pc-${index}`,
@@ -205,6 +208,11 @@ export function companionToCombatant(
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: isBarbarian ? ragesForLevel(level) : 0,
     sneakAttackDice: /Sneak Attack/i.test(features) ? 1 : 0,
     healSlots: archetypes.some((a) => SPELL_HEALER_ARCHETYPES.has(a))
       ? slots
@@ -263,6 +271,11 @@ export function makeMonster(opts: {
     reactionUsed: false,
     tempAcBonus: 0,
     condition: null,
+    immunities: [],
+    resistances: [],
+    vulnerabilities: [],
+    raging: false,
+    ragesRemaining: 0,
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,

@@ -92,6 +92,12 @@ Crits are natural 20 and ignore AC — Shield cannot turn a crit into a miss.
 Full attack-roll spine in `rules.ts` (`rollD20`, `resolveAdvantageMode`, `attackRollMode`).  
 **Only blinded is wired today:** blinded attacker → disadvantage; attacks against blinded → advantage; both → cancel. Unconscious / prone / etc. are not sources yet.
 
+### Damage traits
+
+`immunities` / `resistances` / `vulnerabilities` (string arrays of damage types).  
+Applied in `applyDamage(target, amount, damageType)` via `modifyDamageByTraits`: immunity → 0; resist+vuln cancel → normal; else resist halves (floor) or vuln doubles.  
+**Rage:** Barbarians auto-enter at start of turn (`ragesRemaining` from leveling.json); while raging, resistance to bludgeoning/piercing/slashing. Ends on unconsciousness or end of encounter (simplified vs full SRD duration clock). No rage damage bonus / STR adv in this pass.
+
 ### Saves
 
 `spellSaveDC = 8 + proficiencyBonus + spellMod`.  

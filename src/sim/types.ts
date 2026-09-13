@@ -74,6 +74,16 @@ export type Combatant = {
    * Omitted / "humanoid" for typical goblinoids and PCs.
    */
   creatureType?: string;
+  /** Damage types that deal 0 damage (distinct from resistance halving). */
+  immunities: string[];
+  /** Damage types halved (floor) after other modifiers. */
+  resistances: string[];
+  /** Damage types doubled after other modifiers. */
+  vulnerabilities: string[];
+  /** Barbarian Rage active this encounter. */
+  raging: boolean;
+  /** Remaining Rage uses (from leveling table; 0 for non-Barbarians). */
+  ragesRemaining: number;
   sneakAttackDice: number;
   healSlots: number;
   layOnHands: number;
