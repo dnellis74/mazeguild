@@ -1,4 +1,5 @@
 import { d, dice, type Rng } from "./rng";
+import { getCantrip } from "./cantrips";
 import type { Ability, Combatant } from "./types";
 
 /** SRD 5.1 ability modifier. */
@@ -24,8 +25,12 @@ export type AttackResult = {
 
 /**
  * SRD 5.1 attack: d20 + ability mod + proficiency vs AC.
- * Natural 20 always hits and doubles weapon dice. Natural 1 always misses.
+ * Natural 20 always hits and doubles weapon/cantrip dice. Natural 1 always misses.
  * Halfling Lucky rerolls a natural 1 on the d20 (once).
+ *
+ * With an assigned attack cantrip: spell attack (prof + spellMod), cantrip dice,
+ * no ability mod on damage (SRD cantrips in this set are dice-only), no Sneak Attack.
+ * Weapon attacks: existing STR/DEX path; Sneak Attack only on finesse or ranged weapons.
  */
 export function resolveAttack(
   rng: Rng,
@@ -33,11 +38,20 @@ export function resolveAttack(
   defender: Combatant,
   allyCount: number,
 ): AttackResult {
+  const cantrip =
+    attacker.cantrip && attacker.kind === "pc"
+      ? getCantrip(attacker.cantrip)
+      : undefined;
+  const useCantrip =
+    !!cantrip && cantrip.combatType === "attack" && !!cantrip.damage;
+
   let d20 = d(rng, 20);
   if (attacker.lucky && d20 === 1) d20 = d(rng, 20);
 
-  const abi = attackAbility(attacker);
-  const bonus = abilityMod(attacker.abilities[abi]) + attacker.proficiencyBonus;
+  const bonus = useCantrip
+    ? attacker.spellMod + attacker.proficiencyBonus
+    : abilityMod(attacker.abilities[attackAbility(attacker)]) +
+      attacker.proficiencyBonus;
   const total = d20 + bonus;
   const crit = d20 === 20;
   const nat1 = d20 === 1;
@@ -45,12 +59,23 @@ export function resolveAttack(
 
   if (!hit) return { hit: false, crit: false, damage: 0, d20, total };
 
+  if (useCantrip) {
+    const die = cantrip!.damage!;
+    const dieCount = crit ? die.count * 2 : die.count;
+    // SRD attack cantrips in this data set are dice-only (no ability mod on damage).
+    const damage = dice(rng, dieCount, die.sides);
+    return { hit: true, crit, damage: Math.max(0, damage), d20, total };
+  }
+
+  const abi = attackAbility(attacker);
   const die = attacker.weapon.damage;
   const dieCount = crit ? die.count * 2 : die.count;
   let damage =
     dice(rng, dieCount, die.sides) + abilityMod(attacker.abilities[abi]);
 
-  if (attacker.sneakAttackDice > 0 && allyCount > 0) {
+  // Sneak Attack requires a finesse or ranged weapon attack (SRD), not a spell attack.
+  const weaponOk = attacker.weapon.finesse || attacker.weapon.ranged;
+  if (attacker.sneakAttackDice > 0 && allyCount > 0 && weaponOk) {
     const sa = crit ? attacker.sneakAttackDice * 2 : attacker.sneakAttackDice;
     damage += dice(rng, sa, 6);
   }

@@ -1,6 +1,7 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
-import { ATTACK_CANTRIPS, defaultAttackCantrip } from "./cantrips";
+import { pickLearnedAttackCantrip } from "./cantrips";
 import { abilityMod } from "./rules";
+import type { Rng } from "./rng";
 import {
   archetypeFallbackWeapon,
   defaultUnarmedWeapon,
@@ -101,16 +102,6 @@ function pickSpellAbility(archetypes: string[]): Ability {
   return "WIS";
 }
 
-function assignedAttackCantrip(ch: Character): string | undefined {
-  const known = (ch.cantrips || []).find((c) => ATTACK_CANTRIPS.has(c.name));
-  if (known) return known.name;
-  for (const a of archetypesOf(ch)) {
-    const fallback = defaultAttackCantrip(a);
-    if (fallback) return fallback;
-  }
-  return undefined;
-}
-
 function pickWeapon(archetypes: string[]): Weapon {
   if (archetypes.includes("Monk")) return monkUnarmedWeapon();
   for (const a of archetypes) {
@@ -144,10 +135,12 @@ function armorClass(
 /**
  * Map a companion onto a combat runtime fighter.
  * Combat reads features / cantrips / spells / race / scores — not a class sheet.
+ * Optional rng picks among multiple learned attack cantrips (seeded).
  */
 export function companionToCombatant(
   ch: Character,
   index: number,
+  rng?: Rng,
 ): Combatant {
   const abilities = {
     STR: 10,
@@ -173,6 +166,7 @@ export function companionToCombatant(
   const slots = level1Slots(archetypes);
   const spellAbility = pickSpellAbility(archetypes);
   const primary = archetypes[0] || "Companion";
+  const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
 
   return {
     id: ch.id || `pc-${index}`,
@@ -187,8 +181,9 @@ export function companionToCombatant(
     maxHp,
     hp,
     alive: hp > 0,
+    // Casters keep a weapon for turns with no attack cantrip (and for display).
     weapon: pickWeapon(archetypes),
-    cantrip: assignedAttackCantrip(ch),
+    cantrip,
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
     relentless:
       /Relentless Endurance/i.test(features) || /half-?orc/i.test(ch.raceId),

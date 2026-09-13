@@ -54,12 +54,12 @@ describe("chooseAction", () => {
       id: "wiz",
       archetype: "Wizard",
       role: "dps",
-      cantrip: "Fire Bolt",
+      cantrip: "Ray of Frost",
     });
     expect(chooseAction(wizard, [wizard], foes)).toEqual({
       type: "attack",
       targetId: "gob-low",
-      ability: "Fire Bolt",
+      ability: "Ray of Frost",
     });
   });
 

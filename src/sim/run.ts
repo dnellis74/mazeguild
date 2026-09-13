@@ -19,7 +19,9 @@ export function runDungeon(input: DungeonInput): DungeonResult {
   const rng = createRng(seed);
   const maze = generateMaze(rng, 20);
   const route = aStarPath(maze, maze.entrance, maze.exit);
-  const party = input.party.slice(0, PARTY_CAP).map(companionToCombatant);
+  const party = input.party
+    .slice(0, PARTY_CAP)
+    .map((ch, i) => companionToCombatant(ch, i, rng));
   const partyLevels = party.map((member) => ({
     level: levelForXp(member.xp),
   }));
