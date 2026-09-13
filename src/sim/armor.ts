@@ -37,30 +37,6 @@ export function getArmor(key: string): ArmorDef {
   return def;
 }
 
-/** Archetype default armor loadout; null armor when unarmored or no entry. */
-export function archetypeFallbackArmor(archetype: string): ArmorLoadout {
-  const fb = DATA.armor_fallback[archetype];
-  if (!fb) return { armor: null, shield: false };
-  return {
-    armor: fb.armor ? getArmor(fb.armor) : null,
-    shield: !!fb.shield,
-  };
-}
-
-/** First matching archetype in list wins (same order as weapon fallback). */
-export function pickArmorLoadout(archetypes: string[]): ArmorLoadout {
-  for (const a of archetypes) {
-    const fb = DATA.armor_fallback[a];
-    if (fb) {
-      return {
-        armor: fb.armor ? getArmor(fb.armor) : null,
-        shield: !!fb.shield,
-      };
-    }
-  }
-  return { armor: null, shield: false };
-}
-
 /** Apply base AC + DEX per category rules; shield stacks on top. */
 export function computeAcFromArmor(
   scores: Record<Ability, number>,

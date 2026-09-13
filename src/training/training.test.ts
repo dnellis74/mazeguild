@@ -27,6 +27,40 @@ describe("training API domain", () => {
     expect(view.sheet?.abilities[0]?.score).toBe(
       catalog.abilityMods.pointBuy.startingScore,
     );
+    expect(view.sheet?.equipment).toEqual([]);
+  });
+
+  it("shows resolved equipment names on the sheet", () => {
+    const catalog = getCatalog();
+    const character = {
+      ...createEmptyCompanion(catalog, {
+        id: "c-geared",
+        name: "Geared",
+        raceId: "human",
+        alignment: { alignmentId: "lg" },
+      }),
+      equipment: {
+        armor: "chain_mail",
+        mainHand: "longsword",
+        offHand: "shield",
+        pack: {
+          name: "Dungeoneer's Pack",
+          contents: ["Backpack", "A crowbar", "Spellbook"],
+        },
+      },
+    };
+    const ui = { ...defaultTrainingUi(), hubTab: "sheet" as const };
+    const view = buildTrainingView(catalog, character, ui);
+    expect(view.sheet?.equipment).toEqual([
+      { slot: "Armor", name: "Chain mail" },
+      { slot: "Main hand", name: "Longsword" },
+      { slot: "Off hand", name: "Shield" },
+      {
+        slot: "Pack",
+        name: "Dungeoneer's Pack",
+        detail: "Backpack, A crowbar, Spellbook",
+      },
+    ]);
   });
 
   it("lists Town Square beside Tavern in the Walled City", () => {

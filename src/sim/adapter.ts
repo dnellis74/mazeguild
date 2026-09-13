@@ -14,11 +14,15 @@ import {
 import { abilityMod } from "./rules";
 import { levelForXp, rageDamageForLevel, ragesForLevel } from "./leveling";
 import type { Rng } from "./rng";
-import { computeAcFromArmor, pickArmorLoadout } from "./armor";
 import {
-  archetypeFallbackWeapon,
+  armorFromEquipmentId,
+  ensureCharacterEquipment,
+  normalizeEquipment,
+  shieldAcBonus,
+  weaponFromEquipmentId,
+} from "./loadout";
+import {
   defaultUnarmedWeapon,
-  getWeapon,
   monkUnarmedWeapon,
 } from "./weapons";
 import type { Combatant, PartySnapshot, Role, Weapon } from "./types";
@@ -143,21 +147,13 @@ function collectFightingStyles(ch: Character): string[] {
   return [...styles];
 }
 
-function pickWeapon(
-  archetypes: string[],
-  fightingStyles: string[],
-): Weapon {
-  if (fightingStyles.includes("Great Weapon Fighting")) {
-    return getWeapon("greataxe");
-  }
-  if (fightingStyles.includes("Archery")) {
-    return getWeapon("shortbow");
+function resolveWeapon(ch: Character, archetypes: string[]): Weapon {
+  const id = normalizeEquipment(ch.equipment).mainHand;
+  if (id) {
+    const fromEquip = weaponFromEquipmentId(id);
+    if (fromEquip) return fromEquip;
   }
   if (archetypes.includes("Monk")) return monkUnarmedWeapon();
-  for (const a of archetypes) {
-    const w = archetypeFallbackWeapon(a);
-    if (w) return w;
-  }
   return defaultUnarmedWeapon();
 }
 
@@ -168,12 +164,14 @@ function hasUnarmoredDefense(archetypes: string[]): "barbarian" | "monk" | null 
 }
 
 function armorClass(
+  ch: Character,
   scores: Record<Ability, number>,
   archetypes: string[],
   fightingStyles: string[],
 ): number {
   const dex = abilityMod(scores.DEX ?? 10);
   const unarmored = hasUnarmoredDefense(archetypes);
+  // Unarmored Defense always wins over any armor slot.
   if (unarmored === "barbarian") {
     return 10 + dex + abilityMod(scores.CON ?? 10);
   }
@@ -181,27 +179,25 @@ function armorClass(
     return 10 + dex + abilityMod(scores.WIS ?? 10);
   }
 
-  const loadout = pickArmorLoadout(archetypes);
-  // Two-handed styles: can't wield a shield with greataxe/shortbow.
-  if (
-    fightingStyles.includes("Great Weapon Fighting") ||
-    fightingStyles.includes("Archery")
-  ) {
-    loadout.shield = false;
+  const eq = normalizeEquipment(ch.equipment);
+  const armor = eq.armor ? armorFromEquipmentId(eq.armor) : null;
+  let ac: number;
+  if (armor) {
+    ac = armor.baseAC;
+    if (armor.dexCap === null) ac += dex;
+    else if (armor.dexCap > 0) ac += Math.min(dex, armor.dexCap);
+  } else {
+    ac = 10 + dex;
   }
-  let ac = computeAcFromArmor(scores, loadout);
-
-  // Defense: +1 AC while wearing armor (exact feature name — not Unarmored Defense).
-  // Applied once here; armorClass is not called repeatedly for the same combatant.
-  if (loadout.armor && fightingStyles.includes("Defense")) {
-    ac += 1;
-  }
+  if (eq.offHand === "shield") ac += shieldAcBonus();
+  if (armor && fightingStyles.includes("Defense")) ac += 1;
   return ac;
 }
 
 /**
  * Map a companion onto a combat runtime fighter.
- * Combat reads features / cantrips / spells / race / scores — not a class sheet.
+ * Combat reads inventory (equipment), features / cantrips / spells / race / scores.
+ * Empty slots are filled from the primary archetype before resolving weapon/AC.
  * Optional rng picks among multiple learned attack cantrips (seeded).
  */
 export function companionToCombatant(
@@ -209,6 +205,7 @@ export function companionToCombatant(
   index: number,
   rng?: Rng,
 ): Combatant {
+  ch = ensureCharacterEquipment(ch);
   const abilities = {
     STR: 10,
     DEX: 10,
@@ -259,12 +256,12 @@ export function companionToCombatant(
     role: roleFor(archetypes, features),
     abilities,
     proficiencyBonus: 2,
-    ac: armorClass(abilities, archetypes, fightingStyles),
+    ac: armorClass(ch, abilities, archetypes, fightingStyles),
     maxHp,
     hp,
     alive: hp > 0,
     // Casters keep a weapon for turns with no attack cantrip (and for display).
-    weapon: pickWeapon(archetypes, fightingStyles),
+    weapon: resolveWeapon(ch, archetypes),
     cantrip,
     spell,
     attackSpell,

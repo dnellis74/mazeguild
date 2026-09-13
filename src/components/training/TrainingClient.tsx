@@ -590,6 +590,27 @@ function SheetPanel({
         )}
       </div>
       <div className="sheet-block">
+        <div className="sheet-label">Equipment</div>
+        {sheet.equipment.length ? (
+          <div className="feature-list">
+            {sheet.equipment.map((e, i) => (
+              <div key={`${e.slot}-${e.name}-${i}`} className="feature-card">
+                <div className="name">{e.name}</div>
+                <div className="from">
+                  {e.slot}
+                  {e.detail ? ` · ${e.detail}` : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-note">
+            Gear is fitted when you earn your first feature — empty slots fill
+            from your primary archetype.
+          </p>
+        )}
+      </div>
+      <div className="sheet-block">
         <div className="sheet-label">Cantrips</div>
         {sheet.cantrips.length ? (
           <div className="feature-list">

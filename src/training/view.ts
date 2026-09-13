@@ -18,6 +18,7 @@ import {
   spellcastingRoomForArchetype,
 } from "./magic";
 import { originStoryText } from "./origin";
+import { equipmentSheetRows } from "@/sim/loadout";
 import {
   AREAS_DISPLAY_NAME,
   isTownSquareBuilding,
@@ -59,6 +60,7 @@ export type SheetView = {
   archetypes: string[];
   cantrips: { name: string; from: string }[];
   spells: { name: string; from: string }[];
+  equipment: { slot: string; name: string; detail?: string }[];
   originStory: { text: string; hint: string };
 };
 
@@ -197,6 +199,7 @@ function buildSheetView(catalog: Catalog, ch: Character, ui: TrainingUi): SheetV
       name: s.name,
       from: `${s.archetype} · 1st-level${s.description ? ` · ${s.description}` : ""}`,
     })),
+    equipment: equipmentSheetRows(ch.equipment),
     originStory: {
       text: originStoryText(catalog, ch, ui.originDraft),
       hint: "Paste the prompt into an AI, write your own, or leave it. Save when you're happy.",

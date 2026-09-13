@@ -10,6 +10,7 @@ export {
 } from "@/lib/abilities";
 
 import type { Ability } from "@/lib/abilities";
+import type { CharacterEquipment } from "@/sim/loadout";
 
 export type FeatureRef = string | string[];
 
@@ -111,6 +112,13 @@ export type Character = {
    * Written back from the maze when returning to town.
    */
   hp?: number | null;
+  /**
+   * Four named inventory fields. Omitted / all-null until the outfitter runs
+   * (first feature earned). armor/mainHand ids resolve via equipment.json;
+   * offHand may be a weapon id or the literal "shield"; overflow items append
+   * into pack.contents.
+   */
+  equipment?: CharacterEquipment | null;
 };
 
 export type TrainingUi = {

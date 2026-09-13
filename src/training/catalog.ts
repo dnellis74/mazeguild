@@ -7,6 +7,8 @@ import abilityMods from "../../public/data/ability-modifiers.json";
 import backstoryPrompt from "../../public/data/backstory-prompt.json";
 import cantripData from "../../public/data/cantrips.json";
 import spellData from "../../public/data/spells_level1.json";
+import equipmentData from "@/data/equipment.json";
+import startingEquipmentData from "@/data/starting-equipment.json";
 import type { Skill } from "./types";
 
 export type Race = {
@@ -45,6 +47,8 @@ export type Catalog = {
     name: string;
     description?: string;
   }[];
+  equipment: typeof equipmentData;
+  startingEquipment: typeof startingEquipmentData;
 };
 
 function loadCantrips() {
@@ -91,6 +95,8 @@ export function getCatalog(): Catalog {
     cantrips: c.cantrips,
     spellKnown: s.known,
     spells: s.spells,
+    equipment: equipmentData as Catalog["equipment"],
+    startingEquipment: startingEquipmentData as Catalog["startingEquipment"],
   };
   return cached;
 }

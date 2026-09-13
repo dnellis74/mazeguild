@@ -11,6 +11,8 @@ import {
 import { stashQuestParty } from "@/lib/questHandoff";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
+import { ensureCharacterEquipment } from "@/sim/loadout";
+import { earnedArchetypes } from "@/training/features";
 import {
   AREAS_DISPLAY_NAME,
   TOWN_SQUARE_AREA,
@@ -87,7 +89,17 @@ export function TownSquareClient() {
   const count = selected.length;
   const exploreId = count === 1 ? selected[0]! : null;
   const canEnterCity = count === 1;
-  const canQuest = count >= 2;
+  const selectedEntries = useMemo(
+    () =>
+      selected
+        .map((id) => roster.find((c) => c.id === id))
+        .filter((c): c is Character => !!c),
+    [selected, roster],
+  );
+  const partyTrained = selectedEntries.every(
+    (c) => earnedArchetypes(c).length > 0,
+  );
+  const canQuest = count >= 2 && partyTrained;
   const canHeal = count === 1;
 
   const explore = useCallback(
@@ -116,26 +128,37 @@ export function TownSquareClient() {
       const party = selected.map((id) => {
         const entry = getRosterEntry(id);
         if (!entry) throw new Error(`Missing companion (${id}).`);
-        return entry;
+        if (!earnedArchetypes(entry)[0]) {
+          throw new Error(
+            `${entry.name || "A companion"} needs at least one feature before questing.`,
+          );
+        }
+        const geared = ensureCharacterEquipment(entry);
+        upsertRosterEntry(geared);
+        return geared;
       });
+      refresh();
       stashQuestParty(party);
       router.push("/quest");
     } catch (err) {
       setQuestError(err instanceof Error ? err.message : "Could not start quest");
       setQuestBusy(false);
     }
-  }, [canQuest, questBusy, selected, router]);
+  }, [canQuest, questBusy, selected, router, refresh]);
 
   const helperNote = useMemo(() => {
     if (roster.length === 0) return null;
     if (count === 0) {
-      return "Select a companion to enter the city. Select two or more to quest.";
+      return "Select a companion to enter the city. Select two or more trained companions to quest.";
+    }
+    if (count >= 2 && !partyTrained) {
+      return "Every quest companion needs at least one earned feature (and gear) first.";
     }
     if (count >= PARTY_CAP) {
       return `Party is full (${PARTY_CAP}). Deselect someone to change the roster.`;
     }
     return null;
-  }, [roster.length, count]);
+  }, [roster.length, count, partyTrained]);
 
   if (!ready) {
     return (

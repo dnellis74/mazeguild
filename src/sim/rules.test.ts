@@ -313,7 +313,7 @@ describe("companionToCombatant cantrips", () => {
 });
 
 describe("companionToCombatant armor", () => {
-  it("Fighter: chain mail (16) + shield (2), no DEX", () => {
+  it("Fighter: inventory chain mail (16) + shield (2), no DEX", () => {
     const c = companionToCombatant(
       archetypeCharacter("Fighter", {
         abilityScores: { DEX: 18, STR: 16, CON: 14 },
@@ -321,6 +321,7 @@ describe("companionToCombatant armor", () => {
       0,
     );
     expect(c.ac).toBe(18);
+    expect(c.weapon.name).toBe("Longsword");
   });
 
   it("Fighter with Defense: +1 on top of armor total", () => {
@@ -342,7 +343,7 @@ describe("companionToCombatant armor", () => {
     expect(without.ac).toBe(18);
   });
 
-  it("Archery equips shortbow and drops shield (two-handed)", () => {
+  it("Archery does not swap inventory weapon or drop shield", () => {
     const c = companionToCombatant(
       archetypeCharacter("Fighter", {
         features: ["Archery"],
@@ -351,12 +352,11 @@ describe("companionToCombatant armor", () => {
       0,
     );
     expect(c.archery).toBe(true);
-    expect(c.weapon.ranged).toBe(true);
-    expect(c.weapon.name).toBe("Shortbow");
-    expect(c.ac).toBe(16); // chain mail, no shield
+    expect(c.weapon.name).toBe("Longsword");
+    expect(c.ac).toBe(18); // chain mail + shield from inventory
   });
 
-  it("Great Weapon Fighting equips greataxe and drops shield", () => {
+  it("Great Weapon Fighting does not swap inventory weapon or drop shield", () => {
     const c = companionToCombatant(
       archetypeCharacter("Fighter", {
         features: ["Great Weapon Fighting"],
@@ -364,11 +364,11 @@ describe("companionToCombatant armor", () => {
       0,
     );
     expect(c.greatWeaponFighting).toBe(true);
-    expect(c.weapon.name).toBe("Greataxe");
-    expect(c.ac).toBe(16);
+    expect(c.weapon.name).toBe("Longsword");
+    expect(c.ac).toBe(18);
   });
 
-  it("Rogue: leather (11) + full DEX mod", () => {
+  it("Rogue: inventory leather (11) + full DEX mod", () => {
     const c = companionToCombatant(
       archetypeCharacter("Rogue", {
         features: ["Sneak Attack"],
@@ -377,9 +377,10 @@ describe("companionToCombatant armor", () => {
       0,
     );
     expect(c.ac).toBe(14);
+    expect(c.weapon.name).toBe("Rapier");
   });
 
-  it("Cleric: chain shirt + DEX capped at +2 + shield", () => {
+  it("Cleric: inventory scale mail + DEX capped at +2 + shield from item grant", () => {
     const c = companionToCombatant(
       archetypeCharacter("Cleric", {
         features: ["Disciple of Life"],
@@ -387,10 +388,11 @@ describe("companionToCombatant armor", () => {
       }),
       0,
     );
-    expect(c.ac).toBe(17);
+    expect(c.ac).toBe(18);
+    expect(c.weapon.name).toBe("Mace");
   });
 
-  it("Barbarian: Unarmored Defense unchanged (no fallback armor)", () => {
+  it("Barbarian: Unarmored Defense unchanged (ignores armor slot)", () => {
     const c = companionToCombatant(
       archetypeCharacter("Barbarian", {
         features: ["Rage"],
@@ -401,7 +403,7 @@ describe("companionToCombatant armor", () => {
     expect(c.ac).toBe(14);
   });
 
-  it("Wizard: plain 10 + DEX (no armor proficiency)", () => {
+  it("Wizard: 10 + DEX when inventory has no armor", () => {
     const c = companionToCombatant(
       wizardCharacter([{ id: "1", name: "Fire Bolt", archetype: "Wizard" }]),
       0,

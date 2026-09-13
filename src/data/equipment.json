@@ -1,0 +1,286 @@
+{
+  "_source_notes": {
+    "source": "SRD 5.1 Weapons table and Armor table, transcribed in full.",
+    "conventions": [
+      "cost and weight are kept as literal strings matching the SRD table's own units (sp/gp/cp, lb.) rather than converted to a single numeric unit.",
+      "damage is split into count/sides/type for weapons, matching the convention already used in weapons.json.",
+      "properties are the raw SRD property strings for each weapon, including any range or versatile-damage annotation exactly as printed.",
+      "armor AC is given both as the literal SRD string and as structured fields (base, dexCap) for code use: dexCap is null for light armor (full Dex, uncapped), 2 for medium armor, and 0 for heavy armor (no Dex at all).",
+      "strengthRequirement is null unless the SRD lists a minimum Strength score. stealthDisadvantage is true only where the table marks Disadvantage."
+    ]
+  },
+
+  "weapons": {
+    "simple_melee": {
+      "club": {
+        "name": "Club", "cost": "1 sp",
+        "damage": { "count": 1, "sides": 4, "type": "bludgeoning" },
+        "weight": "2 lb.", "properties": ["Light"]
+      },
+      "dagger": {
+        "name": "Dagger", "cost": "2 gp",
+        "damage": { "count": 1, "sides": 4, "type": "piercing" },
+        "weight": "1 lb.", "properties": ["Finesse", "Light", "Thrown (range 20/60)"]
+      },
+      "greatclub": {
+        "name": "Greatclub", "cost": "2 sp",
+        "damage": { "count": 1, "sides": 8, "type": "bludgeoning" },
+        "weight": "10 lb.", "properties": ["Two-handed"]
+      },
+      "handaxe": {
+        "name": "Handaxe", "cost": "5 gp",
+        "damage": { "count": 1, "sides": 6, "type": "slashing" },
+        "weight": "2 lb.", "properties": ["Light", "Thrown (range 20/60)"]
+      },
+      "javelin": {
+        "name": "Javelin", "cost": "5 sp",
+        "damage": { "count": 1, "sides": 6, "type": "piercing" },
+        "weight": "2 lb.", "properties": ["Thrown (range 30/120)"]
+      },
+      "light_hammer": {
+        "name": "Light hammer", "cost": "2 gp",
+        "damage": { "count": 1, "sides": 4, "type": "bludgeoning" },
+        "weight": "2 lb.", "properties": ["Light", "Thrown (range 20/60)"]
+      },
+      "mace": {
+        "name": "Mace", "cost": "5 gp",
+        "damage": { "count": 1, "sides": 6, "type": "bludgeoning" },
+        "weight": "4 lb.", "properties": []
+      },
+      "quarterstaff": {
+        "name": "Quarterstaff", "cost": "2 sp",
+        "damage": { "count": 1, "sides": 6, "type": "bludgeoning" },
+        "weight": "4 lb.", "properties": ["Versatile (1d8)"]
+      },
+      "sickle": {
+        "name": "Sickle", "cost": "1 gp",
+        "damage": { "count": 1, "sides": 4, "type": "slashing" },
+        "weight": "2 lb.", "properties": ["Light"]
+      },
+      "spear": {
+        "name": "Spear", "cost": "1 gp",
+        "damage": { "count": 1, "sides": 6, "type": "piercing" },
+        "weight": "3 lb.", "properties": ["Thrown (range 20/60)", "Versatile (1d8)"]
+      }
+    },
+
+    "simple_ranged": {
+      "crossbow_light": {
+        "name": "Crossbow, light", "cost": "25 gp",
+        "damage": { "count": 1, "sides": 8, "type": "piercing" },
+        "weight": "5 lb.", "properties": ["Ammunition (range 80/320)", "Loading", "Two-handed"]
+      },
+      "dart": {
+        "name": "Dart", "cost": "5 cp",
+        "damage": { "count": 1, "sides": 4, "type": "piercing" },
+        "weight": "1/4 lb.", "properties": ["Finesse", "Thrown (range 20/60)"]
+      },
+      "shortbow": {
+        "name": "Shortbow", "cost": "25 gp",
+        "damage": { "count": 1, "sides": 6, "type": "piercing" },
+        "weight": "2 lb.", "properties": ["Ammunition (range 80/320)", "Two-handed"]
+      },
+      "sling": {
+        "name": "Sling", "cost": "1 sp",
+        "damage": { "count": 1, "sides": 4, "type": "bludgeoning" },
+        "weight": "—", "properties": ["Ammunition (range 30/120)"]
+      }
+    },
+
+    "martial_melee": {
+      "battleaxe": {
+        "name": "Battleaxe", "cost": "10 gp",
+        "damage": { "count": 1, "sides": 8, "type": "slashing" },
+        "weight": "4 lb.", "properties": ["Versatile (1d10)"]
+      },
+      "flail": {
+        "name": "Flail", "cost": "10 gp",
+        "damage": { "count": 1, "sides": 8, "type": "bludgeoning" },
+        "weight": "2 lb.", "properties": []
+      },
+      "glaive": {
+        "name": "Glaive", "cost": "20 gp",
+        "damage": { "count": 1, "sides": 10, "type": "slashing" },
+        "weight": "6 lb.", "properties": ["Heavy", "Reach", "Two-handed"]
+      },
+      "greataxe": {
+        "name": "Greataxe", "cost": "30 gp",
+        "damage": { "count": 1, "sides": 12, "type": "slashing" },
+        "weight": "7 lb.", "properties": ["Heavy", "Two-handed"]
+      },
+      "greatsword": {
+        "name": "Greatsword", "cost": "50 gp",
+        "damage": { "count": 2, "sides": 6, "type": "slashing" },
+        "weight": "6 lb.", "properties": ["Heavy", "Two-handed"]
+      },
+      "halberd": {
+        "name": "Halberd", "cost": "20 gp",
+        "damage": { "count": 1, "sides": 10, "type": "slashing" },
+        "weight": "6 lb.", "properties": ["Heavy", "Reach", "Two-handed"]
+      },
+      "lance": {
+        "name": "Lance", "cost": "10 gp",
+        "damage": { "count": 1, "sides": 12, "type": "piercing" },
+        "weight": "6 lb.", "properties": ["Reach", "Special"]
+      },
+      "longsword": {
+        "name": "Longsword", "cost": "15 gp",
+        "damage": { "count": 1, "sides": 8, "type": "slashing" },
+        "weight": "3 lb.", "properties": ["Versatile (1d10)"]
+      },
+      "maul": {
+        "name": "Maul", "cost": "10 gp",
+        "damage": { "count": 2, "sides": 6, "type": "bludgeoning" },
+        "weight": "10 lb.", "properties": ["Heavy", "Two-handed"]
+      },
+      "morningstar": {
+        "name": "Morningstar", "cost": "15 gp",
+        "damage": { "count": 1, "sides": 8, "type": "piercing" },
+        "weight": "4 lb.", "properties": []
+      },
+      "pike": {
+        "name": "Pike", "cost": "5 gp",
+        "damage": { "count": 1, "sides": 10, "type": "piercing" },
+        "weight": "18 lb.", "properties": ["Heavy", "Reach", "Two-handed"]
+      },
+      "rapier": {
+        "name": "Rapier", "cost": "25 gp",
+        "damage": { "count": 1, "sides": 8, "type": "piercing" },
+        "weight": "2 lb.", "properties": ["Finesse"]
+      },
+      "scimitar": {
+        "name": "Scimitar", "cost": "25 gp",
+        "damage": { "count": 1, "sides": 6, "type": "slashing" },
+        "weight": "3 lb.", "properties": ["Finesse", "Light"]
+      },
+      "shortsword": {
+        "name": "Shortsword", "cost": "10 gp",
+        "damage": { "count": 1, "sides": 6, "type": "piercing" },
+        "weight": "2 lb.", "properties": ["Finesse", "Light"]
+      },
+      "trident": {
+        "name": "Trident", "cost": "5 gp",
+        "damage": { "count": 1, "sides": 6, "type": "piercing" },
+        "weight": "4 lb.", "properties": ["Thrown (range 20/60)", "Versatile (1d8)"]
+      },
+      "war_pick": {
+        "name": "War pick", "cost": "5 gp",
+        "damage": { "count": 1, "sides": 8, "type": "piercing" },
+        "weight": "2 lb.", "properties": []
+      },
+      "warhammer": {
+        "name": "Warhammer", "cost": "15 gp",
+        "damage": { "count": 1, "sides": 8, "type": "bludgeoning" },
+        "weight": "2 lb.", "properties": ["Versatile (1d10)"]
+      },
+      "whip": {
+        "name": "Whip", "cost": "2 gp",
+        "damage": { "count": 1, "sides": 4, "type": "slashing" },
+        "weight": "3 lb.", "properties": ["Finesse", "Reach"]
+      }
+    },
+
+    "martial_ranged": {
+      "blowgun": {
+        "name": "Blowgun", "cost": "10 gp",
+        "damage": { "count": 1, "sides": 1, "type": "piercing" },
+        "weight": "1 lb.", "properties": ["Ammunition (range 25/100)", "Loading"]
+      },
+      "crossbow_hand": {
+        "name": "Crossbow, hand", "cost": "75 gp",
+        "damage": { "count": 1, "sides": 6, "type": "piercing" },
+        "weight": "3 lb.", "properties": ["Ammunition (range 30/120)", "Light", "Loading"]
+      },
+      "crossbow_heavy": {
+        "name": "Crossbow, heavy", "cost": "50 gp",
+        "damage": { "count": 1, "sides": 10, "type": "piercing" },
+        "weight": "18 lb.", "properties": ["Ammunition (range 100/400)", "Heavy", "Loading", "Two-handed"]
+      },
+      "longbow": {
+        "name": "Longbow", "cost": "50 gp",
+        "damage": { "count": 1, "sides": 8, "type": "piercing" },
+        "weight": "2 lb.", "properties": ["Ammunition (range 150/600)", "Heavy", "Two-handed"]
+      },
+      "net": {
+        "name": "Net", "cost": "1 gp",
+        "damage": null,
+        "weight": "3 lb.", "properties": ["Special", "Thrown (range 5/15)"]
+      }
+    }
+  },
+
+  "armor": {
+    "light": {
+      "padded": {
+        "name": "Padded", "cost": "5 gp",
+        "ac": "11 + Dex modifier", "acStructured": { "base": 11, "dexCap": null },
+        "strengthRequirement": null, "stealthDisadvantage": true, "weight": "8 lb."
+      },
+      "leather": {
+        "name": "Leather", "cost": "10 gp",
+        "ac": "11 + Dex modifier", "acStructured": { "base": 11, "dexCap": null },
+        "strengthRequirement": null, "stealthDisadvantage": false, "weight": "10 lb."
+      },
+      "studded_leather": {
+        "name": "Studded leather", "cost": "45 gp",
+        "ac": "12 + Dex modifier", "acStructured": { "base": 12, "dexCap": null },
+        "strengthRequirement": null, "stealthDisadvantage": false, "weight": "13 lb."
+      }
+    },
+    "medium": {
+      "hide": {
+        "name": "Hide", "cost": "10 gp",
+        "ac": "12 + Dex modifier (max 2)", "acStructured": { "base": 12, "dexCap": 2 },
+        "strengthRequirement": null, "stealthDisadvantage": false, "weight": "12 lb."
+      },
+      "chain_shirt": {
+        "name": "Chain shirt", "cost": "50 gp",
+        "ac": "13 + Dex modifier (max 2)", "acStructured": { "base": 13, "dexCap": 2 },
+        "strengthRequirement": null, "stealthDisadvantage": false, "weight": "20 lb."
+      },
+      "scale_mail": {
+        "name": "Scale mail", "cost": "50 gp",
+        "ac": "14 + Dex modifier (max 2)", "acStructured": { "base": 14, "dexCap": 2 },
+        "strengthRequirement": null, "stealthDisadvantage": true, "weight": "45 lb."
+      },
+      "breastplate": {
+        "name": "Breastplate", "cost": "400 gp",
+        "ac": "14 + Dex modifier (max 2)", "acStructured": { "base": 14, "dexCap": 2 },
+        "strengthRequirement": null, "stealthDisadvantage": false, "weight": "20 lb."
+      },
+      "half_plate": {
+        "name": "Half plate", "cost": "750 gp",
+        "ac": "15 + Dex modifier (max 2)", "acStructured": { "base": 15, "dexCap": 2 },
+        "strengthRequirement": null, "stealthDisadvantage": true, "weight": "40 lb."
+      }
+    },
+    "heavy": {
+      "ring_mail": {
+        "name": "Ring mail", "cost": "30 gp",
+        "ac": "14", "acStructured": { "base": 14, "dexCap": 0 },
+        "strengthRequirement": null, "stealthDisadvantage": true, "weight": "40 lb."
+      },
+      "chain_mail": {
+        "name": "Chain mail", "cost": "75 gp",
+        "ac": "16", "acStructured": { "base": 16, "dexCap": 0 },
+        "strengthRequirement": 13, "stealthDisadvantage": true, "weight": "55 lb."
+      },
+      "splint": {
+        "name": "Splint", "cost": "200 gp",
+        "ac": "17", "acStructured": { "base": 17, "dexCap": 0 },
+        "strengthRequirement": 15, "stealthDisadvantage": true, "weight": "60 lb."
+      },
+      "plate": {
+        "name": "Plate", "cost": "1,500 gp",
+        "ac": "18", "acStructured": { "base": 18, "dexCap": 0 },
+        "strengthRequirement": 15, "stealthDisadvantage": true, "weight": "65 lb."
+      }
+    },
+    "shield": {
+      "shield": {
+        "name": "Shield", "cost": "10 gp",
+        "acBonus": 2, "weight": "6 lb."
+      }
+    }
+  }
+}

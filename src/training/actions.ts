@@ -2,6 +2,7 @@ import type { Catalog } from "./catalog";
 import { skillById } from "./catalog";
 import { assignAbilityScores } from "./abilities";
 import { asFeatureList, featureLabel, hasSkill, prereqMet } from "./features";
+import { ensureCharacterEquipment } from "@/sim/loadout";
 import {
   cantripRoomForArchetype,
   cantripsForArchetype,
@@ -298,6 +299,8 @@ function completeJob(catalog: Catalog, ch: Character, ui: TrainingUi): ActionRes
       };
       const label = featureLabel(skill.feature);
       toast = job.detail ? `Learned ${label}: ${job.detail}.` : `Learned ${label}.`;
+      // Outfitter: fill empty slots from primary archetype as soon as they have one.
+      nextCh = ensureCharacterEquipment(nextCh);
       if (nextCh.features.length >= 2) {
         const assigned = assignAbilityScores(catalog, nextCh);
         if (assigned.abilityScoresAssigned && !ch.abilityScoresAssigned) {

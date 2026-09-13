@@ -1,3 +1,4 @@
+import { emptyEquipment } from "@/sim/loadout";
 import type { Catalog } from "./catalog";
 import { alignmentById, raceById } from "./catalog";
 import { baseAbilityScores } from "./abilities";
@@ -44,6 +45,7 @@ export function createEmptyCompanion(
     activeJob: null,
     xp: 0,
     hp: null,
+    equipment: emptyEquipment(),
   };
   return ensureUnlocked(companion);
 }

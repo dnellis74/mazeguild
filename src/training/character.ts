@@ -2,6 +2,7 @@ import type { Character } from "@/training/types";
 import type { Catalog } from "./catalog";
 import { baseAbilityScores } from "./abilities";
 import { normalizeEarnedFeatures } from "./features";
+import { ensureCharacterEquipment, normalizeEquipment } from "@/sim/loadout";
 import type { Ability } from "./types";
 import { ABILITY_ORDER } from "./types";
 import { ensureUnlocked } from "./world";
@@ -53,6 +54,7 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
         : ch.hp === null
           ? null
           : undefined,
+    equipment: normalizeEquipment(ch.equipment),
   };
 
   if (!next.abilityScoresAssigned || !next.abilityScores) {
@@ -72,6 +74,8 @@ export function migrateCharacter(catalog: Catalog, raw: unknown): Character {
 
   next = ensureUnlocked(next);
   next = normalizeEarnedFeatures(catalog, next);
+  // Repair empty slots for companions who already earned an archetype.
+  next = ensureCharacterEquipment(next);
   return next;
 }
 

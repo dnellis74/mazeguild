@@ -1,0 +1,433 @@
+{
+  "_source_notes": {
+    "source": "SRD 5.1 class Equipment sections and Equipment Packs section.",
+    "structure": "packs are defined once and referenced by id from each class. Each class's equipment is a list of choice groups (the SRD's lettered a/b/c options) plus a separate list of fixed, non-choice grants. Nothing is pre-resolved to a single answer.",
+    "option_shapes": [
+      "{ \"weaponId\": \"...\" } \u2014 a specific weapon that exists in weapons.json",
+      "{ \"armorId\": \"...\" } \u2014 a specific armor that exists in the armor data",
+      "{ \"packId\": \"...\" } \u2014 references an entry in the top-level packs object",
+      "{ \"item\": \"...\" } \u2014 a specific named item with no id yet in weapons.json/armor data (see gap list below)",
+      "{ \"category\": \"...\" } \u2014 a generic SRD category (\"any simple weapon\", etc.) with no single resolved answer; the SRD leaves this to the player"
+    ],
+    "data_gaps": [
+      "Named items referenced below with no matching id in weapons.json: warhammer, quarterstaff, javelin, handaxe, light crossbow, shortbow, wooden shield (distinct from the armor system's generic shield). Add these before any code tries to resolve a menu choice into an equipped item."
+    ]
+  },
+
+  "packs": {
+    "burglars": {
+      "name": "Burglar's Pack",
+      "cost": "16 gp",
+      "contents": [
+        "Backpack", "Bag of 1,000 ball bearings", "10 feet of string",
+        "A bell", "5 candles", "A crowbar", "A hammer", "10 pitons",
+        "A hooded lantern", "2 flasks of oil", "5 days of rations",
+        "A tinderbox", "Waterskin", "50 feet of hempen rope"
+      ]
+    },
+    "diplomats": {
+      "name": "Diplomat's Pack",
+      "cost": "39 gp",
+      "contents": [
+        "Chest", "2 cases for maps and scrolls", "A set of fine clothes",
+        "A bottle of ink", "An ink pen", "A lamp", "2 flasks of oil",
+        "5 sheets of paper", "A vial of perfume", "Sealing wax", "Soap"
+      ]
+    },
+    "dungeoneers": {
+      "name": "Dungeoneer's Pack",
+      "cost": "12 gp",
+      "contents": [
+        "Backpack", "A crowbar", "A hammer", "10 pitons", "10 torches",
+        "A tinderbox", "10 days of rations", "Waterskin", "50 feet of hempen rope"
+      ]
+    },
+    "entertainers": {
+      "name": "Entertainer's Pack",
+      "cost": "40 gp",
+      "contents": [
+        "Backpack", "A bedroll", "2 costumes", "5 candles",
+        "5 days of rations", "Waterskin", "A disguise kit"
+      ]
+    },
+    "explorers": {
+      "name": "Explorer's Pack",
+      "cost": "10 gp",
+      "contents": [
+        "Backpack", "A bedroll", "A mess kit", "A tinderbox", "10 torches",
+        "10 days of rations", "Waterskin", "50 feet of hempen rope"
+      ]
+    },
+    "priests": {
+      "name": "Priest's Pack",
+      "cost": "19 gp",
+      "contents": [
+        "Backpack", "A blanket", "10 candles", "A tinderbox", "An alms box",
+        "2 blocks of incense", "A censer", "Vestments", "2 days of rations",
+        "Waterskin"
+      ]
+    },
+    "scholars": {
+      "name": "Scholar's Pack",
+      "cost": "40 gp",
+      "contents": [
+        "Backpack", "A book of lore", "A bottle of ink", "An ink pen",
+        "10 sheets of parchment", "A little bag of sand", "A small knife"
+      ]
+    }
+  },
+
+  "classes": {
+    "Barbarian": {
+      "choices": [
+        {
+          "id": "primaryWeapon",
+          "options": [
+            { "weaponId": "greataxe" },
+            { "category": "any martial melee weapon" }
+          ]
+        },
+        {
+          "id": "secondaryWeapon",
+          "options": [
+            { "item": "Two handaxes" },
+            { "category": "any simple weapon" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "packId": "explorers" },
+        { "item": "Four javelins" }
+      ]
+    },
+
+    "Bard": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "weaponId": "rapier" },
+            { "weaponId": "longsword" },
+            { "category": "any simple weapon" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "diplomats" },
+            { "packId": "entertainers" }
+          ]
+        },
+        {
+          "id": "instrument",
+          "options": [
+            { "item": "Lute" },
+            { "category": "any other musical instrument" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "armorId": "leather" },
+        { "weaponId": "dagger" }
+      ]
+    },
+
+    "Cleric": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "weaponId": "mace" },
+            { "item": "Warhammer" }
+          ]
+        },
+        {
+          "id": "armor",
+          "options": [
+            { "armorId": "scale mail" },
+            { "armorId": "leather" },
+            { "armorId": "chain mail" }
+          ]
+        },
+        {
+          "id": "rangedOrSimple",
+          "options": [
+            { "item": "Light crossbow and 20 bolts" },
+            { "category": "any simple weapon" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "priests" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "item": "Shield" },
+        { "item": "Holy symbol" }
+      ]
+    },
+
+    "Druid": {
+      "choices": [
+        {
+          "id": "shieldOrWeapon",
+          "options": [
+            { "item": "Wooden shield" },
+            { "category": "any simple weapon" }
+          ]
+        },
+        {
+          "id": "weapon",
+          "options": [
+            { "weaponId": "scimitar" },
+            { "category": "any simple melee weapon" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "armorId": "leather" },
+        { "packId": "explorers" },
+        { "item": "Druidic focus" }
+      ]
+    },
+
+    "Fighter": {
+      "choices": [
+        {
+          "id": "armor",
+          "options": [
+            { "armorId": "chain mail" },
+            { "item": "Leather armor, longbow, and 20 arrows", "bundles": [{ "armorId": "leather" }, { "item": "Longbow" }, { "item": "20 arrows" }] }
+          ]
+        },
+        {
+          "id": "weaponAndShield",
+          "options": [
+            { "category": "a martial weapon", "withShield": true },
+            { "item": "Two martial weapons" }
+          ]
+        },
+        {
+          "id": "rangedOrThrown",
+          "options": [
+            { "item": "Light crossbow and 20 bolts" },
+            { "item": "Two handaxes" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "dungeoneers" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": []
+    },
+
+    "Monk": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "weaponId": "shortsword" },
+            { "category": "any simple weapon" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "dungeoneers" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "item": "10 darts" }
+      ]
+    },
+
+    "Paladin": {
+      "choices": [
+        {
+          "id": "weaponAndShield",
+          "options": [
+            { "category": "a martial weapon", "withShield": true },
+            { "item": "Two martial weapons" }
+          ]
+        },
+        {
+          "id": "secondaryWeapon",
+          "options": [
+            { "item": "Five javelins" },
+            { "category": "any simple melee weapon" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "priests" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "armorId": "chain mail" },
+        { "item": "Holy symbol" }
+      ]
+    },
+
+    "Ranger": {
+      "choices": [
+        {
+          "id": "armor",
+          "options": [
+            { "armorId": "scale mail" },
+            { "armorId": "leather" }
+          ]
+        },
+        {
+          "id": "weapons",
+          "options": [
+            { "item": "Two shortswords", "bundles": [{ "weaponId": "shortsword" }, { "weaponId": "shortsword" }] },
+            { "category": "two simple melee weapons" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "dungeoneers" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "item": "Longbow and a quiver of 20 arrows" }
+      ]
+    },
+
+    "Rogue": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "weaponId": "rapier" },
+            { "weaponId": "shortsword" }
+          ]
+        },
+        {
+          "id": "secondaryWeapon",
+          "options": [
+            { "item": "Shortbow and a quiver of 20 arrows" },
+            { "weaponId": "shortsword" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "burglars" },
+            { "packId": "dungeoneers" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "armorId": "leather" },
+        { "item": "Two daggers" },
+        { "item": "Thieves' tools" }
+      ]
+    },
+
+    "Sorcerer": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "item": "Light crossbow and 20 bolts" },
+            { "category": "any simple weapon" }
+          ]
+        },
+        {
+          "id": "focus",
+          "options": [
+            { "item": "Component pouch" },
+            { "item": "Arcane focus" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "dungeoneers" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "item": "Two daggers" }
+      ]
+    },
+
+    "Warlock": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "item": "Light crossbow and 20 bolts" },
+            { "category": "any simple weapon" }
+          ]
+        },
+        {
+          "id": "focus",
+          "options": [
+            { "item": "Component pouch" },
+            { "item": "Arcane focus" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "scholars" },
+            { "packId": "dungeoneers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "armorId": "leather" },
+        { "category": "any simple weapon" },
+        { "item": "Two daggers" }
+      ]
+    },
+
+    "Wizard": {
+      "choices": [
+        {
+          "id": "weapon",
+          "options": [
+            { "item": "Quarterstaff" },
+            { "weaponId": "dagger" }
+          ]
+        },
+        {
+          "id": "focus",
+          "options": [
+            { "item": "Component pouch" },
+            { "item": "Arcane focus" }
+          ]
+        },
+        {
+          "id": "pack",
+          "options": [
+            { "packId": "scholars" },
+            { "packId": "explorers" }
+          ]
+        }
+      ],
+      "fixed": [
+        { "item": "Spellbook" }
+      ]
+    }
+  }
+}
