@@ -235,6 +235,7 @@
       "name": "Produce Flame",
       "description": "Conjure a harmless flickering flame in your hand that sheds light for up to 10 minutes, or hurl it at a creature within 30 feet as a ranged spell attack for 1d8 fire damage, ending the spell.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -286,6 +287,7 @@
       "name": "Chill Touch",
       "description": "Make a ranged spell attack with a ghostly skeletal hand; on a hit the target takes 1d8 necrotic damage and can't regain hit points until your next turn, and an undead target also has disadvantage on attacks against you.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -310,6 +312,7 @@
       "name": "Fire Bolt",
       "description": "Make a ranged spell attack, hurling a mote of fire; on a hit the target takes 1d10 fire damage and flammable objects ignite, with the damage increasing at higher character levels.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 10,
@@ -401,6 +404,7 @@
       "name": "Ray of Frost",
       "description": "Make a ranged spell attack with a frigid beam of light; on a hit the target takes 1d8 cold damage and its speed is reduced by 10 feet until your next turn.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -415,6 +419,7 @@
       "name": "Shocking Grasp",
       "description": "Make a melee spell attack (with advantage if the target wears metal armor) that deals 1d8 lightning damage and prevents the target from taking reactions until its next turn.",
       "combatType": "attack",
+      "ranged": false,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -439,6 +444,7 @@
       "name": "Chill Touch",
       "description": "Make a ranged spell attack with a ghostly skeletal hand; on a hit the target takes 1d8 necrotic damage and can't regain hit points until your next turn, and an undead target also has disadvantage on attacks against you.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -453,6 +459,7 @@
       "name": "Eldritch Blast",
       "description": "Make a ranged spell attack with a beam of crackling force; on a hit the target takes 1d10 force damage, with additional beams at higher character levels.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 10,
@@ -541,6 +548,7 @@
       "name": "Chill Touch",
       "description": "Make a ranged spell attack with a ghostly skeletal hand; on a hit the target takes 1d8 necrotic damage and can't regain hit points until your next turn, and an undead target also has disadvantage on attacks against you.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -565,6 +573,7 @@
       "name": "Fire Bolt",
       "description": "Make a ranged spell attack, hurling a mote of fire; on a hit the target takes 1d10 fire damage and flammable objects ignite, with the damage increasing at higher character levels.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 10,
@@ -656,6 +665,7 @@
       "name": "Ray of Frost",
       "description": "Make a ranged spell attack with a frigid beam of light; on a hit the target takes 1d8 cold damage and its speed is reduced by 10 feet until your next turn.",
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -670,6 +680,7 @@
       "name": "Shocking Grasp",
       "description": "Make a melee spell attack (with advantage if the target wears metal armor) that deals 1d8 lightning damage and prevents the target from taking reactions until its next turn.",
       "combatType": "attack",
+      "ranged": false,
       "damage": {
         "count": 1,
         "sides": 8,

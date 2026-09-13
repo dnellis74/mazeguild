@@ -47,6 +47,7 @@ export function resolveAdvantageMode(
 
 /**
  * Attack-roll advantage sources:
+ * - unconscious defender → advantage (SRD; persists until woken/expiry)
  * - blinded defender → advantage (persists until expiry)
  * - guided defender → advantage (consumed on the next attack roll; see resolveAttack)
  * - blinded attacker → disadvantage
@@ -56,9 +57,32 @@ export function attackRollMode(
   defender: Combatant,
 ): AdvantageMode {
   const adv =
-    hasCondition(defender, "blinded") || hasCondition(defender, "guided");
+    hasCondition(defender, "unconscious") ||
+    hasCondition(defender, "blinded") ||
+    hasCondition(defender, "guided");
   const disadv = hasCondition(attacker, "blinded");
   return resolveAdvantageMode(adv, disadv);
+}
+
+/**
+ * Shared melee check for unconscious auto-crit (and anything else that needs
+ * "within 5 feet" melee vs ranged). Weapons use `weapon.ranged`; attack
+ * cantrips/spells use the same `ranged` boolean on their catalog entry.
+ * Missing `ranged` on a spell attack defaults to ranged (no auto-crit).
+ */
+export function isMeleeAttack(
+  attacker: Combatant,
+  opts?: {
+    useSpellAttack?: boolean;
+    leveled?: { ranged?: boolean } | null;
+    cantrip?: { ranged?: boolean } | null;
+  },
+): boolean {
+  if (opts?.useSpellAttack) {
+    const entry = opts.leveled ?? opts.cantrip;
+    return entry?.ranged === false;
+  }
+  return !attacker.weapon.ranged;
 }
 
 /**
@@ -275,7 +299,10 @@ export function hasCondition(c: Combatant, name: ConditionName): boolean {
  * SRD 5.1 attack: d20 + ability mod + proficiency vs AC.
  * Natural 20 always hits and doubles weapon/cantrip/spell dice. Natural 1 always misses.
  * Halfling Lucky rerolls a natural 1 on the kept d20 (once).
- * Advantage/disadvantage: blinded (duration) + guided (consume-on-use) — see attackRollMode.
+ * Advantage/disadvantage: unconscious + blinded (duration) + guided
+ * (consume-on-use) — see attackRollMode.
+ * Unconscious: any hit from a melee attack (weapon, Shocking Grasp, Inflict
+ * Wounds) is a critical; ranged weapons / ranged spell attacks get advantage only.
  * Roll modifiers (e.g. Bless): after d20, each applicable die in array order.
  *
  * With opts.spellAttack (leveled) or an assigned attack cantrip: spell attack
@@ -283,7 +310,8 @@ export function hasCondition(c: Combatant, name: ConditionName): boolean {
  * Weapon attacks: existing STR/DEX path; Sneak Attack only on finesse or ranged weapons.
  *
  * Guided: if the defender has guided when this attack roll is made, it grants
- * advantage for this roll and is then cleared (next-attack only). Blinded is not consumed.
+ * advantage for this roll and is then cleared (next-attack only). Blinded /
+ * unconscious are not consumed by the attack roll.
  */
 export function resolveAttack(
   rng: Rng,
@@ -312,7 +340,7 @@ export function resolveAttack(
       ? cantrip!.damage!
       : null;
 
-  // Consume guided on the attack roll (hit or miss); blinded persists.
+  // Consume guided on the attack roll (hit or miss); blinded/unconscious persist.
   const guided = hasCondition(defender, "guided");
   const mode = attackRollMode(attacker, defender);
   if (guided) clearCondition(defender);
@@ -328,10 +356,20 @@ export function resolveAttack(
   const archeryBonus =
     !useSpellAttack && attacker.archery && attacker.weapon.ranged ? 2 : 0;
   const total = d20 + bonus + modBonus + archeryBonus;
-  const crit = d20 === 20;
+  const nat20 = d20 === 20;
   const nat1 = d20 === 1;
   const ac = defender.ac + (defender.tempAcBonus || 0);
-  const hit = crit || (!nat1 && total >= ac);
+  const hit = nat20 || (!nat1 && total >= ac);
+  // SRD: hit vs unconscious from within 5 ft (melee) is a critical.
+  const unconsciousMeleeCrit =
+    hit &&
+    hasCondition(defender, "unconscious") &&
+    isMeleeAttack(attacker, {
+      useSpellAttack,
+      leveled: useLeveled ? leveled : null,
+      cantrip: useCantrip ? cantrip : null,
+    });
+  const crit = nat20 || unconsciousMeleeCrit;
 
   if (!hit) {
     return {

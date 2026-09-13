@@ -760,6 +760,179 @@ describe("advantage / disadvantage", () => {
   });
 });
 
+describe("unconscious attack rules", () => {
+  function seqRng(values: number[]): () => number {
+    let i = 0;
+    return () => (i < values.length ? values[i++]! : 0.5);
+  }
+
+  const SHORTBOW: Weapon = {
+    name: "Shortbow",
+    damage: { count: 1, sides: 6 },
+    damageType: "piercing",
+    properties: ["ammunition"],
+    finesse: false,
+    ranged: true,
+  };
+
+  it("attackRollMode reports advantage vs an unconscious target", () => {
+    const attacker = basePc({ cantrip: undefined });
+    const target = foe(15);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    expect(attackRollMode(attacker, target)).toBe("advantage");
+  });
+
+  it("a melee hit vs unconscious is a crit even without a natural 20", () => {
+    const attacker = basePc({
+      cantrip: undefined,
+      weapon: CLUB,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 10, WIS: 10, CHA: 10 },
+    });
+    const target = foe(10);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    expect(attackRollMode(attacker, target)).toBe("advantage");
+    // Advantage: 3 then 15 → keep 15 (not nat 20). Bonus +2 → total 17 hits AC 10.
+    const result = resolveAttack(
+      seqRng([0.1, 0.7, 0.5, 0.5]),
+      attacker,
+      target,
+      0,
+    );
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(15);
+    expect(result.d20).not.toBe(20);
+    expect(result.hit).toBe(true);
+    expect(result.crit).toBe(true);
+  });
+
+  it("a ranged hit vs unconscious has advantage but does not auto-crit", () => {
+    const attacker = basePc({
+      cantrip: undefined,
+      weapon: SHORTBOW,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 10, WIS: 10, CHA: 10 },
+    });
+    const target = foe(10);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    expect(attackRollMode(attacker, target)).toBe("advantage");
+    const result = resolveAttack(
+      seqRng([0.1, 0.7, 0.5]),
+      attacker,
+      target,
+      0,
+    );
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(15);
+    expect(result.hit).toBe(true);
+    expect(result.crit).toBe(false);
+  });
+
+  it("a ranged spell attack vs unconscious has advantage but does not auto-crit", () => {
+    const attacker = basePc({
+      cantrip: undefined,
+      attackSpell: "Guiding Bolt",
+      spellMod: 3,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 10, WIS: 10, CHA: 10 },
+    });
+    const target = foe(10);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    expect(attackRollMode(attacker, target)).toBe("advantage");
+    // Advantage keep 15; spell attack bonus spellMod+prof = 5 → total 20.
+    const result = resolveAttack(
+      seqRng([0.1, 0.7, 0.5, 0.5, 0.5, 0.5]),
+      attacker,
+      target,
+      0,
+      { spellAttack: "Guiding Bolt" },
+    );
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(15);
+    expect(result.hit).toBe(true);
+    expect(result.crit).toBe(false);
+  });
+
+  it("Shocking Grasp (melee cantrip) vs unconscious auto-crits without a natural 20", () => {
+    const attacker = basePc({
+      cantrip: "Shocking Grasp",
+      spellMod: 3,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    const target = foe(10);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    expect(attackRollMode(attacker, target)).toBe("advantage");
+    const result = resolveAttack(
+      seqRng([0.1, 0.7, 0.5]),
+      attacker,
+      target,
+      0,
+    );
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(15);
+    expect(result.d20).not.toBe(20);
+    expect(result.hit).toBe(true);
+    expect(result.crit).toBe(true);
+  });
+
+  it.each([
+    ["Fire Bolt", 10],
+    ["Produce Flame", 8],
+    ["Eldritch Blast", 10],
+  ] as const)(
+    "%s (ranged cantrip) vs unconscious has advantage but does not auto-crit",
+    (name) => {
+      const attacker = basePc({
+        cantrip: name,
+        spellMod: 3,
+        abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+      });
+      const target = foe(10);
+      target.condition = { name: "unconscious", expiresRound: 99 };
+      expect(attackRollMode(attacker, target)).toBe("advantage");
+      const result = resolveAttack(
+        seqRng([0.1, 0.7, 0.5]),
+        attacker,
+        target,
+        0,
+      );
+      expect(result.advantageMode).toBe("advantage");
+      expect(result.d20).toBe(15);
+      expect(result.hit).toBe(true);
+      expect(result.crit).toBe(false);
+    },
+  );
+
+  it("a natural 1 vs unconscious still misses despite advantage", () => {
+    const attacker = basePc({
+      cantrip: undefined,
+      weapon: CLUB,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 10, WIS: 10, CHA: 10 },
+    });
+    const target = foe(5);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    expect(attackRollMode(attacker, target)).toBe("advantage");
+    // Both dice natural 1 → kept 1; automatic miss even vs AC 5 / unconscious.
+    const result = resolveAttack(seqRng([0, 0]), attacker, target, 0);
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(1);
+    expect(result.hit).toBe(false);
+    expect(result.crit).toBe(false);
+  });
+
+  it("a natural 1 Shocking Grasp vs unconscious still misses", () => {
+    const attacker = basePc({
+      cantrip: "Shocking Grasp",
+      spellMod: 5,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    const target = foe(5);
+    target.condition = { name: "unconscious", expiresRound: 99 };
+    const result = resolveAttack(seqRng([0, 0]), attacker, target, 0);
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(1);
+    expect(result.hit).toBe(false);
+    expect(result.crit).toBe(false);
+  });
+});
+
 describe("resolveHpPool (Color Spray)", () => {
   function seqRng(values: number[]): () => number {
     let i = 0;

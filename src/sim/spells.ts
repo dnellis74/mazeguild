@@ -28,6 +28,11 @@ export type SpellEntry = {
   description: string;
   archetypes: string[];
   combatType?: SpellCombatType;
+  /**
+   * Attack spells only: false = melee spell attack (e.g. Inflict Wounds),
+   * true = ranged spell attack (e.g. Guiding Bolt).
+   */
+  ranged?: boolean;
   damage?: SpellDamage | null;
   save?: { ability: string; onSuccess: string } | null;
   trigger?: ReactionTrigger;

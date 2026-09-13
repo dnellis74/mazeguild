@@ -378,12 +378,16 @@ describe("runCombat Sleep", () => {
       condition: { name: "unconscious", expiresRound: 99 },
     });
     const log: LogEvent[] = [];
-    // goblin wins init but is unconscious → no attack; wizard then hits and wakes
+    // goblin wins init but is unconscious → no attack; wizard then hits and wakes.
+    // Fire Bolt vs unconscious has advantage (two d20s); nat 20 still crits (ranged:
+    // no unconscious auto-crit). Crit Fire Bolt rolls 2 damage dice.
     const seq = [
       0, // wiz init low
       0.95, // gob init high
-      0.95, // wiz Fire Bolt attack (crit)
-      0.5, // damage die
+      0.95, // Fire Bolt d20 a → 20
+      0.1, // Fire Bolt d20 b (advantage)
+      0.9, // crit damage die 1
+      0.9, // crit damage die 2
     ];
     let i = 0;
     const rng = () => (i < seq.length ? seq[i++]! : 0.1);

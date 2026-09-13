@@ -404,6 +404,7 @@
         "Cleric"
       ],
       "combatType": "attack",
+      "ranged": true,
       "damage": {
         "count": 4,
         "sides": 6,
@@ -423,6 +424,7 @@
         "Cleric"
       ],
       "combatType": "attack",
+      "ranged": false,
       "damage": {
         "count": 3,
         "sides": 10,

@@ -14,6 +14,11 @@ export type CantripEntry = {
   name: string;
   description: string;
   combatType: CantripCombatType;
+  /**
+   * Attack cantrips only: false = melee spell attack (e.g. Shocking Grasp),
+   * true = ranged spell attack (e.g. Fire Bolt). Omitted on non-attack cantrips.
+   */
+  ranged?: boolean;
   damage: CantripDamage | null;
   save: { ability: string; onSuccess: string } | null;
   castingTime?: CantripCastingTime;

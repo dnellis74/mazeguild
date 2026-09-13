@@ -99,7 +99,7 @@ Crits are natural 20 and ignore AC — Shield cannot turn a crit into a miss.
 ### Advantage / disadvantage
 
 Full attack-roll spine in `rules.ts` (`rollD20`, `resolveAdvantageMode`, `attackRollMode`).  
-**Only blinded is wired today:** blinded attacker → disadvantage; attacks against blinded → advantage; both → cancel. Unconscious / prone / etc. are not sources yet.
+**Only blinded, guided, and unconscious defenders grant advantage today** (blinded attacker → disadvantage; both cancel). Unconscious also auto-crits melee hits — weapons with `ranged: false`, and attack cantrips/spells with catalog `ranged: false` (Shocking Grasp, Inflict Wounds). Ranged weapons / ranged spell attacks get advantage only.
 
 ### Damage traits
 
@@ -162,7 +162,7 @@ Any new roll must consume the rng in a fixed order or determinism breaks.
 | `weapons.ts` | `src/data/weapons.json` |
 | `encounterScaling.ts` | encounter tables under `src/data` / related |
 
-Combat classification fields on spells (`combatType`, `damage`, `save`, `pool`, `condition`, `trigger`, `effect`) drive which code path runs — paraphrased `description` text is not parsed.
+Combat classification fields on spells and cantrips (`combatType`, `damage`, `save`, `pool`, `condition`, `trigger`, `effect`, `ranged` on attack entries) drive which code path runs — paraphrased `description` text is not parsed.
 
 ## Tests
 
