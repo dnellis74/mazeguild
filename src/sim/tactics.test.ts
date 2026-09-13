@@ -187,6 +187,53 @@ describe("chooseAction", () => {
     });
   });
 
+  it("casts Burning Hands when ≥2 foes and no control spell", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      saveSpell: "Burning Hands",
+      spellSlots: 1,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "save",
+      ability: "Burning Hands",
+    });
+  });
+
+  it("does not cast Burning Hands against a single foe", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      saveSpell: "Burning Hands",
+      spellSlots: 1,
+    });
+    expect(chooseAction(wizard, [wizard], [foes[0]!])).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Fire Bolt",
+    });
+  });
+
+  it("never casts Burning Hands with 0 spell slots", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      saveSpell: "Burning Hands",
+      spellSlots: 0,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Fire Bolt",
+    });
+  });
+
   it("does not cast Sleep against a single foe", () => {
     const wizard = combatant({
       id: "wiz",

@@ -71,6 +71,18 @@ export function isCombatControlSpell(name: string): boolean {
   );
 }
 
+/** AoE save spells (Burning Hands, Thunderwave) — half damage on success. */
+export function isCombatSaveSpell(name: string): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "save" &&
+    !!row.damage &&
+    row.save?.onSuccess === "half" &&
+    (row.name === "Burning Hands" || row.name === "Thunderwave")
+  );
+}
+
 export function isReactionSpell(
   name: string,
   trigger: ReactionTrigger,
@@ -113,6 +125,22 @@ export function pickLearnedControlSpell(
   if (names.includes("Sleep")) return "Sleep";
   names.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   return names[0];
+}
+
+/**
+ * Pick a learned AoE save spell (Burning Hands / Thunderwave).
+ * Prefers Burning Hands (higher expected damage: 10.5 vs 9).
+ * Never invents an unlearned spell.
+ */
+export function pickLearnedSaveSpell(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ].filter(isCombatSaveSpell);
+  if (names.includes("Burning Hands")) return "Burning Hands";
+  if (names.includes("Thunderwave")) return "Thunderwave";
+  return undefined;
 }
 
 /**

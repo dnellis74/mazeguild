@@ -9,6 +9,8 @@ import {
   resolveAutoSpell,
   resolveCureWounds,
   resolveHpPool,
+  resolveSave,
+  rollSpellDamage,
   setCondition,
   type AttackResult,
 } from "./rules";
@@ -16,6 +18,7 @@ import {
   getSpell,
   isCombatAutoSpell,
   isCombatControlSpell,
+  isCombatSaveSpell,
 } from "./spells";
 import {
   chooseAction,
@@ -23,7 +26,7 @@ import {
   chooseBeforeDamageReaction,
   chooseEnemyAction,
 } from "./tactics";
-import type { Combatant, LogEvent } from "./types";
+import type { Ability, Combatant, LogEvent } from "./types";
 
 function allyCount(actor: Combatant, party: Combatant[]): number {
   return party.filter((p) => p.alive && p.id !== actor.id).length;
@@ -187,6 +190,56 @@ export function runCombat(
             pool,
             affected: affected.map((t) => t.name),
           });
+          continue;
+        }
+      }
+
+      // AoE save spells (Burning Hands / Thunderwave): one shared damage roll,
+      // each living foe saves independently. Foes only — no positional model.
+      if (
+        intent.type === "save" &&
+        actor.kind === "pc" &&
+        actor.saveSpell === intent.ability &&
+        actor.spellSlots > 0 &&
+        isCombatSaveSpell(intent.ability)
+      ) {
+        const spell = getSpell(intent.ability);
+        if (spell?.damage && spell.save) {
+          actor.spellSlots -= 1;
+          const damageFull = rollSpellDamage(rng, spell);
+          const saveAbility = spell.save.ability as Ability;
+          const onSuccess =
+            spell.save.onSuccess === "half" ? "half" : "none";
+          const pushOnFail = intent.ability === "Thunderwave";
+          const targets = foes.filter((f) => f.alive);
+          for (const target of targets) {
+            const result = resolveSave(rng, actor, target, {
+              ability: saveAbility,
+              onSuccess,
+              damageFull,
+              pushOnFail,
+            });
+            applyDamage(target, result.damage);
+            log.push({
+              event: "save",
+              round,
+              actor: actor.name,
+              target: target.name,
+              used: intent.ability,
+              dc: result.dc,
+              d20: result.d20,
+              total: result.total,
+              success: result.success,
+              damageFull: result.damageFull,
+              damage: result.damage,
+              targetHpAfter: target.hp,
+              pushed: result.pushed || undefined,
+            });
+            runAfterDamageReaction(target);
+            if (!target.alive) {
+              log.push({ event: "death", round, name: target.name });
+            }
+          }
           continue;
         }
       }

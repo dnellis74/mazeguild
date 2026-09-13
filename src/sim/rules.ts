@@ -260,6 +260,66 @@ export function resolveCureWounds(rng: Rng, healer: Combatant): number {
   );
 }
 
+/** Spell save DC: 8 + proficiency + spellcasting modifier. */
+export function spellSaveDC(caster: Combatant): number {
+  return 8 + caster.proficiencyBonus + caster.spellMod;
+}
+
+export type SaveResult = {
+  success: boolean;
+  d20: number;
+  total: number;
+  dc: number;
+  /** Damage applied after onSuccess handling. */
+  damage: number;
+  damageFull: number;
+  pushed: boolean;
+};
+
+/**
+ * Ability saving throw vs caster's spell save DC.
+ * Roll: d20 + ability modifier only (no save proficiency — Combatant has none).
+ * Shared damageFull is reduced to half (floor) or 0 on success per onSuccess.
+ */
+export function resolveSave(
+  rng: Rng,
+  caster: Combatant,
+  defender: Combatant,
+  opts: {
+    ability: Ability;
+    onSuccess: "half" | "none";
+    damageFull: number;
+    /** Thunderwave: push on a failed save (logged; no position model). */
+    pushOnFail?: boolean;
+  },
+): SaveResult {
+  const dc = spellSaveDC(caster);
+  const d20 = d(rng, 20);
+  const total = d20 + abilityMod(defender.abilities[opts.ability]);
+  const success = total >= dc;
+  let damage = opts.damageFull;
+  if (success) {
+    damage =
+      opts.onSuccess === "half" ? Math.floor(opts.damageFull / 2) : 0;
+  }
+  return {
+    success,
+    d20,
+    total,
+    dc,
+    damage,
+    damageFull: opts.damageFull,
+    pushed: !success && !!opts.pushOnFail,
+  };
+}
+
+/** Roll AoE spell damage once (shared across all targets in the blast). */
+export function rollSpellDamage(rng: Rng, spell: SpellEntry): number {
+  const die = spell.damage;
+  if (!die) return 0;
+  return dice(rng, die.count, die.sides);
+}
+
 export function applyDamage(target: Combatant, amount: number): void {
   target.hp = Math.max(0, target.hp - amount);
   // Sleep: taking any damage wakes the sleeper (SRD).

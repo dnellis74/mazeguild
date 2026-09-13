@@ -4,6 +4,7 @@ import {
   pickLearnedAutoSpell,
   pickLearnedControlSpell,
   pickLearnedReactionSpell,
+  pickLearnedSaveSpell,
 } from "./spells";
 import { abilityMod } from "./rules";
 import type { Rng } from "./rng";
@@ -174,6 +175,7 @@ export function companionToCombatant(
   const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
   const spell = pickLearnedAutoSpell(ch.spells);
   const controlSpell = pickLearnedControlSpell(ch.spells);
+  const saveSpell = pickLearnedSaveSpell(ch.spells);
   const reactionSpell = pickLearnedReactionSpell(ch.spells, "before_damage");
 
   return {
@@ -194,6 +196,7 @@ export function companionToCombatant(
     cantrip,
     spell,
     controlSpell,
+    saveSpell,
     reactionSpell,
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
     relentless:

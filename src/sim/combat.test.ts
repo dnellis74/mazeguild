@@ -424,3 +424,160 @@ describe("runCombat Color Spray", () => {
     expect(wizard.spellSlots).toBe(0);
   });
 });
+
+describe("runCombat Burning Hands / Thunderwave", () => {
+  it("uses one shared damage roll; full on fail, half on success", () => {
+    const wizard = pc({
+      id: "wiz",
+      saveSpell: "Burning Hands",
+      spellSlots: 1,
+      cantrip: "Fire Bolt",
+      spellMod: 3,
+      proficiencyBonus: 2,
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    // DC = 8+2+3 = 13; DEX +0 for all → d20 < 13 fail, >= 13 success
+    const a = goblin({
+      id: "a",
+      name: "A",
+      maxHp: 40,
+      hp: 40,
+      abilities: { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+    });
+    const b = goblin({
+      id: "b",
+      name: "B",
+      maxHp: 40,
+      hp: 40,
+      abilities: { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+    });
+    const c = goblin({
+      id: "c",
+      name: "C",
+      maxHp: 40,
+      hp: 40,
+      abilities: { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+    });
+    const log: LogEvent[] = [];
+    // wiz init; 3 foes init; 3d6 all 6 → 18; saves: fail(11), success(19), fail(5)
+    const seq = [
+      0.95, 0, 0, 0,
+      0.9, 0.9, 0.9, // damage
+      0.5, // A fail d20=11
+      0.9, // B success d20=19
+      0.2, // C fail d20=5
+    ];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [wizard], [a, b, c], log);
+
+    const saves = log.filter(
+      (e) => e.event === "save" && e.used === "Burning Hands",
+    );
+    expect(saves).toHaveLength(3);
+    expect(saves.every((e) => e.event === "save" && e.damageFull === 18)).toBe(
+      true,
+    );
+    const byName = Object.fromEntries(
+      saves
+        .filter((e) => e.event === "save")
+        .map((e) => [e.target, e]),
+    );
+    expect(byName.A).toMatchObject({
+      success: false,
+      damage: 18,
+      damageFull: 18,
+    });
+    expect(byName.B).toMatchObject({
+      success: true,
+      damage: 9,
+      damageFull: 18,
+    });
+    expect(byName.C).toMatchObject({
+      success: false,
+      damage: 18,
+      damageFull: 18,
+    });
+    expect(a.hp).toBe(22);
+    expect(b.hp).toBe(31);
+    expect(c.hp).toBe(22);
+    expect(wizard.spellSlots).toBe(0);
+  });
+
+  it("logs Thunderwave push on a failed save", () => {
+    const wizard = pc({
+      id: "wiz",
+      saveSpell: "Thunderwave",
+      spellSlots: 1,
+      cantrip: "Fire Bolt",
+      spellMod: 3,
+      proficiencyBonus: 2,
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    const a = goblin({
+      id: "a",
+      name: "A",
+      maxHp: 40,
+      hp: 40,
+      abilities: { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+    });
+    const b = goblin({
+      id: "b",
+      name: "B",
+      maxHp: 40,
+      hp: 40,
+      abilities: { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+    });
+    const log: LogEvent[] = [];
+    // DC 13 CON+0; 2d8=8+8=16; A fail, B success
+    const seq = [0.95, 0, 0, 0.9, 0.9, 0.5, 0.9];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [wizard], [a, b], log);
+
+    const saves = log.filter(
+      (e) => e.event === "save" && e.used === "Thunderwave",
+    );
+    expect(saves).toHaveLength(2);
+    expect(saves[0]).toMatchObject({
+      target: "A",
+      success: false,
+      pushed: true,
+      damageFull: 16,
+      damage: 16,
+    });
+    expect(saves[1]).toMatchObject({
+      target: "B",
+      success: true,
+      damage: 8,
+    });
+    expect(
+      saves[1] && "pushed" in saves[1] ? saves[1].pushed : undefined,
+    ).toBeUndefined();
+  });
+
+  it("cannot cast Burning Hands with 0 spell slots", () => {
+    const wizard = pc({
+      id: "wiz",
+      saveSpell: "Burning Hands",
+      spellSlots: 0,
+      cantrip: "Fire Bolt",
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    const foes = [
+      goblin({ id: "a", name: "A", maxHp: 3, hp: 3 }),
+      goblin({ id: "b", name: "B", maxHp: 3, hp: 3 }),
+    ];
+    const log: LogEvent[] = [];
+    const seq = [0.95, 0, 0];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [wizard], foes, log);
+
+    expect(log.some((e) => e.event === "save")).toBe(false);
+    expect(wizard.spellSlots).toBe(0);
+  });
+});

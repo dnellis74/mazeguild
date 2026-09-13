@@ -56,6 +56,8 @@ export type Combatant = {
   spell?: string;
   /** Learned HP-pool control spell, e.g. "Sleep". */
   controlSpell?: string;
+  /** Learned AoE save spell, e.g. "Burning Hands". */
+  saveSpell?: string;
   /** Learned reaction spell, e.g. "Shield". */
   reactionSpell?: string;
   lucky: boolean;
@@ -137,6 +139,24 @@ export type LogEvent =
       pool: number;
       /** Names of creatures fully covered by the HP pool. */
       affected: string[];
+    }
+  | {
+      event: "save";
+      round: number;
+      actor: string;
+      target: string;
+      used: string;
+      dc: number;
+      d20: number;
+      total: number;
+      success: boolean;
+      /** Shared full damage before save reduction. */
+      damageFull: number;
+      /** Damage applied after save (full or half). */
+      damage: number;
+      targetHpAfter: number;
+      /** Thunderwave: failed save pushes 10 ft (logged only; no positions). */
+      pushed?: boolean;
     }
   | { event: "death"; round: number; name: string }
   | {

@@ -10,8 +10,15 @@ import {
   rollD20,
   resolveAdvantageMode,
   attackRollMode,
+  resolveSave,
+  spellSaveDC,
+  rollSpellDamage,
 } from "./rules";
-import { getSpell, pickLearnedControlSpell } from "./spells";
+import {
+  getSpell,
+  pickLearnedControlSpell,
+  pickLearnedSaveSpell,
+} from "./spells";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
 
@@ -516,5 +523,78 @@ describe("resolveHpPool (Color Spray)", () => {
     );
     expect(pool).toBe(12);
     expect(affected.map((c) => c.id)).toEqual(["a"]);
+  });
+});
+
+describe("resolveSave (Burning Hands / Thunderwave)", () => {
+  function seqRng(values: number[]): () => number {
+    let i = 0;
+    return () => (i < values.length ? values[i++]! : 0.5);
+  }
+
+  it("computes DC as 8 + proficiency + spellMod", () => {
+    const caster = basePc({ proficiencyBonus: 2, spellMod: 3 });
+    expect(spellSaveDC(caster)).toBe(13);
+  });
+
+  it("applies full damage on fail and half floor on success against shared damage", () => {
+    const caster = basePc({ proficiencyBonus: 2, spellMod: 3 });
+    const weak = foe(10);
+    weak.abilities = { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 };
+    const strong = foe(10);
+    strong.abilities = { STR: 8, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 };
+    const damageFull = 17;
+    const fail = resolveSave(seqRng([0.5]), caster, weak, {
+      ability: "DEX",
+      onSuccess: "half",
+      damageFull,
+    });
+    const ok = resolveSave(seqRng([0.9]), caster, strong, {
+      ability: "DEX",
+      onSuccess: "half",
+      damageFull,
+    });
+    expect(fail).toMatchObject({
+      success: false,
+      damage: 17,
+      damageFull: 17,
+      dc: 13,
+    });
+    expect(ok).toMatchObject({
+      success: true,
+      damage: 8,
+      damageFull: 17,
+      dc: 13,
+    });
+  });
+
+  it("rolls Burning Hands damage once via rollSpellDamage", () => {
+    const spell = getSpell("Burning Hands")!;
+    // 3d6 of 6 → 18
+    expect(rollSpellDamage(seqRng([0.9, 0.9, 0.9]), spell)).toBe(18);
+  });
+
+  it("picks Burning Hands over Thunderwave when both are learned", () => {
+    expect(
+      pickLearnedSaveSpell([
+        { name: "Thunderwave" },
+        { name: "Burning Hands" },
+      ]),
+    ).toBe("Burning Hands");
+    expect(pickLearnedSaveSpell([{ name: "Thunderwave" }])).toBe(
+      "Thunderwave",
+    );
+  });
+
+  it("assigns saveSpell from learned Burning Hands", () => {
+    const c = companionToCombatant(
+      wizardCharacter(
+        [{ id: "1", name: "Fire Bolt", archetype: "Wizard" }],
+        [{ id: "bh", name: "Burning Hands", archetype: "Wizard", level: 1 }],
+      ),
+      0,
+      createRng(1),
+    );
+    expect(c.saveSpell).toBe("Burning Hands");
   });
 });

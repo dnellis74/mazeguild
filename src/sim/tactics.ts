@@ -4,6 +4,7 @@ export type Intent =
   | { type: "heal"; targetId: string }
   | { type: "attack"; targetId: string; ability?: string }
   | { type: "control"; ability: string }
+  | { type: "save"; ability: string }
   | { type: "none" };
 
 export type ReactionIntent =
@@ -29,8 +30,8 @@ function byId(a: Combatant, b: Combatant): number {
 
 /**
  * Action and target selection. No dice, no HP mutation.
- * Priority: heal wounded ally → control (≥2 living foes) → auto spell →
- * cantrip → weapon.
+ * Priority: heal wounded ally → control (≥2 foes) → AoE save (≥2 foes) →
+ * auto spell → cantrip → weapon.
  * A later motivation prompt will bias this layer only.
  */
 export function chooseAction(
@@ -49,9 +50,14 @@ export function chooseAction(
     if (wounded[0]) return { type: "heal", targetId: wounded[0].id };
   }
 
-  // Pool control (Sleep): only when at least two living foes remain.
+  // Pool control (Sleep / Color Spray): only when at least two living foes remain.
   if (actor.controlSpell && actor.spellSlots > 0 && foes.length >= 2) {
     return { type: "control", ability: actor.controlSpell };
+  }
+
+  // AoE save (Burning Hands / Thunderwave): same ≥2-foe gate.
+  if (actor.saveSpell && actor.spellSlots > 0 && foes.length >= 2) {
+    return { type: "save", ability: actor.saveSpell };
   }
 
   const sorted = [...foes].sort((a, b) => {
