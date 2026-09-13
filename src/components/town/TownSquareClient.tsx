@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PlaceArt } from "@/components/training/PlaceArt";
 import {
   getRosterEntry,
   loadRoster,
@@ -186,6 +187,8 @@ export function TownSquareClient() {
                 </>
               )}
             </div>
+
+            <PlaceArt name={TOWN_SQUARE_BUILDING} className="place-art-here" />
 
             <div className="sheet-block">
               <div className="sheet-label">Actions</div>

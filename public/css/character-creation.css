@@ -977,6 +977,18 @@
   .world-crumb a{
     font:inherit;
   }
+  .place-art{
+    width:100%;
+    aspect-ratio:1 / 1;
+    object-fit:cover;
+    display:block;
+    border:1px solid var(--rule);
+    background:rgba(0,0,0,0.35);
+  }
+  .place-art-here{
+    margin-bottom:14px;
+    max-width:22rem;
+  }
   .world-grid{
     display:flex;
     flex-direction:column;

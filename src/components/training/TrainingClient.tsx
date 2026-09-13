@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PlaceArt } from "@/components/training/PlaceArt";
 import {
   getRosterEntry,
   loadRoster,
@@ -664,6 +665,7 @@ function WorldPanel({
   onAction: (a: TrainingAction) => void;
 }) {
   const dockProgress = world.level === "activities";
+  const here = world.crumb[world.crumb.length - 1]?.label;
   return (
     <div className={`world-panel${dockProgress ? " world-panel--dock" : ""}`}>
       <div className="world-panel-main">
@@ -689,6 +691,7 @@ function WorldPanel({
             </span>
           ))}
         </div>
+        <PlaceArt name={here} className="place-art-here" />
         <div className="world-grid">
           {world.cards.length ? (
             world.cards.map((card, i) => (
