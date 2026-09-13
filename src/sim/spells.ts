@@ -1,12 +1,15 @@
 import spellData from "../../public/data/spells_level1.json";
-import type { DiceExpr } from "./types";
+import type { ConditionName, DiceExpr } from "./types";
 
 export type SpellCombatType =
   | "auto"
   | "attack"
   | "save"
   | "control"
-  | "utility";
+  | "utility"
+  | "reaction";
+
+export type ReactionTrigger = "before_damage" | "after_damage";
 
 export type SpellDamage = DiceExpr & {
   type: string;
@@ -25,6 +28,18 @@ export type SpellEntry = {
   combatType?: SpellCombatType;
   damage?: SpellDamage | null;
   save?: { ability: string; onSuccess: string } | null;
+  trigger?: ReactionTrigger;
+  effect?: { acBonus?: number } | null;
+  /** Control spell condition applied to covered targets. */
+  condition?: ConditionName;
+  /** HP pool dice for Sleep / Color Spray-style spells. */
+  pool?: DiceExpr | null;
+  /** How many combat rounds the condition lasts (1 minute ≈ 10). */
+  durationRounds?: number;
+  /** Creature types excluded from the pool (e.g. "undead"). */
+  exclude?: string[];
+  /** Color Spray: also skip creatures that can't see (already blinded). */
+  ignoreCantSee?: boolean;
 };
 
 const entries = (spellData as { spells: SpellEntry[] }).spells;
@@ -38,10 +53,35 @@ export function getSpell(name: string): SpellEntry | undefined {
   return byName.get(name);
 }
 
-/** Spells the combat layer can cast this pass (auto-hit, slot cost). */
+/** Spells the combat layer can cast on its turn (auto-hit, slot cost). */
 export function isCombatAutoSpell(name: string): boolean {
   const row = byName.get(name);
   return !!row && row.combatType === "auto" && !!row.damage;
+}
+
+/** HP-pool control spells (Sleep, Color Spray). */
+export function isCombatControlSpell(name: string): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "control" &&
+    !!row.pool &&
+    !!row.condition &&
+    (row.name === "Sleep" || row.name === "Color Spray")
+  );
+}
+
+export function isReactionSpell(
+  name: string,
+  trigger: ReactionTrigger,
+): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "reaction" &&
+    row.trigger === trigger &&
+    !!row.effect
+  );
 }
 
 /**
@@ -55,6 +95,38 @@ export function pickLearnedAutoSpell(
     ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
   ]
     .filter(isCombatAutoSpell)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return names[0];
+}
+
+/**
+ * Pick a learned control spell (Sleep / Color Spray).
+ * Prefers Sleep when both are known (longer-lasting control).
+ * Never invents an unlearned spell.
+ */
+export function pickLearnedControlSpell(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ].filter(isCombatControlSpell);
+  if (names.includes("Sleep")) return "Sleep";
+  names.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return names[0];
+}
+
+/**
+ * Pick a learned reaction spell for before_damage (this pass: Shield only).
+ * Never invents an unlearned spell.
+ */
+export function pickLearnedReactionSpell(
+  learned: { name: string }[] | null | undefined,
+  trigger: ReactionTrigger = "before_damage",
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ]
+    .filter((n) => isReactionSpell(n, trigger))
     .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   return names[0];
 }

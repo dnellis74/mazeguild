@@ -222,13 +222,22 @@
       "id": 17,
       "level": 1,
       "name": "Sleep",
-      "description": "Roll 5d8 to determine how many hit points of creatures this spell can affect within a 20-foot radius; starting with the lowest current hit points, affected creatures fall unconscious until the spell ends, they take damage, or someone wakes them.",
+      "description": "Roll 5d8 to determine how many hit points of creatures this spell can affect within a 20-foot radius; starting with the lowest current hit points, affected creatures fall unconscious until the spell ends, they take damage, or someone wakes them. Undead and creatures immune to being charmed aren't affected.",
       "archetypes": [
         "Bard",
         "Sorcerer",
         "Wizard"
       ],
       "combatType": "control",
+      "condition": "unconscious",
+      "pool": {
+        "count": 5,
+        "sides": 8
+      },
+      "durationRounds": 10,
+      "exclude": [
+        "undead"
+      ],
       "damage": null,
       "save": null
     },
@@ -457,12 +466,19 @@
       "id": 37,
       "level": 1,
       "name": "Color Spray",
-      "description": "A cone of dazzling colored light blinds creatures totaling up to 6d10 hit points, starting with the ones with the least hit points.",
+      "description": "A dazzling cone of colored light; roll 6d10 and blind creatures in ascending current-HP order until the spell ends (1 round). Ignores unconscious creatures and creatures that can't see.",
       "archetypes": [
         "Sorcerer",
         "Wizard"
       ],
       "combatType": "control",
+      "condition": "blinded",
+      "pool": {
+        "count": 6,
+        "sides": 10
+      },
+      "durationRounds": 1,
+      "ignoreCantSee": true,
       "damage": null,
       "save": null
     },
@@ -534,9 +550,13 @@
         "Sorcerer",
         "Wizard"
       ],
-      "combatType": "utility",
+      "combatType": "reaction",
       "damage": null,
-      "save": null
+      "save": null,
+      "trigger": "before_damage",
+      "effect": {
+        "acBonus": 5
+      }
     },
     {
       "id": 43,

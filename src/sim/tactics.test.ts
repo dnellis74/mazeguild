@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chooseAction } from "./tactics";
+import { chooseAction, chooseBeforeDamageReaction } from "./tactics";
 import type { Combatant, Role, Weapon } from "./types";
 
 const CLUB: Weapon = {
@@ -40,6 +40,9 @@ function combatant(
     healDice: { count: 1, sides: 8 },
     xp: 0,
     xpValue: 0,
+    reactionUsed: false,
+    tempAcBonus: 0,
+    condition: null,
     ...over,
   };
 }
@@ -151,5 +154,132 @@ describe("chooseAction", () => {
       targetId: "gob-low",
       ability: "Fire Bolt",
     });
+  });
+
+  it("prefers Sleep over cantrip/MM when ≥2 living foes and slots remain", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      spell: "Magic Missile",
+      controlSpell: "Sleep",
+      spellSlots: 2,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "control",
+      ability: "Sleep",
+    });
+  });
+
+  it("casts Color Spray under the same ≥2-foe policy", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      controlSpell: "Color Spray",
+      spellSlots: 1,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "control",
+      ability: "Color Spray",
+    });
+  });
+
+  it("does not cast Sleep against a single foe", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      controlSpell: "Sleep",
+      spellSlots: 2,
+    });
+    expect(chooseAction(wizard, [wizard], [foes[0]!])).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Fire Bolt",
+    });
+  });
+
+  it("never casts Sleep if the spell was not learned", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      spellSlots: 2,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Fire Bolt",
+    });
+  });
+});
+
+describe("chooseBeforeDamageReaction (Shield)", () => {
+  const baseCtx = { total: 12, crit: false, ac: 10 };
+
+  it("casts Shield when +5 would turn a hit into a miss", () => {
+    const wiz = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      reactionSpell: "Shield",
+      spellSlots: 1,
+    });
+    expect(chooseBeforeDamageReaction(wiz, baseCtx)).toEqual({
+      type: "reaction",
+      ability: "Shield",
+    });
+  });
+
+  it("does not cast when the attack still hits with +5", () => {
+    const wiz = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      reactionSpell: "Shield",
+      spellSlots: 1,
+    });
+    expect(
+      chooseBeforeDamageReaction(wiz, { total: 16, crit: false, ac: 10 }),
+    ).toEqual({ type: "none" });
+  });
+
+  it("does not cast on a critical hit", () => {
+    const wiz = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      reactionSpell: "Shield",
+      spellSlots: 1,
+    });
+    expect(
+      chooseBeforeDamageReaction(wiz, { total: 25, crit: true, ac: 10 }),
+    ).toEqual({ type: "none" });
+  });
+
+  it("does not cast with 0 spell slots", () => {
+    const wiz = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      reactionSpell: "Shield",
+      spellSlots: 0,
+    });
+    expect(chooseBeforeDamageReaction(wiz, baseCtx)).toEqual({ type: "none" });
+  });
+
+  it("does not cast when Shield was never learned", () => {
+    const wiz = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      spellSlots: 2,
+    });
+    expect(chooseBeforeDamageReaction(wiz, baseCtx)).toEqual({ type: "none" });
   });
 });

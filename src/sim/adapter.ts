@@ -1,6 +1,10 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
 import { pickLearnedAttackCantrip } from "./cantrips";
-import { pickLearnedAutoSpell } from "./spells";
+import {
+  pickLearnedAutoSpell,
+  pickLearnedControlSpell,
+  pickLearnedReactionSpell,
+} from "./spells";
 import { abilityMod } from "./rules";
 import type { Rng } from "./rng";
 import {
@@ -169,6 +173,8 @@ export function companionToCombatant(
   const primary = archetypes[0] || "Companion";
   const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
   const spell = pickLearnedAutoSpell(ch.spells);
+  const controlSpell = pickLearnedControlSpell(ch.spells);
+  const reactionSpell = pickLearnedReactionSpell(ch.spells, "before_damage");
 
   return {
     id: ch.id || `pc-${index}`,
@@ -187,10 +193,15 @@ export function companionToCombatant(
     weapon: pickWeapon(archetypes),
     cantrip,
     spell,
+    controlSpell,
+    reactionSpell,
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
     relentless:
       /Relentless Endurance/i.test(features) || /half-?orc/i.test(ch.raceId),
     relentlessUsed: false,
+    reactionUsed: false,
+    tempAcBonus: 0,
+    condition: null,
     sneakAttackDice: /Sneak Attack/i.test(features) ? 1 : 0,
     healSlots: archetypes.some((a) => SPELL_HEALER_ARCHETYPES.has(a))
       ? slots
@@ -246,6 +257,9 @@ export function makeMonster(opts: {
     lucky: false,
     relentless: false,
     relentlessUsed: false,
+    reactionUsed: false,
+    tempAcBonus: 0,
+    condition: null,
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,

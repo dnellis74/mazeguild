@@ -26,6 +26,15 @@ export type Weapon = {
 
 export type Role = "tank" | "healer" | "dps";
 
+/** Timed combat conditions (Sleep, future Color Spray, etc.). */
+export type ConditionName = "unconscious" | "blinded";
+
+export type ActiveCondition = {
+  name: ConditionName;
+  /** Cleared when combat `round` reaches this value (beginTurn check). */
+  expiresRound: number;
+};
+
 export type Combatant = {
   id: string;
   name: string;
@@ -45,9 +54,24 @@ export type Combatant = {
   cantrip?: string;
   /** Learned combat spell ready to cast when spellSlots remain, e.g. "Magic Missile". */
   spell?: string;
+  /** Learned HP-pool control spell, e.g. "Sleep". */
+  controlSpell?: string;
+  /** Learned reaction spell, e.g. "Shield". */
+  reactionSpell?: string;
   lucky: boolean;
   relentless: boolean;
   relentlessUsed: boolean;
+  /** True after using a reaction; cleared at the start of this combatant's turn. */
+  reactionUsed: boolean;
+  /** Temporary AC from Shield until the start of this combatant's next turn. */
+  tempAcBonus: number;
+  /** Active condition, if any (one at a time for this pass). */
+  condition: ActiveCondition | null;
+  /**
+   * Creature type for spell exclusions (e.g. Sleep vs undead).
+   * Omitted / "humanoid" for typical goblinoids and PCs.
+   */
+  creatureType?: string;
   sneakAttackDice: number;
   healSlots: number;
   layOnHands: number;
@@ -92,6 +116,8 @@ export type LogEvent =
       targetHpAfter?: number;
       /** Weapon, cantrip, or spell used for this attack. */
       used?: string;
+      /** Reaction that altered this attack, e.g. "Shield". */
+      reaction?: string;
     }
   | {
       event: "heal";
@@ -102,6 +128,15 @@ export type LogEvent =
       targetHpAfter: number;
       /** Cure Wounds, Lay on Hands, etc. */
       used?: string;
+    }
+  | {
+      event: "control";
+      round: number;
+      actor: string;
+      used: string;
+      pool: number;
+      /** Names of creatures fully covered by the HP pool. */
+      affected: string[];
     }
   | { event: "death"; round: number; name: string }
   | {
