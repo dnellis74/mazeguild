@@ -96,6 +96,8 @@ export type LogEvent =
       target: string;
       amount: number;
       targetHpAfter: number;
+      /** Cure Wounds, Lay on Hands, etc. */
+      used?: string;
     }
   | { event: "death"; round: number; name: string }
   | {

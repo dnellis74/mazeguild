@@ -10,717 +10,481 @@
   "spells": [
     {
       "id": 1,
-      "archetype": "Bard",
       "level": 1,
       "name": "Animal Friendship",
-      "description": "Convince a beast within range that you mean it no harm; on a failed Wisdom save it becomes charmed by you for 24 hours, ending early if you or a companion harms it."
+      "description": "Convince a beast within range that you mean it no harm; on a failed Wisdom save it becomes charmed by you for 24 hours, ending early if you or a companion harms it.",
+      "archetypes": [
+        "Bard",
+        "Druid"
+      ]
     },
     {
       "id": 2,
-      "archetype": "Bard",
       "level": 1,
       "name": "Bane",
-      "description": "Up to three creatures make Charisma saves; a target that fails must subtract 1d4 from its next attack rolls and saving throws before the spell ends."
+      "description": "Up to three creatures make Charisma saves; a target that fails must subtract 1d4 from its next attack rolls and saving throws before the spell ends.",
+      "archetypes": [
+        "Bard",
+        "Cleric"
+      ]
     },
     {
       "id": 3,
-      "archetype": "Bard",
       "level": 1,
       "name": "Charm Person",
-      "description": "Attempt to charm one humanoid you can see; on a failed Wisdom save it regards you as a friendly acquaintance for an hour, or until you or a companion harms it."
+      "description": "Attempt to charm one humanoid you can see; on a failed Wisdom save it regards you as a friendly acquaintance for an hour, or until you or a companion harms it.",
+      "archetypes": [
+        "Bard",
+        "Druid",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "id": 4,
-      "archetype": "Bard",
       "level": 1,
       "name": "Comprehend Languages",
-      "description": "For an hour, you understand the literal meaning of any spoken language you hear and any written language you touch, though secret codes or glyphs aren't decoded."
+      "description": "For an hour, you understand the literal meaning of any spoken language you hear and any written language you touch, though secret codes or glyphs aren't decoded.",
+      "archetypes": [
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "id": 5,
-      "archetype": "Bard",
       "level": 1,
       "name": "Cure Wounds",
-      "description": "Touch a creature to restore 1d8 plus your spellcasting ability modifier in hit points; has no effect on undead or constructs."
+      "description": "Touch a creature to restore 1d8 plus your spellcasting ability modifier in hit points; has no effect on undead or constructs.",
+      "archetypes": [
+        "Bard",
+        "Cleric",
+        "Druid"
+      ]
     },
     {
       "id": 6,
-      "archetype": "Bard",
       "level": 1,
       "name": "Detect Magic",
-      "description": "For up to 10 minutes, sense the presence of magic within 30 feet, and use your action to see a faint aura and its school around any magical creature or object in range."
+      "description": "For up to 10 minutes, sense the presence of magic within 30 feet, and use your action to see a faint aura and its school around any magical creature or object in range.",
+      "archetypes": [
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 7,
-      "archetype": "Bard",
       "level": 1,
       "name": "Disguise Self",
-      "description": "Change your appearance, including height, build, and features, for an hour; the illusion doesn't hold up to physical inspection or a successful Investigation check against your spell save DC."
+      "description": "Change your appearance, including height, build, and features, for an hour; the illusion doesn't hold up to physical inspection or a successful Investigation check against your spell save DC.",
+      "archetypes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 8,
-      "archetype": "Bard",
       "level": 1,
       "name": "Faerie Fire",
-      "description": "Objects and creatures in a 20-foot cube are outlined in colored light (a failed Dexterity save affects creatures); attackers get advantage against anything outlined, which also can't benefit from being invisible."
+      "description": "Objects and creatures in a 20-foot cube are outlined in colored light (a failed Dexterity save affects creatures); attackers get advantage against anything outlined, which also can't benefit from being invisible.",
+      "archetypes": [
+        "Bard",
+        "Druid"
+      ]
     },
     {
       "id": 9,
-      "archetype": "Bard",
       "level": 1,
       "name": "Feather Fall",
-      "description": "As a reaction when up to five falling creatures within range drop, slow their descent to 60 feet per round so they take no falling damage if they land before the spell ends."
+      "description": "As a reaction when up to five falling creatures within range drop, slow their descent to 60 feet per round so they take no falling damage if they land before the spell ends.",
+      "archetypes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 10,
-      "archetype": "Bard",
       "level": 1,
       "name": "Healing Word",
-      "description": "As a bonus action, restore 1d4 plus your spellcasting ability modifier in hit points to a creature you can see; has no effect on undead or constructs."
+      "description": "As a bonus action, restore 1d4 plus your spellcasting ability modifier in hit points to a creature you can see; has no effect on undead or constructs.",
+      "archetypes": [
+        "Bard",
+        "Cleric",
+        "Druid"
+      ]
     },
     {
       "id": 11,
-      "archetype": "Bard",
       "level": 1,
       "name": "Heroism",
-      "description": "Touch a willing creature to make it immune to being frightened and grant it temporary hit points equal to your spellcasting ability modifier at the start of each of its turns, for up to a minute."
+      "description": "Touch a willing creature to make it immune to being frightened and grant it temporary hit points equal to your spellcasting ability modifier at the start of each of its turns, for up to a minute.",
+      "archetypes": [
+        "Bard"
+      ]
     },
     {
       "id": 12,
-      "archetype": "Bard",
       "level": 1,
       "name": "Hideous Laughter",
-      "description": "A creature perceives everything as hilarious; on a failed Wisdom save it falls prone, incapacitated by laughter, and can retry the save each turn or when it takes damage."
+      "description": "A creature perceives everything as hilarious; on a failed Wisdom save it falls prone, incapacitated by laughter, and can retry the save each turn or when it takes damage.",
+      "archetypes": [
+        "Bard",
+        "Wizard"
+      ]
     },
     {
       "id": 13,
-      "archetype": "Bard",
       "level": 1,
       "name": "Identify",
-      "description": "Touch an object throughout the casting to learn a magic item's properties, how to use it, and what spells created or currently affect it, or touch a creature to learn what spells affect it."
+      "description": "Touch an object throughout the casting to learn a magic item's properties, how to use it, and what spells created or currently affect it, or touch a creature to learn what spells affect it.",
+      "archetypes": [
+        "Bard",
+        "Wizard"
+      ]
     },
     {
       "id": 14,
-      "archetype": "Bard",
       "level": 1,
       "name": "Illusory Script",
-      "description": "Write a message that appears as your own hand and meaning to you and creatures you designate, but as unintelligible magical script to everyone else, lasting 10 days."
+      "description": "Write a message that appears as your own hand and meaning to you and creatures you designate, but as unintelligible magical script to everyone else, lasting 10 days.",
+      "archetypes": [
+        "Bard",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "id": 15,
-      "archetype": "Bard",
       "level": 1,
       "name": "Longstrider",
-      "description": "Touch a creature to increase its speed by 10 feet until the spell ends an hour later."
+      "description": "Touch a creature to increase its speed by 10 feet until the spell ends an hour later.",
+      "archetypes": [
+        "Bard",
+        "Druid",
+        "Wizard"
+      ]
     },
     {
       "id": 16,
-      "archetype": "Bard",
       "level": 1,
       "name": "Silent Image",
-      "description": "Create a purely visual illusion of an object, creature, or other phenomenon up to a 15-foot cube, which you can move within range and which a physical or Investigation check can reveal as false."
+      "description": "Create a purely visual illusion of an object, creature, or other phenomenon up to a 15-foot cube, which you can move within range and which a physical or Investigation check can reveal as false.",
+      "archetypes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 17,
-      "archetype": "Bard",
       "level": 1,
       "name": "Sleep",
-      "description": "Roll 5d8 to determine how many hit points of creatures this spell can affect within a 20-foot radius; starting with the lowest current hit points, affected creatures fall unconscious until the spell ends, they take damage, or someone wakes them."
+      "description": "Roll 5d8 to determine how many hit points of creatures this spell can affect within a 20-foot radius; starting with the lowest current hit points, affected creatures fall unconscious until the spell ends, they take damage, or someone wakes them.",
+      "archetypes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 18,
-      "archetype": "Bard",
       "level": 1,
       "name": "Speak with Animals",
-      "description": "For 10 minutes, comprehend and verbally communicate with beasts, who can give you information about nearby locations and monsters based on what they've perceived."
+      "description": "For 10 minutes, comprehend and verbally communicate with beasts, who can give you information about nearby locations and monsters based on what they've perceived.",
+      "archetypes": [
+        "Bard",
+        "Druid"
+      ]
     },
     {
       "id": 19,
-      "archetype": "Bard",
       "level": 1,
       "name": "Thunderwave",
-      "description": "A wave of thunderous force sweeps out from you in a 15-foot cube; each creature makes a Constitution save or takes 2d8 thunder damage and is pushed 10 feet away."
+      "description": "A wave of thunderous force sweeps out from you in a 15-foot cube; each creature makes a Constitution save or takes 2d8 thunder damage and is pushed 10 feet away.",
+      "archetypes": [
+        "Bard",
+        "Druid",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 20,
-      "archetype": "Bard",
       "level": 1,
       "name": "Unseen Servant",
-      "description": "Create an invisible, mindless force that performs simple tasks like fetching, cleaning, or opening things at your mental command each turn, until it drops to 0 hit points or the spell ends."
+      "description": "Create an invisible, mindless force that performs simple tasks like fetching, cleaning, or opening things at your mental command each turn, until it drops to 0 hit points or the spell ends.",
+      "archetypes": [
+        "Bard",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "id": 21,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Bane",
-      "description": "Up to three creatures make Charisma saves; a target that fails must subtract 1d4 from its next attack rolls and saving throws before the spell ends."
+      "name": "Bless",
+      "description": "Bless up to three creatures within range; whenever a target makes an attack roll or saving throw before the spell ends, it adds 1d4.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 22,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Bless",
-      "description": "Bless up to three creatures within range; whenever a target makes an attack roll or saving throw before the spell ends, it adds 1d4."
+      "name": "Command",
+      "description": "Speak a one-word command to a creature you can see; on a failed Wisdom save it follows the command on its next turn, unless the command would be directly harmful to it.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 23,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Command",
-      "description": "Speak a one-word command to a creature you can see; on a failed Wisdom save it follows the command on its next turn, unless the command would be directly harmful to it."
+      "name": "Create or Destroy Water",
+      "description": "Create up to 10 gallons of clean water in a container or as rain in a 30-foot cube (extinguishing open flames), or destroy the same amount of water or fog.",
+      "archetypes": [
+        "Cleric",
+        "Druid"
+      ]
     },
     {
       "id": 24,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Create or Destroy Water",
-      "description": "Create up to 10 gallons of clean water in a container or as rain in a 30-foot cube (extinguishing open flames), or destroy the same amount of water or fog."
+      "name": "Detect Evil and Good",
+      "description": "For up to 10 minutes, you know the presence and location of any aberration, celestial, elemental, fey, fiend, or undead within 30 feet, and any consecrated or desecrated place or object nearby.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 25,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Cure Wounds",
-      "description": "Touch a creature to restore 1d8 plus your spellcasting ability modifier in hit points; has no effect on undead or constructs."
+      "name": "Detect Poison and Disease",
+      "description": "For up to 10 minutes, sense the presence, location, and specific kind of poisons, poisonous creatures, and diseases within 30 feet.",
+      "archetypes": [
+        "Cleric",
+        "Druid"
+      ]
     },
     {
       "id": 26,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Detect Evil and Good",
-      "description": "For up to 10 minutes, you know the presence and location of any aberration, celestial, elemental, fey, fiend, or undead within 30 feet, and any consecrated or desecrated place or object nearby."
+      "name": "Guiding Bolt",
+      "description": "Make a ranged spell attack with a flash of light; on a hit the target takes 4d6 radiant damage, and the next attack roll against it before the end of your next turn has advantage.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 27,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Detect Magic",
-      "description": "For up to 10 minutes, sense the presence of magic within 30 feet, and use your action to see a faint aura and its school around any magical creature or object in range."
+      "name": "Inflict Wounds",
+      "description": "Make a melee spell attack against a creature you can reach; on a hit it takes 3d10 necrotic damage.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 28,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Detect Poison and Disease",
-      "description": "For up to 10 minutes, sense the presence, location, and specific kind of poisons, poisonous creatures, and diseases within 30 feet."
+      "name": "Protection from Evil and Good",
+      "description": "Touch a willing creature to protect it against aberrations, celestials, elementals, fey, fiends, and undead, giving those creatures disadvantage on attacks against it and preventing it from being charmed, frightened, or possessed by them.",
+      "archetypes": [
+        "Cleric",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "id": 29,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Guiding Bolt",
-      "description": "Make a ranged spell attack with a flash of light; on a hit the target takes 4d6 radiant damage, and the next attack roll against it before the end of your next turn has advantage."
+      "name": "Purify Food and Drink",
+      "description": "Purify all nonmagical food and drink in a 5-foot-radius sphere, rendering it free of poison and disease.",
+      "archetypes": [
+        "Cleric",
+        "Druid"
+      ]
     },
     {
       "id": 30,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Healing Word",
-      "description": "As a bonus action, restore 1d4 plus your spellcasting ability modifier in hit points to a creature you can see; has no effect on undead or constructs."
+      "name": "Sanctuary",
+      "description": "Ward a creature so that any creature targeting it with an attack or harmful spell must first succeed on a Wisdom save or choose a new target; ends if the warded creature attacks or casts a harmful spell.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 31,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Inflict Wounds",
-      "description": "Make a melee spell attack against a creature you can reach; on a hit it takes 3d10 necrotic damage."
+      "name": "Shield of Faith",
+      "description": "A shimmering field surrounds a creature of your choice, granting it a +2 bonus to AC for up to 10 minutes.",
+      "archetypes": [
+        "Cleric"
+      ]
     },
     {
       "id": 32,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Protection from Evil and Good",
-      "description": "Touch a willing creature to protect it against aberrations, celestials, elementals, fey, fiends, and undead, giving those creatures disadvantage on attacks against it and preventing it from being charmed, frightened, or possessed by them."
+      "name": "Entangle",
+      "description": "Grasping weeds and vines sprout in a 20-foot square, turning the area into difficult terrain and forcing a Strength save or restraining creatures caught there when it's cast.",
+      "archetypes": [
+        "Druid"
+      ]
     },
     {
       "id": 33,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Purify Food and Drink",
-      "description": "Purify all nonmagical food and drink in a 5-foot-radius sphere, rendering it free of poison and disease."
+      "name": "Fog Cloud",
+      "description": "Create a 20-foot-radius sphere of fog that heavily obscures its area, lasting until the duration ends or a moderate wind disperses it.",
+      "archetypes": [
+        "Druid",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 34,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Sanctuary",
-      "description": "Ward a creature so that any creature targeting it with an attack or harmful spell must first succeed on a Wisdom save or choose a new target; ends if the warded creature attacks or casts a harmful spell."
+      "name": "Goodberry",
+      "description": "Conjure up to ten berries infused with magic; eating one as an action restores 1 hit point and provides a day's nourishment, but they lose potency after 24 hours.",
+      "archetypes": [
+        "Druid"
+      ]
     },
     {
       "id": 35,
-      "archetype": "Cleric",
       "level": 1,
-      "name": "Shield of Faith",
-      "description": "A shimmering field surrounds a creature of your choice, granting it a +2 bonus to AC for up to 10 minutes."
+      "name": "Jump",
+      "description": "Touch a creature to triple its jump distance for a minute.",
+      "archetypes": [
+        "Druid",
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 36,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Animal Friendship",
-      "description": "Convince a beast within range that you mean it no harm; on a failed Wisdom save it becomes charmed by you for 24 hours, ending early if you or a companion harms it."
+      "name": "Burning Hands",
+      "description": "A thin sheet of flame shoots from your outstretched fingers in a 15-foot cone; each creature makes a Dexterity save or takes 3d6 fire damage, half on a success.",
+      "archetypes": [
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 37,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Charm Person",
-      "description": "Attempt to charm one humanoid you can see; on a failed Wisdom save it regards you as a friendly acquaintance for an hour, or until you or a companion harms it."
+      "name": "Color Spray",
+      "description": "A cone of dazzling colored light blinds creatures totaling up to 6d10 hit points, starting with the ones with the least hit points.",
+      "archetypes": [
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 38,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Create or Destroy Water",
-      "description": "Create up to 10 gallons of clean water in a container or as rain in a 30-foot cube (extinguishing open flames), or destroy the same amount of water or fog."
+      "name": "Expeditious Retreat",
+      "description": "For the duration, you can take the Dash action as a bonus action on each of your turns, letting you move at an incredible pace.",
+      "archetypes": [
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "id": 39,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Cure Wounds",
-      "description": "Touch a creature to restore 1d8 plus your spellcasting ability modifier in hit points; has no effect on undead or constructs."
+      "name": "False Life",
+      "description": "Bolster yourself with a necromantic facsimile of life, gaining 1d4 + 4 temporary hit points for an hour.",
+      "archetypes": [
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 40,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Detect Magic",
-      "description": "For up to 10 minutes, sense the presence of magic within 30 feet, and use your action to see a faint aura and its school around any magical creature or object in range."
+      "name": "Mage Armor",
+      "description": "Touch a willing, unarmored creature to surround it with protective magical force, setting its base AC to 13 plus its Dexterity modifier for 8 hours.",
+      "archetypes": [
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 41,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Detect Poison and Disease",
-      "description": "For up to 10 minutes, sense the presence, location, and specific kind of poisons, poisonous creatures, and diseases within 30 feet."
+      "name": "Magic Missile",
+      "description": "Create three glowing darts of magical force that automatically strike creatures of your choice within range, each dealing 1d4 + 1 force damage.",
+      "archetypes": [
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 42,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Entangle",
-      "description": "Grasping weeds and vines sprout in a 20-foot square, turning the area into difficult terrain and forcing a Strength save or restraining creatures caught there when it's cast."
+      "name": "Shield",
+      "description": "As a reaction when hit by an attack or targeted by magic missile, gain a +5 bonus to AC until the start of your next turn, including against the triggering attack, and take no damage from magic missile.",
+      "archetypes": [
+        "Sorcerer",
+        "Wizard"
+      ]
     },
     {
       "id": 43,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Faerie Fire",
-      "description": "Objects and creatures in a 20-foot cube are outlined in colored light (a failed Dexterity save affects creatures); attackers get advantage against anything outlined, which also can't benefit from being invisible."
+      "name": "Hellish Rebuke",
+      "description": "As a reaction to being damaged by a creature you can see within 60 feet, surround it in hellish flame; it takes 2d10 fire damage on a failed Dexterity save, half on a success.",
+      "archetypes": [
+        "Warlock"
+      ]
     },
     {
       "id": 44,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Fog Cloud",
-      "description": "Create a 20-foot-radius sphere of fog that heavily obscures its area, lasting until the duration ends or a moderate wind disperses it."
+      "name": "Alarm",
+      "description": "Set a ward on a door, window, or area up to a 20-foot cube; when a Tiny or larger creature you haven't excluded touches or enters it, you get a mental or audible alert.",
+      "archetypes": [
+        "Wizard"
+      ]
     },
     {
       "id": 45,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Goodberry",
-      "description": "Conjure up to ten berries infused with magic; eating one as an action restores 1 hit point and provides a day's nourishment, but they lose potency after 24 hours."
+      "name": "Find Familiar",
+      "description": "Summon a spirit familiar in a small animal form of your choice; it acts independently, obeys your commands, and can't attack, but can otherwise take actions on its own turn.",
+      "archetypes": [
+        "Wizard"
+      ]
     },
     {
       "id": 46,
-      "archetype": "Druid",
       "level": 1,
-      "name": "Healing Word",
-      "description": "As a bonus action, restore 1d4 plus your spellcasting ability modifier in hit points to a creature you can see; has no effect on undead or constructs."
+      "name": "Floating Disk",
+      "description": "Create a 3-foot horizontal disk of force that floats 3 feet off the ground, follows you within 20 feet, and can carry up to 500 pounds for an hour.",
+      "archetypes": [
+        "Wizard"
+      ]
     },
     {
       "id": 47,
-      "archetype": "Druid",
-      "level": 1,
-      "name": "Jump",
-      "description": "Touch a creature to triple its jump distance for a minute."
-    },
-    {
-      "id": 48,
-      "archetype": "Druid",
-      "level": 1,
-      "name": "Longstrider",
-      "description": "Touch a creature to increase its speed by 10 feet until the spell ends an hour later."
-    },
-    {
-      "id": 49,
-      "archetype": "Druid",
-      "level": 1,
-      "name": "Purify Food and Drink",
-      "description": "Purify all nonmagical food and drink in a 5-foot-radius sphere, rendering it free of poison and disease."
-    },
-    {
-      "id": 50,
-      "archetype": "Druid",
-      "level": 1,
-      "name": "Speak with Animals",
-      "description": "For 10 minutes, comprehend and verbally communicate with beasts, who can give you information about nearby locations and monsters based on what they've perceived."
-    },
-    {
-      "id": 51,
-      "archetype": "Druid",
-      "level": 1,
-      "name": "Thunderwave",
-      "description": "A wave of thunderous force sweeps out from you in a 15-foot cube; each creature makes a Constitution save or takes 2d8 thunder damage and is pushed 10 feet away."
-    },
-    {
-      "id": 52,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Burning Hands",
-      "description": "A thin sheet of flame shoots from your outstretched fingers in a 15-foot cone; each creature makes a Dexterity save or takes 3d6 fire damage, half on a success."
-    },
-    {
-      "id": 53,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Charm Person",
-      "description": "Attempt to charm one humanoid you can see; on a failed Wisdom save it regards you as a friendly acquaintance for an hour, or until you or a companion harms it."
-    },
-    {
-      "id": 54,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Color Spray",
-      "description": "A cone of dazzling colored light blinds creatures totaling up to 6d10 hit points, starting with the ones with the least hit points."
-    },
-    {
-      "id": 55,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Comprehend Languages",
-      "description": "For an hour, you understand the literal meaning of any spoken language you hear and any written language you touch, though secret codes or glyphs aren't decoded."
-    },
-    {
-      "id": 56,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Detect Magic",
-      "description": "For up to 10 minutes, sense the presence of magic within 30 feet, and use your action to see a faint aura and its school around any magical creature or object in range."
-    },
-    {
-      "id": 57,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Disguise Self",
-      "description": "Change your appearance, including height, build, and features, for an hour; the illusion doesn't hold up to physical inspection or a successful Investigation check against your spell save DC."
-    },
-    {
-      "id": 58,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Expeditious Retreat",
-      "description": "For the duration, you can take the Dash action as a bonus action on each of your turns, letting you move at an incredible pace."
-    },
-    {
-      "id": 59,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "False Life",
-      "description": "Bolster yourself with a necromantic facsimile of life, gaining 1d4 + 4 temporary hit points for an hour."
-    },
-    {
-      "id": 60,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Feather Fall",
-      "description": "As a reaction when up to five falling creatures within range drop, slow their descent to 60 feet per round so they take no falling damage if they land before the spell ends."
-    },
-    {
-      "id": 61,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Fog Cloud",
-      "description": "Create a 20-foot-radius sphere of fog that heavily obscures its area, lasting until the duration ends or a moderate wind disperses it."
-    },
-    {
-      "id": 62,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Jump",
-      "description": "Touch a creature to triple its jump distance for a minute."
-    },
-    {
-      "id": 63,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Mage Armor",
-      "description": "Touch a willing, unarmored creature to surround it with protective magical force, setting its base AC to 13 plus its Dexterity modifier for 8 hours."
-    },
-    {
-      "id": 64,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Magic Missile",
-      "description": "Create three glowing darts of magical force that automatically strike creatures of your choice within range, each dealing 1d4 + 1 force damage."
-    },
-    {
-      "id": 65,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Shield",
-      "description": "As a reaction when hit by an attack or targeted by magic missile, gain a +5 bonus to AC until the start of your next turn, including against the triggering attack, and take no damage from magic missile."
-    },
-    {
-      "id": 66,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Silent Image",
-      "description": "Create a purely visual illusion of an object, creature, or other phenomenon up to a 15-foot cube, which you can move within range and which a physical or Investigation check can reveal as false."
-    },
-    {
-      "id": 67,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Sleep",
-      "description": "Roll 5d8 to determine how many hit points of creatures this spell can affect within a 20-foot radius; starting with the lowest current hit points, affected creatures fall unconscious until the spell ends, they take damage, or someone wakes them."
-    },
-    {
-      "id": 68,
-      "archetype": "Sorcerer",
-      "level": 1,
-      "name": "Thunderwave",
-      "description": "A wave of thunderous force sweeps out from you in a 15-foot cube; each creature makes a Constitution save or takes 2d8 thunder damage and is pushed 10 feet away."
-    },
-    {
-      "id": 69,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Charm Person",
-      "description": "Attempt to charm one humanoid you can see; on a failed Wisdom save it regards you as a friendly acquaintance for an hour, or until you or a companion harms it."
-    },
-    {
-      "id": 70,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Comprehend Languages",
-      "description": "For an hour, you understand the literal meaning of any spoken language you hear and any written language you touch, though secret codes or glyphs aren't decoded."
-    },
-    {
-      "id": 71,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Expeditious Retreat",
-      "description": "For the duration, you can take the Dash action as a bonus action on each of your turns, letting you move at an incredible pace."
-    },
-    {
-      "id": 72,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Hellish Rebuke",
-      "description": "As a reaction to being damaged by a creature you can see within 60 feet, surround it in hellish flame; it takes 2d10 fire damage on a failed Dexterity save, half on a success."
-    },
-    {
-      "id": 73,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Illusory Script",
-      "description": "Write a message that appears as your own hand and meaning to you and creatures you designate, but as unintelligible magical script to everyone else, lasting 10 days."
-    },
-    {
-      "id": 74,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Protection from Evil and Good",
-      "description": "Touch a willing creature to protect it against aberrations, celestials, elementals, fey, fiends, and undead, giving those creatures disadvantage on attacks against it and preventing it from being charmed, frightened, or possessed by them."
-    },
-    {
-      "id": 75,
-      "archetype": "Warlock",
-      "level": 1,
-      "name": "Unseen Servant",
-      "description": "Create an invisible, mindless force that performs simple tasks like fetching, cleaning, or opening things at your mental command each turn, until it drops to 0 hit points or the spell ends."
-    },
-    {
-      "id": 76,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Alarm",
-      "description": "Set a ward on a door, window, or area up to a 20-foot cube; when a Tiny or larger creature you haven't excluded touches or enters it, you get a mental or audible alert."
-    },
-    {
-      "id": 77,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Burning Hands",
-      "description": "A thin sheet of flame shoots from your outstretched fingers in a 15-foot cone; each creature makes a Dexterity save or takes 3d6 fire damage, half on a success."
-    },
-    {
-      "id": 78,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Charm Person",
-      "description": "Attempt to charm one humanoid you can see; on a failed Wisdom save it regards you as a friendly acquaintance for an hour, or until you or a companion harms it."
-    },
-    {
-      "id": 79,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Color Spray",
-      "description": "A cone of dazzling colored light blinds creatures totaling up to 6d10 hit points, starting with the ones with the least hit points."
-    },
-    {
-      "id": 80,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Comprehend Languages",
-      "description": "For an hour, you understand the literal meaning of any spoken language you hear and any written language you touch, though secret codes or glyphs aren't decoded."
-    },
-    {
-      "id": 81,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Detect Magic",
-      "description": "For up to 10 minutes, sense the presence of magic within 30 feet, and use your action to see a faint aura and its school around any magical creature or object in range."
-    },
-    {
-      "id": 82,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Disguise Self",
-      "description": "Change your appearance, including height, build, and features, for an hour; the illusion doesn't hold up to physical inspection or a successful Investigation check against your spell save DC."
-    },
-    {
-      "id": 83,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Expeditious Retreat",
-      "description": "For the duration, you can take the Dash action as a bonus action on each of your turns, letting you move at an incredible pace."
-    },
-    {
-      "id": 84,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "False Life",
-      "description": "Bolster yourself with a necromantic facsimile of life, gaining 1d4 + 4 temporary hit points for an hour."
-    },
-    {
-      "id": 85,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Feather Fall",
-      "description": "As a reaction when up to five falling creatures within range drop, slow their descent to 60 feet per round so they take no falling damage if they land before the spell ends."
-    },
-    {
-      "id": 86,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Find Familiar",
-      "description": "Summon a spirit familiar in a small animal form of your choice; it acts independently, obeys your commands, and can't attack, but can otherwise take actions on its own turn."
-    },
-    {
-      "id": 87,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Floating Disk",
-      "description": "Create a 3-foot horizontal disk of force that floats 3 feet off the ground, follows you within 20 feet, and can carry up to 500 pounds for an hour."
-    },
-    {
-      "id": 88,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Fog Cloud",
-      "description": "Create a 20-foot-radius sphere of fog that heavily obscures its area, lasting until the duration ends or a moderate wind disperses it."
-    },
-    {
-      "id": 89,
-      "archetype": "Wizard",
       "level": 1,
       "name": "Grease",
-      "description": "Cover a 10-foot square in slick grease, turning it into difficult terrain; creatures standing in it, entering it, or ending their turn there must succeed on a Dexterity save or fall prone."
-    },
-    {
-      "id": 90,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Hideous Laughter",
-      "description": "A creature perceives everything as hilarious; on a failed Wisdom save it falls prone, incapacitated by laughter, and can retry the save each turn or when it takes damage."
-    },
-    {
-      "id": 91,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Identify",
-      "description": "Touch an object throughout the casting to learn a magic item's properties, how to use it, and what spells created or currently affect it, or touch a creature to learn what spells affect it."
-    },
-    {
-      "id": 92,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Illusory Script",
-      "description": "Write a message that appears as your own hand and meaning to you and creatures you designate, but as unintelligible magical script to everyone else, lasting 10 days."
-    },
-    {
-      "id": 93,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Jump",
-      "description": "Touch a creature to triple its jump distance for a minute."
-    },
-    {
-      "id": 94,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Longstrider",
-      "description": "Touch a creature to increase its speed by 10 feet until the spell ends an hour later."
-    },
-    {
-      "id": 95,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Mage Armor",
-      "description": "Touch a willing, unarmored creature to surround it with protective magical force, setting its base AC to 13 plus its Dexterity modifier for 8 hours."
-    },
-    {
-      "id": 96,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Magic Missile",
-      "description": "Create three glowing darts of magical force that automatically strike creatures of your choice within range, each dealing 1d4 + 1 force damage."
-    },
-    {
-      "id": 97,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Protection from Evil and Good",
-      "description": "Touch a willing creature to protect it against aberrations, celestials, elementals, fey, fiends, and undead, giving those creatures disadvantage on attacks against it and preventing it from being charmed, frightened, or possessed by them."
-    },
-    {
-      "id": 98,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Shield",
-      "description": "As a reaction when hit by an attack or targeted by magic missile, gain a +5 bonus to AC until the start of your next turn, including against the triggering attack, and take no damage from magic missile."
-    },
-    {
-      "id": 99,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Silent Image",
-      "description": "Create a purely visual illusion of an object, creature, or other phenomenon up to a 15-foot cube, which you can move within range and which a physical or Investigation check can reveal as false."
-    },
-    {
-      "id": 100,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Sleep",
-      "description": "Roll 5d8 to determine how many hit points of creatures this spell can affect within a 20-foot radius; starting with the lowest current hit points, affected creatures fall unconscious until the spell ends, they take damage, or someone wakes them."
-    },
-    {
-      "id": 101,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Thunderwave",
-      "description": "A wave of thunderous force sweeps out from you in a 15-foot cube; each creature makes a Constitution save or takes 2d8 thunder damage and is pushed 10 feet away."
-    },
-    {
-      "id": 102,
-      "archetype": "Wizard",
-      "level": 1,
-      "name": "Unseen Servant",
-      "description": "Create an invisible, mindless force that performs simple tasks like fetching, cleaning, or opening things at your mental command each turn, until it drops to 0 hit points or the spell ends."
+      "description": "Cover a 10-foot square in slick grease, turning it into difficult terrain; creatures standing in it, entering it, or ending their turn there must succeed on a Dexterity save or fall prone.",
+      "archetypes": [
+        "Wizard"
+      ]
     }
   ]
 }

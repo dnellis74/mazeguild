@@ -109,5 +109,5 @@ export function cantripsForArchetype(catalog: Catalog, archetype: string) {
 }
 
 export function spellsForArchetype(catalog: Catalog, archetype: string) {
-  return catalog.spells.filter((s) => s.archetype === archetype);
+  return catalog.spells.filter((s) => s.archetypes.includes(archetype));
 }

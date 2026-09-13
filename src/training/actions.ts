@@ -145,9 +145,15 @@ function openSpellPicker(
     return { character: ch, ui, toast: `No spell slots left for ${archetype}.` };
   }
   const ownedIds = new Set(ownedSpells(ch, archetype).map((s) => String(s.id)));
-  const options = spellsForArchetype(catalog, archetype).filter(
-    (s) => !ownedIds.has(String(s.id)),
-  );
+  const options = spellsForArchetype(catalog, archetype)
+    .filter((s) => !ownedIds.has(String(s.id)))
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      archetype,
+      level: s.level,
+      description: s.description || "",
+    }));
   if (!options.length) {
     return { character: ch, ui, toast: "No spells left to learn." };
   }
@@ -507,7 +513,7 @@ export function applyTrainingAction(
       const pending = ui.pendingChoice;
       if (!pending || pending.type !== "spell") return { character: ch, ui };
       const spell = catalog.spells.find((s) => String(s.id) === String(action.spellId));
-      if (!spell || spell.archetype !== pending.archetype) {
+      if (!spell || !spell.archetypes.includes(pending.archetype)) {
         return { character: ch, ui, toast: "Invalid spell." };
       }
       if (ownedSpells(ch, pending.archetype).some((s) => String(s.id) === String(spell.id))) {
@@ -527,7 +533,7 @@ export function applyTrainingAction(
           {
             id: spell.id,
             name: spell.name,
-            archetype: spell.archetype,
+            archetype: pending.archetype,
             level: spell.level || 1,
             description: spell.description || "",
           },

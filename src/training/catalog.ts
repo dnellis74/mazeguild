@@ -40,7 +40,7 @@ export type Catalog = {
   spellKnown: Record<string, number>;
   spells: {
     id: number;
-    archetype: string;
+    archetypes: string[];
     level: number;
     name: string;
     description?: string;

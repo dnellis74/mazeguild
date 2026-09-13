@@ -59,12 +59,15 @@ export function runCombat(
         const target = allies.find((a) => a.id === intent.targetId);
         if (!target?.alive) continue;
         let amount = 0;
+        let used = "";
         if (actor.healSlots > 0) {
           actor.healSlots -= 1;
           amount = resolveCureWounds(rng, actor);
+          used = "Cure Wounds";
         } else if (actor.layOnHands > 0) {
           amount = Math.min(actor.layOnHands, target.maxHp - target.hp);
           actor.layOnHands -= amount;
+          used = "Lay on Hands";
         }
         if (amount <= 0) continue;
         applyHeal(target, amount);
@@ -75,6 +78,7 @@ export function runCombat(
           target: target.name,
           amount,
           targetHpAfter: target.hp,
+          used,
         });
         continue;
       }

@@ -10,21 +10,25 @@ import type { DungeonResult } from "@/sim/types";
 
 /**
  * Maze entry: party handed off from Town Square → GameClient.
+ * Party is read only after mount so SSR and the first client paint match.
  */
 export function QuestPageClient() {
   const router = useRouter();
-  const [party, setParty] = useState<Character[] | null>(() => readQuestParty());
+  const [party, setParty] = useState<Character[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [booted, setBooted] = useState(false);
 
   useEffect(() => {
-    if (party) return;
     const handed = readQuestParty();
     if (handed) {
       setParty(handed);
-      return;
+    } else {
+      setError(
+        "No party ready. Select companions in Town Square and Quest again.",
+      );
     }
-    setError("No party ready. Select companions in Town Square and Quest again.");
-  }, [party]);
+    setBooted(true);
+  }, []);
 
   const returnToTown = (partyAfter?: DungeonResult["partyAfter"]) => {
     if (partyAfter?.length) {
@@ -35,6 +39,14 @@ export function QuestPageClient() {
     clearQuestParty();
     router.push("/");
   };
+
+  if (!booted || (!party && !error)) {
+    return (
+      <div className="crt flex min-h-[70dvh] items-center justify-center bg-[#050301] font-mono text-amber-500">
+        DESCENDING…
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -52,19 +64,11 @@ export function QuestPageClient() {
     );
   }
 
-  if (!party) {
-    return (
-      <div className="crt flex min-h-[70dvh] items-center justify-center bg-[#050301] font-mono text-amber-500">
-        DESCENDING…
-      </div>
-    );
-  }
-
   return (
     <div className="stage stage-quest">
       <div className="app app-quest">
         <div className="quest-adventure">
-          <GameClient party={party} onReturnToTown={returnToTown} />
+          <GameClient party={party!} onReturnToTown={returnToTown} />
         </div>
       </div>
     </div>
