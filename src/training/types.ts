@@ -10,7 +10,14 @@ export {
 } from "@/lib/abilities";
 
 import type { Ability } from "@/lib/abilities";
-import type { CharacterEquipment } from "@/sim/loadout";
+
+/** Four named inventory fields. Overflow appends into pack.contents. */
+export type CharacterEquipment = {
+  armor: string | null;
+  mainHand: string | null;
+  offHand: string | null;
+  pack: { name: string; contents: string[] } | null;
+};
 
 export type FeatureRef = string | string[];
 

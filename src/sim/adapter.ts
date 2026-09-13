@@ -17,7 +17,6 @@ import type { Rng } from "./rng";
 import {
   armorFromEquipmentId,
   ensureCharacterEquipment,
-  normalizeEquipment,
   shieldAcBonus,
   weaponFromEquipmentId,
 } from "./loadout";
@@ -148,7 +147,7 @@ function collectFightingStyles(ch: Character): string[] {
 }
 
 function resolveWeapon(ch: Character, archetypes: string[]): Weapon {
-  const id = normalizeEquipment(ch.equipment).mainHand;
+  const id = ch.equipment?.mainHand;
   if (id) {
     const fromEquip = weaponFromEquipmentId(id);
     if (fromEquip) return fromEquip;
@@ -171,7 +170,6 @@ function armorClass(
 ): number {
   const dex = abilityMod(scores.DEX ?? 10);
   const unarmored = hasUnarmoredDefense(archetypes);
-  // Unarmored Defense always wins over any armor slot.
   if (unarmored === "barbarian") {
     return 10 + dex + abilityMod(scores.CON ?? 10);
   }
@@ -179,8 +177,8 @@ function armorClass(
     return 10 + dex + abilityMod(scores.WIS ?? 10);
   }
 
-  const eq = normalizeEquipment(ch.equipment);
-  const armor = eq.armor ? armorFromEquipmentId(eq.armor) : null;
+  const eq = ch.equipment;
+  const armor = eq?.armor ? armorFromEquipmentId(eq.armor) : null;
   let ac: number;
   if (armor) {
     ac = armor.baseAC;
@@ -189,7 +187,7 @@ function armorClass(
   } else {
     ac = 10 + dex;
   }
-  if (eq.offHand === "shield") ac += shieldAcBonus();
+  if (eq?.offHand === "shield") ac += shieldAcBonus();
   if (armor && fightingStyles.includes("Defense")) ac += 1;
   return ac;
 }

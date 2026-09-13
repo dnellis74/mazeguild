@@ -10,7 +10,6 @@ type WeaponDef = {
 
 type WeaponsFile = {
   weapons: Record<string, WeaponDef>;
-  class_fallback: Record<string, string>;
   monster_weapons: Record<string, string>;
 };
 
