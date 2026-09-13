@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PlaceArt } from "@/components/training/PlaceArt";
+import { fetchJsonOnce } from "@/lib/fetchOnce";
 import {
   getRosterEntry,
   loadRoster,
@@ -111,13 +112,15 @@ export function TrainingClient() {
       const taken = loadRoster()
         .filter((e) => e.id !== character.id)
         .map((e) => e.name);
-      const res = await fetch("/api/names", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ raceId: character.raceId, taken }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.name) {
+      const { ok, data } = await fetchJsonOnce<{ name?: string; error?: string }>(
+        "/api/names",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ raceId: character.raceId, taken }),
+        },
+      );
+      if (!ok || !data?.name) {
         throw new Error(data.error || "Could not roll a name");
       }
       const next = String(data.name);
@@ -133,13 +136,18 @@ export function TrainingClient() {
 
   const apiView = useCallback(
     async (ch: Character, nextUi: TrainingUi) => {
-      const res = await fetch("/api/training/view", {
+      const { ok, data } = await fetchJsonOnce<{
+        character: Character;
+        ui: TrainingUi;
+        view: TrainingView;
+        redirect?: string;
+        error?: string;
+      }>("/api/training/view", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ character: ch, ui: nextUi }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+      if (!ok) {
         if (data.redirect) {
           router.replace(data.redirect);
           return null;
@@ -162,13 +170,20 @@ export function TrainingClient() {
     async (action: TrainingAction, opts?: { character?: Character }) => {
       const ch = opts?.character ?? character;
       if (!ch) return;
-      const res = await fetch("/api/training/action", {
+      const { ok, data } = await fetchJsonOnce<{
+        character: Character;
+        ui: TrainingUi;
+        view: TrainingView;
+        redirect?: string;
+        navigate?: string;
+        toast?: string;
+        error?: string;
+      }>("/api/training/action", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ character: ch, ui, action }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+      if (!ok) {
         if (data.redirect) {
           router.replace(data.redirect);
           return;

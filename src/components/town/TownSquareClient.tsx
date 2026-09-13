@@ -9,6 +9,7 @@ import {
   upsertRosterEntry,
 } from "@/lib/rosterStorage";
 import { stashQuestParty } from "@/lib/questHandoff";
+import { fetchJsonOnce } from "@/lib/fetchOnce";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
 import { ensureCharacterEquipment } from "@/sim/loadout";
@@ -60,9 +61,11 @@ export function TownSquareClient() {
   useEffect(() => {
     setRoster(loadRoster());
     setReady(true);
-    void fetch("/api/training/catalog")
-      .then((r) => r.json())
-      .then((data) => {
+    void fetchJsonOnce<{
+      races?: { id: string; name: string }[];
+      alignments?: { id: string; name: string }[];
+    }>("/api/training/catalog")
+      .then(({ data }) => {
         const races: Record<string, string> = {};
         const alignments: Record<string, string> = {};
         for (const r of data.races || []) races[r.id] = r.name;

@@ -167,7 +167,7 @@
       "archetype": "Cleric",
       "name": "Spare the Dying",
       "description": "Touch a living creature that has 0 hit points, causing it to become stable.",
-      "combatType": "utility",
+      "combatType": "stabilize",
       "damage": null,
       "save": null,
       "castingTime": "action"

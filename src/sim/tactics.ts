@@ -2,6 +2,7 @@ import type { Combatant } from "./types";
 
 export type Intent =
   | { type: "heal"; targetId: string; ability?: string }
+  | { type: "stabilize"; targetId: string; ability?: string }
   | { type: "attack"; targetId: string; ability?: string }
   | { type: "control"; ability: string }
   | { type: "save"; ability: string }
@@ -90,10 +91,16 @@ export function chooseBonusAction(
   return { type: "none" };
 }
 
+function pickDyingAlly(allies: Combatant[]): Combatant | undefined {
+  return living(allies)
+    .filter((a) => a.hp <= 0 && !a.stable)
+    .sort(byId)[0];
+}
+
 /**
  * Action-slot selection. No dice, no HP mutation.
- * Priority: Cure Wounds / Lay on Hands → Bless → control → AoE save →
- * auto spell → leveled attack spell → cantrip → weapon.
+ * Priority: Spare the Dying → Cure Wounds / Lay on Hands → Bless → control →
+ * AoE save → auto spell → leveled attack spell → cantrip → weapon.
  * Healing Word is not chosen here (bonus-action slot only).
  */
 export function chooseAction(
@@ -101,6 +108,18 @@ export function chooseAction(
   allies: Combatant[],
   enemies: Combatant[],
 ): Intent {
+  // Spare the Dying: before other action heals / attacks (stabilize dying allies).
+  if (actor.stabilizeCantrip === "Spare the Dying") {
+    const dying = pickDyingAlly(allies);
+    if (dying) {
+      return {
+        type: "stabilize",
+        targetId: dying.id,
+        ability: "Spare the Dying",
+      };
+    }
+  }
+
   const foes = living(enemies);
   if (foes.length === 0) return { type: "none" };
 

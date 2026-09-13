@@ -67,9 +67,19 @@ export type Combatant = {
   maxHp: number;
   hp: number;
   alive: boolean;
+  /** Temporary hit points (absorbed before real HP; do not stack). */
+  tempHp: number;
+  /** Death saving throw successes while at 0 HP (PCs only). */
+  deathSaveSuccesses: number;
+  /** Death saving throw failures while at 0 HP (PCs only). */
+  deathSaveFailures: number;
+  /** Stable at 0 HP (no death saves until damaged or healed). */
+  stable: boolean;
   weapon: Weapon;
   /** Assigned attack-roll cantrip name, e.g. "Fire Bolt". Omitted for weapon attacks. */
   cantrip?: string;
+  /** Learned stabilize cantrip, e.g. "Spare the Dying". */
+  stabilizeCantrip?: string;
   /** Learned combat spell ready to cast when spellSlots remain, e.g. "Magic Missile". */
   spell?: string;
   /** Learned leveled spell attack, e.g. "Guiding Bolt" / "Inflict Wounds". */
@@ -242,6 +252,23 @@ export type LogEvent =
       actor: string;
       /** "Rage" on enter, "End Rage" on voluntary or logged ends. */
       used: "Rage" | "End Rage";
+    }
+  | {
+      event: "death_save";
+      round: number;
+      actor: string;
+      d20: number;
+      outcome: "success" | "failure" | "revived" | "stabilized" | "died";
+      successes: number;
+      failures: number;
+    }
+  | {
+      event: "stabilize";
+      round: number;
+      actor: string;
+      target: string;
+      used: string;
+      targetHpAfter: number;
     }
   | { event: "death"; round: number; name: string }
   | {

@@ -50,7 +50,7 @@
   {
     "id": "f_05k2v7",
     "archetype": "Cleric",
-    "feature": ["Divine Spellcasting", "Divine Cantrips"],
+    "feature": ["Divine Cantrips"],
     "prerequisite": null,
     "area": "Walled City",
     "building": "Cathedral",
@@ -62,7 +62,7 @@
   {
     "id": "f_06q9m3",
     "archetype": "Cleric",
-    "feature": "Divine Domain",
+    "feature": ["Divine Spellcasting", "Divine Domain"],
     "detail": "Life Domain",
     "prerequisite": "f_05k2v7",
     "area": "Walled City",
@@ -261,7 +261,7 @@
   {
     "id": "f_17x7r3",
     "archetype": "Rogue",
-    "feature": "Expertise",
+    "feature": ["Expertise", "Thieves' Cant"],
     "prerequisite": null,
     "area": "Walled City",
     "building": "Tavern",
@@ -279,18 +279,6 @@
     "building": "Tavern",
     "room": "Card Room",
     "activity": "Practice Dirty Fighting",
-    "fills": 6,
-    "fillMsSec": 1
-  },
-  {
-    "id": "f_19t5p9",
-    "archetype": "Rogue",
-    "feature": "Thieves' Cant",
-    "prerequisite": null,
-    "area": "Walled City",
-    "building": "Tavern",
-    "room": "Card Room",
-    "activity": "Learn the Cant",
     "fills": 6,
     "fillMsSec": 1
   },

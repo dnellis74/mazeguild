@@ -522,41 +522,213 @@ export function modifyDamageByTraits(
 
 /**
  * Reduce HP by amount after resistance/immunity/vulnerability for damageType.
- * Returns the actual HP lost (post-mitigation).
- * If `rng` is provided and the target is concentrating, rolls a concentration
- * save against the damage taken (separate call per damage instance).
+ * Temp HP absorbs first (never stacks). PCs at ≤0 enter dying (unconscious)
+ * unless leftover damage ≥ maxHp (instant death). Monsters still die at 0.
+ * Returns the post-mitigation damage amount (used for concentration DCs).
+ * `critical` marks an automatic two-failure death save when already at 0 HP.
  */
 export function applyDamage(
   target: Combatant,
   amount: number,
   damageType: string,
   rng?: Rng,
+  critical = false,
 ): number {
   const applied = modifyDamageByTraits(target, amount, damageType);
-  target.hp = Math.max(0, target.hp - applied);
-  // Rage maintenance: any damage taken counts toward keeping Rage active.
-  if (applied > 0 && target.raging) {
-    target.rageMaintained = true;
+  if (applied <= 0) return 0;
+
+  // Temp HP absorbs first.
+  const fromTemp = Math.min(target.tempHp, applied);
+  target.tempHp -= fromTemp;
+  const hpDamage = applied - fromTemp;
+
+  if (target.raging) target.rageMaintained = true;
+
+  // Already at 0 HP (dying / stable PC).
+  if (target.hp <= 0 && target.alive) {
+    return applyDamageAtZeroHp(target, applied, hpDamage, critical, rng);
   }
-  // Sleep: taking any damage wakes the sleeper (SRD).
-  if (applied > 0 && target.condition?.name === "unconscious") {
+
+  const hpBefore = target.hp;
+  target.hp = Math.max(0, target.hp - hpDamage);
+
+  // Sleep / non-dying unconscious: any damage wakes if still above 0 HP.
+  if (
+    applied > 0 &&
+    target.condition?.name === "unconscious" &&
+    target.hp > 0
+  ) {
     clearCondition(target);
   }
-  if (target.hp === 0 && target.relentless && !target.relentlessUsed) {
+
+  if (target.hp > 0) {
+    if (rng) checkConcentrationOnDamage(rng, target, applied);
+    return applied;
+  }
+
+  // Hit 0 this strike.
+  if (target.relentless && !target.relentlessUsed) {
     target.hp = 1;
     target.relentlessUsed = true;
-    if (rng && applied > 0) checkConcentrationOnDamage(rng, target, applied);
+    if (rng) checkConcentrationOnDamage(rng, target, applied);
     return applied;
   }
-  if (target.hp === 0) {
-    target.alive = false;
-    if (target.raging) endRage(target);
-    // Dying ends concentration immediately — no save.
-    endConcentration(target);
+
+  const leftover = hpDamage - hpBefore;
+  if (target.kind !== "pc" || leftover >= target.maxHp) {
+    killCombatant(target);
     return applied;
   }
-  if (rng && applied > 0) checkConcentrationOnDamage(rng, target, applied);
+
+  // PC dying: floor at 0, unconscious, reset death saves.
+  target.hp = 0;
+  target.deathSaveSuccesses = 0;
+  target.deathSaveFailures = 0;
+  target.stable = false;
+  setCondition(target, "unconscious", 9999);
   return applied;
+}
+
+/**
+ * Damage while already at 0 HP (PC dying/stable).
+ * Instant death if this hit's mitigated damage ≥ maxHp; otherwise auto failure(s).
+ */
+function applyDamageAtZeroHp(
+  target: Combatant,
+  applied: number,
+  hpDamage: number,
+  critical: boolean,
+  rng?: Rng,
+): number {
+  if (target.kind !== "pc") {
+    killCombatant(target);
+    return applied;
+  }
+
+  // Massive damage: this hit alone ≥ maxHp → instant death.
+  if (applied >= target.maxHp) {
+    killCombatant(target);
+    return applied;
+  }
+
+  // Hit while stable restarts the death-save sequence, then this hit fails a save.
+  if (target.stable) {
+    target.stable = false;
+    target.deathSaveSuccesses = 0;
+    target.deathSaveFailures = 0;
+  }
+
+  // Automatic failure(s); HP stays at 0; stay unconscious.
+  target.deathSaveFailures += critical ? 2 : 1;
+  if (target.deathSaveFailures >= 3) {
+    killCombatant(target);
+  } else if (rng && target.concentratingOn) {
+    checkConcentrationOnDamage(rng, target, applied);
+  }
+  return applied;
+}
+
+/** Mark a combatant dead; ends Rage/concentration; clears conditions. */
+export function killCombatant(target: Combatant): void {
+  target.alive = false;
+  target.hp = 0;
+  target.stable = false;
+  target.deathSaveSuccesses = 0;
+  target.deathSaveFailures = 0;
+  if (target.raging) endRage(target);
+  endConcentration(target);
+  clearCondition(target);
+}
+
+/**
+ * Temporary HP: keep the higher pool (SRD — grants do not stack/add).
+ * Does not wake, heal, or stabilize a combatant at 0 HP.
+ */
+export function grantTempHp(target: Combatant, amount: number): void {
+  if (amount <= 0) return;
+  target.tempHp = Math.max(target.tempHp, amount);
+}
+
+export type DeathSaveOutcome =
+  | "success"
+  | "failure"
+  | "revived"
+  | "stabilized"
+  | "died";
+
+export type DeathSaveResult = {
+  d20: number;
+  outcome: DeathSaveOutcome;
+  successes: number;
+  failures: number;
+};
+
+/**
+ * Roll a death saving throw for a dying PC (hp ≤ 0, not stable).
+ * Nat 20 → 1 HP and clear unconscious. Nat 1 → two failures.
+ */
+export function processDeathSave(rng: Rng, actor: Combatant): DeathSaveResult {
+  const d20 = d(rng, 20);
+
+  if (d20 === 20) {
+    actor.hp = 1;
+    actor.deathSaveSuccesses = 0;
+    actor.deathSaveFailures = 0;
+    actor.stable = false;
+    clearCondition(actor);
+    return { d20, outcome: "revived", successes: 0, failures: 0 };
+  }
+
+  if (d20 === 1) actor.deathSaveFailures += 2;
+  else if (d20 >= 10) actor.deathSaveSuccesses += 1;
+  else actor.deathSaveFailures += 1;
+
+  if (actor.deathSaveFailures >= 3) {
+    const successes = actor.deathSaveSuccesses;
+    const failures = actor.deathSaveFailures;
+    killCombatant(actor);
+    return {
+      d20,
+      outcome: "died",
+      successes,
+      failures,
+    };
+  }
+
+  if (actor.deathSaveSuccesses >= 3) {
+    actor.stable = true;
+    actor.deathSaveSuccesses = 0;
+    actor.deathSaveFailures = 0;
+    return { d20, outcome: "stabilized", successes: 0, failures: 0 };
+  }
+
+  return {
+    d20,
+    outcome: d20 >= 10 ? "success" : "failure",
+    successes: actor.deathSaveSuccesses,
+    failures: actor.deathSaveFailures,
+  };
+}
+
+/** Stabilize a living creature at 0 HP (Spare the Dying / Medicine). No HP change. */
+export function stabilizeCombatant(target: Combatant): boolean {
+  if (!target.alive || target.hp > 0 || target.stable) return false;
+  target.stable = true;
+  target.deathSaveSuccesses = 0;
+  target.deathSaveFailures = 0;
+  return true;
+}
+
+export function applyHeal(target: Combatant, amount: number): void {
+  if (!target.alive || amount <= 0) return;
+  const wasDown = target.hp <= 0;
+  target.hp = Math.min(target.maxHp, target.hp + amount);
+  if (wasDown && target.hp > 0) {
+    clearCondition(target);
+    target.deathSaveSuccesses = 0;
+    target.deathSaveFailures = 0;
+    target.stable = false;
+  }
 }
 
 /** Mark that a raging combatant attacked a hostile (hit or miss). */
@@ -611,11 +783,6 @@ export function endRage(actor: Combatant): void {
   actor.resistances = actor.resistances.filter(
     (t) => !drop.has(t.toLowerCase()),
   );
-}
-
-export function applyHeal(target: Combatant, amount: number): void {
-  if (!target.alive) return;
-  target.hp = Math.min(target.maxHp, target.hp + amount);
 }
 
 export function applyXp(target: Combatant, amount: number): void {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { chooseAction, chooseBeforeDamageReaction, chooseBonusAction } from "./tactics";
 import type { Combatant, Role, Weapon } from "./types";
+import { DYING_DEFAULTS } from "./dyingDefaults";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -28,6 +29,7 @@ function combatant(
     maxHp: 10,
     hp: 10,
     alive: true,
+    ...DYING_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { fetchJsonOnce } from "@/lib/fetchOnce";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { characterLabel } from "@/training/companion";
 import { projectFrame } from "@/replay/project";
@@ -54,13 +55,14 @@ export function GameClient({
     setError(null);
     setRunning(true);
     try {
-      const res = await fetch("/api/run", {
+      const { ok, data } = await fetchJsonOnce<
+        DungeonResult & { error?: string }
+      >("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ seed, party }),
       });
-      const data = (await res.json()) as DungeonResult & { error?: string };
-      if (!res.ok || data.error) {
+      if (!ok || data.error) {
         throw new Error(data.error ?? "maze run failed");
       }
       setResult(data);

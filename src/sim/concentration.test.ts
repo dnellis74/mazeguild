@@ -13,6 +13,7 @@ import {
   startConcentration,
 } from "./rules";
 import type { Combatant, Weapon } from "./types";
+import { DYING_DEFAULTS } from "./dyingDefaults";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -36,6 +37,7 @@ function combatant(over: Partial<Combatant> & { id: string }): Combatant {
     maxHp: 20,
     hp: 20,
     alive: true,
+    ...DYING_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,
@@ -146,14 +148,16 @@ describe("Part 1: concentration (mock effect, not Bless)", () => {
     expect(cleaned).toBe(1);
   });
 
-  it("dying ends concentration with no save", () => {
+  it("dying ends concentration with no save via unconscious incapacitation", () => {
     const c = combatant({ id: "caster", hp: 3 });
     let cleaned = 0;
     startConcentration(c, "MockSpell", 1, () => {
       cleaned += 1;
     });
-    applyDamage(c, 10, "slashing"); // no rng → death path, no save
-    expect(c.alive).toBe(false);
+    applyDamage(c, 10, "slashing"); // leftover 7 < maxHp 20 → dying, not dead
+    expect(c.alive).toBe(true);
+    expect(c.hp).toBe(0);
+    expect(c.condition?.name).toBe("unconscious");
     expect(c.concentratingOn).toBeNull();
     expect(cleaned).toBe(1);
   });
@@ -392,7 +396,7 @@ describe("Part 3: Bless integration (concentration + modifiers)", () => {
     const a = combatant({ id: "a" });
     const b = combatant({ id: "b" });
     castBless(caster, [a, b], 1);
-    applyDamage(caster, 20, "slashing"); // death, no rng
+    applyDamage(caster, 30, "slashing"); // leftover 25 ≥ maxHp 20 → instant death
     expect(caster.alive).toBe(false);
     expect(caster.concentratingOn).toBeNull();
     expect(a.rollModifiers).toEqual([]);

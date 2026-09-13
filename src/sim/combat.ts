@@ -10,6 +10,7 @@ import {
   expireConditionIfDue,
   hasCondition,
   markRageAttack,
+  processDeathSave,
   removeRollModifier,
   resolveAttack,
   resolveAutoSpell,
@@ -19,6 +20,7 @@ import {
   resolveSave,
   rollSpellDamage,
   setCondition,
+  stabilizeCombatant,
   startConcentration,
   tickRageAtTurnStart,
   type AttackResult,
@@ -69,14 +71,40 @@ function damageTypeForAttack(actor: Combatant, used: string): string {
   return actor.weapon.damageType;
 }
 
-/** Start-of-turn refresh: reaction recharges; Shield AC bonus ends; Rage clock. */
-function beginTurn(actor: Combatant, round: number): void {
+/** Start-of-turn refresh: reaction, Shield AC, Rage clock, death saves. */
+function beginTurn(
+  actor: Combatant,
+  round: number,
+  rng: Rng,
+  log: LogEvent[],
+): void {
   expireConditionIfDue(actor, round);
   actor.reactionUsed = false;
   actor.sneakAttackUsedThisTurn = false;
   actor.tempAcBonus = 0;
-  // Rage early-end / 1-minute expiry (entry is a bonus-action Intent now).
   tickRageAtTurnStart(actor, round);
+
+  // Death saving throws (PCs at 0 HP, not yet stable).
+  if (
+    actor.kind === "pc" &&
+    actor.alive &&
+    actor.hp <= 0 &&
+    !actor.stable
+  ) {
+    const result = processDeathSave(rng, actor);
+    log.push({
+      event: "death_save",
+      round,
+      actor: actor.name,
+      d20: result.d20,
+      outcome: result.outcome,
+      successes: result.successes,
+      failures: result.failures,
+    });
+    if (result.outcome === "died") {
+      log.push({ event: "death", round, name: actor.name });
+    }
+  }
 }
 
 /** Clear Rage and concentration at encounter end. */
@@ -222,6 +250,22 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
     if (intent.type === "attack" && intent.ability) {
       intent = { type: "attack", targetId: intent.targetId };
     }
+  }
+
+  if (intent.type === "stabilize") {
+    const target = allies.find((a) => a.id === intent.targetId);
+    if (!target?.alive) return true;
+    const used = intent.ability || actor.stabilizeCantrip || "Spare the Dying";
+    if (!stabilizeCombatant(target)) return true;
+    log.push({
+      event: "stabilize",
+      round,
+      actor: actor.name,
+      target: target.name,
+      used,
+      targetHpAfter: target.hp,
+    });
+    return true;
   }
 
   if (intent.type === "heal") {
@@ -462,6 +506,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           result.damage,
           spell.damage.type,
           rng,
+          result.crit,
         );
         if (spell.onHitCondition) {
           const dur = spell.conditionDurationRounds ?? 2;
@@ -514,7 +559,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
 
   if (result.hit) {
     const dtype = damageTypeForAttack(actor, used);
-    const applied = applyDamage(target, result.damage, dtype, rng);
+    const applied = applyDamage(target, result.damage, dtype, rng, result.crit);
     log.push({
       event: "attack",
       round,
@@ -582,9 +627,10 @@ export function runCombat(
       if (!actor.alive) continue;
       if (!party.some((p) => p.alive) || !enemies.some((e) => e.alive)) break;
 
-      beginTurn(actor, round);
+      beginTurn(actor, round, rng, log);
 
       // Unconscious: still occupy a turn slot (beginTurn ran) but take no actions.
+      // (Nat-20 death save may have cleared unconscious above.)
       if (hasCondition(actor, "unconscious")) continue;
 
       const allies = actor.kind === "pc" ? party : enemies;

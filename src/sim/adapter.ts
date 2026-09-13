@@ -1,5 +1,6 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
-import { pickLearnedAttackCantrip } from "./cantrips";
+import { pickLearnedAttackCantrip, pickLearnedStabilizeCantrip } from "./cantrips";
+import { DYING_DEFAULTS } from "./dyingDefaults";
 import {
   getSpell,
   pickLearnedAttackSpell,
@@ -230,6 +231,7 @@ export function companionToCombatant(
   const spellAbility = pickSpellAbility(archetypes);
   const primary = archetypes[0] || "Companion";
   const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
+  const stabilizeCantrip = pickLearnedStabilizeCantrip(ch.cantrips);
   const spell = pickLearnedAutoSpell(ch.spells);
   const attackSpell = pickLearnedAttackSpell(ch.spells);
   const controlSpell = pickLearnedControlSpell(ch.spells);
@@ -258,9 +260,11 @@ export function companionToCombatant(
     maxHp,
     hp,
     alive: hp > 0,
+    ...DYING_DEFAULTS,
     // Casters keep a weapon for turns with no attack cantrip (and for display).
     weapon: resolveWeapon(ch, archetypes),
     cantrip,
+    stabilizeCantrip,
     spell,
     attackSpell,
     controlSpell,
@@ -343,6 +347,7 @@ export function makeMonster(opts: {
     maxHp: opts.hp,
     hp: opts.hp,
     alive: true,
+    ...DYING_DEFAULTS,
     weapon: opts.weapon,
     fightingStyles: [],
     archery: false,

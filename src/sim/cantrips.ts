@@ -2,7 +2,7 @@ import cantripData from "../../public/data/cantrips.json";
 import type { Rng } from "./rng";
 import type { DiceExpr } from "./types";
 
-export type CantripCombatType = "attack" | "save" | "utility";
+export type CantripCombatType = "attack" | "save" | "utility" | "stabilize";
 
 export type CantripCastingTime = "action" | "bonus_action" | "reaction";
 
@@ -36,6 +36,11 @@ export function isAttackCantrip(name: string): boolean {
   return !!row && row.combatType === "attack" && !!row.damage;
 }
 
+export function isStabilizeCantrip(name: string): boolean {
+  const row = byName.get(name);
+  return !!row && row.combatType === "stabilize";
+}
+
 /**
  * Pick an attack-roll cantrip the character actually learned.
  * Multiple matches: sorted by name, then chosen with the seeded rng.
@@ -53,4 +58,16 @@ export function pickLearnedAttackCantrip(
   if (names.length === 0) return undefined;
   if (names.length === 1 || !rng) return names[0];
   return names[Math.floor(rng() * names.length)]!;
+}
+
+/** First learned stabilize cantrip (e.g. Spare the Dying), if any. */
+export function pickLearnedStabilizeCantrip(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((c) => c.name).filter(Boolean)),
+  ]
+    .filter(isStabilizeCantrip)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return names[0];
 }
