@@ -35,6 +35,7 @@ function combatant(
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
+    spellSlots: 0,
     spellMod: 0,
     healDice: { count: 1, sides: 8 },
     xp: 0,
@@ -102,6 +103,53 @@ describe("chooseAction", () => {
     expect(chooseAction(druid, [druid, wounded], foes)).toEqual({
       type: "heal",
       targetId: "ally",
+    });
+  });
+
+  it("prefers Magic Missile over cantrip when slots remain", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      spell: "Magic Missile",
+      spellSlots: 2,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Magic Missile",
+    });
+  });
+
+  it("falls back to cantrip when spell slots are exhausted", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      spell: "Magic Missile",
+      spellSlots: 0,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Fire Bolt",
+    });
+  });
+
+  it("never chooses Magic Missile if the spell was not learned", () => {
+    const wizard = combatant({
+      id: "wiz",
+      archetype: "Wizard",
+      role: "dps",
+      cantrip: "Fire Bolt",
+      spellSlots: 2,
+    });
+    expect(chooseAction(wizard, [wizard], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Fire Bolt",
     });
   });
 });

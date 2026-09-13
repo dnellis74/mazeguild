@@ -15,6 +15,7 @@ function byId(a: Combatant, b: Combatant): number {
 
 /**
  * Action and target selection. No dice, no HP mutation.
+ * Priority: heal wounded ally → cast learned auto spell (slot) → cantrip → weapon.
  * A later motivation prompt will bias this layer only.
  */
 export function chooseAction(
@@ -38,6 +39,10 @@ export function chooseAction(
     return b.hp - a.hp || byId(a, b);
   });
   const targetId = sorted[0]!.id;
+
+  if (actor.spell && actor.spellSlots > 0) {
+    return { type: "attack", targetId, ability: actor.spell };
+  }
   if (actor.cantrip) {
     return { type: "attack", targetId, ability: actor.cantrip };
   }

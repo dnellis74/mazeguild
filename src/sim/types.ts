@@ -43,12 +43,16 @@ export type Combatant = {
   weapon: Weapon;
   /** Assigned attack-roll cantrip name, e.g. "Fire Bolt". Omitted for weapon attacks. */
   cantrip?: string;
+  /** Learned combat spell ready to cast when spellSlots remain, e.g. "Magic Missile". */
+  spell?: string;
   lucky: boolean;
   relentless: boolean;
   relentlessUsed: boolean;
   sneakAttackDice: number;
   healSlots: number;
   layOnHands: number;
+  /** Remaining 1st-level spell slots (offense). Separate from healSlots. */
+  spellSlots: number;
   spellMod: number;
   healDice: DiceExpr;
   xp: number;
@@ -86,7 +90,7 @@ export type LogEvent =
       crit?: boolean;
       damage?: number;
       targetHpAfter?: number;
-      /** Weapon or cantrip used for this attack. */
+      /** Weapon, cantrip, or spell used for this attack. */
       used?: string;
     }
   | {

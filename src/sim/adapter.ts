@@ -1,5 +1,6 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
 import { pickLearnedAttackCantrip } from "./cantrips";
+import { pickLearnedAutoSpell } from "./spells";
 import { abilityMod } from "./rules";
 import type { Rng } from "./rng";
 import {
@@ -167,6 +168,7 @@ export function companionToCombatant(
   const spellAbility = pickSpellAbility(archetypes);
   const primary = archetypes[0] || "Companion";
   const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
+  const spell = pickLearnedAutoSpell(ch.spells);
 
   return {
     id: ch.id || `pc-${index}`,
@@ -184,6 +186,7 @@ export function companionToCombatant(
     // Casters keep a weapon for turns with no attack cantrip (and for display).
     weapon: pickWeapon(archetypes),
     cantrip,
+    spell,
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
     relentless:
       /Relentless Endurance/i.test(features) || /half-?orc/i.test(ch.raceId),
@@ -193,6 +196,7 @@ export function companionToCombatant(
       ? slots
       : 0,
     layOnHands: /Lay on Hands/i.test(features) ? 5 : 0,
+    spellSlots: slots,
     spellMod: abilityMod(abilities[spellAbility]),
     healDice: { count: 1, sides: 8 },
     xp: ch.xp ?? 0,
@@ -245,6 +249,7 @@ export function makeMonster(opts: {
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
+    spellSlots: 0,
     spellMod: 0,
     healDice: { count: 1, sides: 8 },
     xp: 0,

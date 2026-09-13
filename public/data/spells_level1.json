@@ -39,7 +39,13 @@
         "Sorcerer",
         "Warlock",
         "Wizard"
-      ]
+      ],
+      "combatType": "save",
+      "damage": null,
+      "save": {
+        "ability": "WIS",
+        "onSuccess": "none"
+      }
     },
     {
       "id": 4,
@@ -51,7 +57,10 @@
         "Sorcerer",
         "Warlock",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 5,
@@ -75,7 +84,10 @@
         "Druid",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 7,
@@ -86,7 +98,10 @@
         "Bard",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 8,
@@ -107,7 +122,10 @@
         "Bard",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 10,
@@ -137,7 +155,13 @@
       "archetypes": [
         "Bard",
         "Wizard"
-      ]
+      ],
+      "combatType": "save",
+      "damage": null,
+      "save": {
+        "ability": "WIS",
+        "onSuccess": "none"
+      }
     },
     {
       "id": 13,
@@ -147,7 +171,10 @@
       "archetypes": [
         "Bard",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 14,
@@ -158,7 +185,10 @@
         "Bard",
         "Warlock",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 15,
@@ -169,7 +199,10 @@
         "Bard",
         "Druid",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 16,
@@ -180,7 +213,10 @@
         "Bard",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 17,
@@ -191,7 +227,10 @@
         "Bard",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "control",
+      "damage": null,
+      "save": null
     },
     {
       "id": 18,
@@ -213,7 +252,18 @@
         "Druid",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "save",
+      "damage": {
+        "count": 2,
+        "sides": 8,
+        "type": "thunder",
+        "per": 1
+      },
+      "save": {
+        "ability": "CON",
+        "onSuccess": "half"
+      }
     },
     {
       "id": 20,
@@ -224,7 +274,10 @@
         "Bard",
         "Warlock",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 21,
@@ -300,7 +353,10 @@
         "Cleric",
         "Warlock",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 29,
@@ -348,7 +404,10 @@
         "Druid",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 34,
@@ -368,7 +427,10 @@
         "Druid",
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 36,
@@ -378,7 +440,18 @@
       "archetypes": [
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "save",
+      "damage": {
+        "count": 3,
+        "sides": 6,
+        "type": "fire",
+        "per": 1
+      },
+      "save": {
+        "ability": "DEX",
+        "onSuccess": "half"
+      }
     },
     {
       "id": 37,
@@ -388,7 +461,10 @@
       "archetypes": [
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "control",
+      "damage": null,
+      "save": null
     },
     {
       "id": 38,
@@ -399,7 +475,10 @@
         "Sorcerer",
         "Warlock",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 39,
@@ -409,7 +488,10 @@
       "archetypes": [
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 40,
@@ -419,7 +501,10 @@
       "archetypes": [
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 41,
@@ -429,7 +514,16 @@
       "archetypes": [
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "auto",
+      "damage": {
+        "count": 1,
+        "sides": 4,
+        "type": "force",
+        "per": 3,
+        "bonus": 1
+      },
+      "save": null
     },
     {
       "id": 42,
@@ -439,7 +533,10 @@
       "archetypes": [
         "Sorcerer",
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 43,
@@ -457,7 +554,10 @@
       "description": "Set a ward on a door, window, or area up to a 20-foot cube; when a Tiny or larger creature you haven't excluded touches or enters it, you get a mental or audible alert.",
       "archetypes": [
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 45,
@@ -466,7 +566,10 @@
       "description": "Summon a spirit familiar in a small animal form of your choice; it acts independently, obeys your commands, and can't attack, but can otherwise take actions on its own turn.",
       "archetypes": [
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 46,
@@ -475,7 +578,10 @@
       "description": "Create a 3-foot horizontal disk of force that floats 3 feet off the ground, follows you within 20 feet, and can carry up to 500 pounds for an hour.",
       "archetypes": [
         "Wizard"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null
     },
     {
       "id": 47,
@@ -484,7 +590,13 @@
       "description": "Cover a 10-foot square in slick grease, turning it into difficult terrain; creatures standing in it, entering it, or ending their turn there must succeed on a Dexterity save or fall prone.",
       "archetypes": [
         "Wizard"
-      ]
+      ],
+      "combatType": "save",
+      "damage": null,
+      "save": {
+        "ability": "DEX",
+        "onSuccess": "none"
+      }
     }
   ]
 }

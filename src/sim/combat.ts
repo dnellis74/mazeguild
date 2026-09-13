@@ -4,8 +4,10 @@ import {
   applyDamage,
   applyHeal,
   resolveAttack,
+  resolveAutoSpell,
   resolveCureWounds,
 } from "./rules";
+import { getSpell, isCombatAutoSpell } from "./spells";
 import { chooseAction, chooseEnemyAction } from "./tactics";
 import type { Combatant, LogEvent } from "./types";
 
@@ -86,6 +88,38 @@ export function runCombat(
       const target = foes.find((f) => f.id === intent.targetId);
       if (!target?.alive) continue;
       const used = intent.ability ?? actor.weapon.name;
+
+      // Auto-hit spells (Magic Missile): spend a slot, no to-hit roll.
+      if (
+        actor.kind === "pc" &&
+        intent.ability &&
+        actor.spell === intent.ability &&
+        actor.spellSlots > 0 &&
+        isCombatAutoSpell(intent.ability)
+      ) {
+        const spell = getSpell(intent.ability);
+        if (spell) {
+          actor.spellSlots -= 1;
+          const result = resolveAutoSpell(rng, spell);
+          applyDamage(target, result.damage);
+          log.push({
+            event: "attack",
+            round,
+            actor: actor.name,
+            target: target.name,
+            hit: true,
+            crit: false,
+            damage: result.damage,
+            targetHpAfter: target.hp,
+            used,
+          });
+          if (!target.alive) {
+            log.push({ event: "death", round, name: target.name });
+          }
+          continue;
+        }
+      }
+
       const result = resolveAttack(
         rng,
         actor,

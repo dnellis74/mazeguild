@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { companionToCombatant } from "./adapter";
 import { pickLearnedAttackCantrip } from "./cantrips";
 import { createRng } from "./rng";
-import { resolveAttack } from "./rules";
+import { resolveAttack, resolveAutoSpell } from "./rules";
+import { getSpell } from "./spells";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
 
@@ -45,6 +46,7 @@ function basePc(over: Partial<Combatant> = {}): Combatant {
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
+    spellSlots: 0,
     spellMod: 3,
     healDice: { count: 1, sides: 8 },
     xp: 0,
@@ -74,6 +76,7 @@ function foe(ac = 10): Combatant {
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
+    spellSlots: 0,
     spellMod: 0,
     healDice: { count: 1, sides: 8 },
     xp: 0,
@@ -87,7 +90,10 @@ function seqRng(seq: number[]) {
   return () => (i < seq.length ? seq[i++]! : 0);
 }
 
-function wizardCharacter(cantrips: Character["cantrips"]): Character {
+function wizardCharacter(
+  cantrips: Character["cantrips"],
+  spells: Character["spells"] = [],
+): Character {
   return {
     id: "wiz-1",
     name: "Elowen",
@@ -102,7 +108,7 @@ function wizardCharacter(cantrips: Character["cantrips"]): Character {
       },
     ],
     cantrips,
-    spells: [],
+    spells,
     abilityScores: {
       STR: 8,
       DEX: 14,
@@ -228,5 +234,45 @@ describe("resolveAttack cantrips", () => {
     expect(result.hit).toBe(true);
     expect(result.damage).toBe(5);
     expect(result.total).toBe(14);
+  });
+});
+
+describe("resolveAutoSpell / Magic Missile", () => {
+  it("deals 3 separate 1d4+1 darts with no attack roll", () => {
+    const spell = getSpell("Magic Missile")!;
+    // three d4 rolls forced to 2, 3, 4 → (2+1)+(3+1)+(4+1) = 12
+    const result = resolveAutoSpell(seqRng([0.25, 0.5, 0.75]), spell);
+    expect(result.damage).toBe(12);
+  });
+
+  it("ranges from 6 to 15 for three 1d4+1 darts", () => {
+    const spell = getSpell("Magic Missile")!;
+    const min = resolveAutoSpell(seqRng([0, 0, 0]), spell).damage;
+    const max = resolveAutoSpell(seqRng([0.999, 0.999, 0.999]), spell).damage;
+    expect(min).toBe(6);
+    expect(max).toBe(15);
+  });
+});
+
+describe("companionToCombatant spells", () => {
+  it("assigns Magic Missile only when learned", () => {
+    const withMm = companionToCombatant(
+      wizardCharacter(
+        [{ id: "1", name: "Fire Bolt", archetype: "Wizard" }],
+        [{ id: "mm", name: "Magic Missile", archetype: "Wizard", level: 1 }],
+      ),
+      0,
+      createRng(1),
+    );
+    expect(withMm.spell).toBe("Magic Missile");
+    expect(withMm.spellSlots).toBe(2);
+
+    const without = companionToCombatant(
+      wizardCharacter([{ id: "1", name: "Fire Bolt", archetype: "Wizard" }], []),
+      0,
+      createRng(1),
+    );
+    expect(without.spell).toBeUndefined();
+    expect(without.spellSlots).toBe(2);
   });
 });

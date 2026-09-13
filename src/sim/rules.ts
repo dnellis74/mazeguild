@@ -1,5 +1,6 @@
 import { d, dice, type Rng } from "./rng";
 import { getCantrip } from "./cantrips";
+import { getSpell, type SpellEntry } from "./spells";
 import type { Ability, Combatant } from "./types";
 
 /** SRD 5.1 ability modifier. */
@@ -22,6 +23,29 @@ export type AttackResult = {
   d20: number;
   total: number;
 };
+
+export type AutoSpellResult = {
+  damage: number;
+};
+
+/**
+ * Auto-hit spell (combatType "auto"): no attack roll, no crit, no miss, no Lucky,
+ * no Sneak Attack. Rolls each damage instance separately (per) and adds bonus per instance.
+ */
+export function resolveAutoSpell(
+  rng: Rng,
+  spell: SpellEntry,
+): AutoSpellResult {
+  const die = spell.damage;
+  if (!die) return { damage: 0 };
+  const per = Math.max(1, die.per ?? 1);
+  const bonus = die.bonus ?? 0;
+  let damage = 0;
+  for (let i = 0; i < per; i++) {
+    damage += dice(rng, die.count, die.sides) + bonus;
+  }
+  return { damage: Math.max(0, damage) };
+}
 
 /**
  * SRD 5.1 attack: d20 + ability mod + proficiency vs AC.
