@@ -16,7 +16,8 @@
       "archetypes": [
         "Bard",
         "Druid"
-      ]
+      ],
+      "castingTime": "action"
     },
     {
       "id": 2,
@@ -26,7 +27,11 @@
       "archetypes": [
         "Bard",
         "Cleric"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 3,
@@ -45,7 +50,8 @@
       "save": {
         "ability": "WIS",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 4,
@@ -60,7 +66,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 5,
@@ -71,7 +78,15 @@
         "Bard",
         "Cleric",
         "Druid"
-      ]
+      ],
+      "combatType": "heal",
+      "damage": null,
+      "save": null,
+      "healDice": {
+        "count": 1,
+        "sides": 8
+      },
+      "castingTime": "action"
     },
     {
       "id": 6,
@@ -87,7 +102,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 7,
@@ -101,7 +117,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 8,
@@ -111,7 +128,8 @@
       "archetypes": [
         "Bard",
         "Druid"
-      ]
+      ],
+      "castingTime": "action"
     },
     {
       "id": 9,
@@ -125,7 +143,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "reaction"
     },
     {
       "id": 10,
@@ -136,7 +155,15 @@
         "Bard",
         "Cleric",
         "Druid"
-      ]
+      ],
+      "combatType": "heal",
+      "damage": null,
+      "save": null,
+      "healDice": {
+        "count": 1,
+        "sides": 4
+      },
+      "castingTime": "bonus_action"
     },
     {
       "id": 11,
@@ -145,7 +172,8 @@
       "description": "Touch a willing creature to make it immune to being frightened and grant it temporary hit points equal to your spellcasting ability modifier at the start of each of its turns, for up to a minute.",
       "archetypes": [
         "Bard"
-      ]
+      ],
+      "castingTime": "action"
     },
     {
       "id": 12,
@@ -161,7 +189,8 @@
       "save": {
         "ability": "WIS",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 13,
@@ -174,7 +203,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "minute"
     },
     {
       "id": 14,
@@ -188,7 +218,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "minute"
     },
     {
       "id": 15,
@@ -202,7 +233,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 16,
@@ -216,7 +248,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 17,
@@ -239,7 +272,8 @@
         "undead"
       ],
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 18,
@@ -249,7 +283,8 @@
       "archetypes": [
         "Bard",
         "Druid"
-      ]
+      ],
+      "castingTime": "action"
     },
     {
       "id": 19,
@@ -272,7 +307,8 @@
       "save": {
         "ability": "CON",
         "onSuccess": "half"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 20,
@@ -286,16 +322,24 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 21,
       "level": 1,
       "name": "Bless",
-      "description": "Bless up to three creatures within range; whenever a target makes an attack roll or saving throw before the spell ends, it adds 1d4.",
+      "description": "Bless up to three creatures within range; whenever a target makes an attack roll or saving throw before the spell ends, it adds 1d4. Concentration, up to 1 minute.",
       "archetypes": [
-        "Cleric"
-      ]
+        "Cleric",
+        "Paladin"
+      ],
+      "combatType": "buff",
+      "concentration": true,
+      "durationRounds": 10,
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 22,
@@ -304,7 +348,11 @@
       "description": "Speak a one-word command to a creature you can see; on a failed Wisdom save it follows the command on its next turn, unless the command would be directly harmful to it.",
       "archetypes": [
         "Cleric"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 23,
@@ -314,7 +362,11 @@
       "archetypes": [
         "Cleric",
         "Druid"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 24,
@@ -323,7 +375,11 @@
       "description": "For up to 10 minutes, you know the presence and location of any aberration, celestial, elemental, fey, fiend, or undead within 30 feet, and any consecrated or desecrated place or object nearby.",
       "archetypes": [
         "Cleric"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 25,
@@ -333,7 +389,11 @@
       "archetypes": [
         "Cleric",
         "Druid"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 26,
@@ -342,7 +402,17 @@
       "description": "Make a ranged spell attack with a flash of light; on a hit the target takes 4d6 radiant damage, and the next attack roll against it before the end of your next turn has advantage.",
       "archetypes": [
         "Cleric"
-      ]
+      ],
+      "combatType": "attack",
+      "damage": {
+        "count": 4,
+        "sides": 6,
+        "type": "radiant"
+      },
+      "save": null,
+      "onHitCondition": "guided",
+      "conditionDurationRounds": 2,
+      "castingTime": "action"
     },
     {
       "id": 27,
@@ -351,7 +421,15 @@
       "description": "Make a melee spell attack against a creature you can reach; on a hit it takes 3d10 necrotic damage.",
       "archetypes": [
         "Cleric"
-      ]
+      ],
+      "combatType": "attack",
+      "damage": {
+        "count": 3,
+        "sides": 10,
+        "type": "necrotic"
+      },
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 28,
@@ -365,7 +443,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 29,
@@ -375,7 +454,11 @@
       "archetypes": [
         "Cleric",
         "Druid"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 30,
@@ -384,7 +467,11 @@
       "description": "Ward a creature so that any creature targeting it with an attack or harmful spell must first succeed on a Wisdom save or choose a new target; ends if the warded creature attacks or casts a harmful spell.",
       "archetypes": [
         "Cleric"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "bonus_action"
     },
     {
       "id": 31,
@@ -393,7 +480,11 @@
       "description": "A shimmering field surrounds a creature of your choice, granting it a +2 bonus to AC for up to 10 minutes.",
       "archetypes": [
         "Cleric"
-      ]
+      ],
+      "combatType": "utility",
+      "damage": null,
+      "save": null,
+      "castingTime": "bonus_action"
     },
     {
       "id": 32,
@@ -402,7 +493,8 @@
       "description": "Grasping weeds and vines sprout in a 20-foot square, turning the area into difficult terrain and forcing a Strength save or restraining creatures caught there when it's cast.",
       "archetypes": [
         "Druid"
-      ]
+      ],
+      "castingTime": "action"
     },
     {
       "id": 33,
@@ -416,7 +508,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 34,
@@ -425,7 +518,8 @@
       "description": "Conjure up to ten berries infused with magic; eating one as an action restores 1 hit point and provides a day's nourishment, but they lose potency after 24 hours.",
       "archetypes": [
         "Druid"
-      ]
+      ],
+      "castingTime": "action"
     },
     {
       "id": 35,
@@ -439,7 +533,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 36,
@@ -460,7 +555,8 @@
       "save": {
         "ability": "DEX",
         "onSuccess": "half"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 37,
@@ -480,7 +576,8 @@
       "durationRounds": 1,
       "ignoreCantSee": true,
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 38,
@@ -494,7 +591,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "bonus_action"
     },
     {
       "id": 39,
@@ -507,7 +605,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 40,
@@ -520,7 +619,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 41,
@@ -539,7 +639,8 @@
         "per": 3,
         "bonus": 1
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 42,
@@ -556,7 +657,8 @@
       "trigger": "before_damage",
       "effect": {
         "acBonus": 5
-      }
+      },
+      "castingTime": "reaction"
     },
     {
       "id": 43,
@@ -565,7 +667,8 @@
       "description": "As a reaction to being damaged by a creature you can see within 60 feet, surround it in hellish flame; it takes 2d10 fire damage on a failed Dexterity save, half on a success.",
       "archetypes": [
         "Warlock"
-      ]
+      ],
+      "castingTime": "reaction"
     },
     {
       "id": 44,
@@ -577,7 +680,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "minute"
     },
     {
       "id": 45,
@@ -589,7 +693,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "hour"
     },
     {
       "id": 46,
@@ -601,7 +706,8 @@
       ],
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 47,
@@ -616,7 +722,8 @@
       "save": {
         "ability": "DEX",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     }
   ]
 }

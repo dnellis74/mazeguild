@@ -22,6 +22,25 @@ export function dice(rng: Rng, count: number, sides: number): number {
   return total;
 }
 
+/**
+ * Roll `count` dice; any result ≤ `threshold` is rerolled once (must keep the
+ * second roll even if still ≤ threshold). Used for Great Weapon Fighting.
+ */
+export function diceRerollLow(
+  rng: Rng,
+  count: number,
+  sides: number,
+  threshold = 2,
+): number {
+  let total = 0;
+  for (let i = 0; i < count; i++) {
+    let roll = d(rng, sides);
+    if (roll <= threshold) roll = d(rng, sides);
+    total += roll;
+  }
+  return total;
+}
+
 export function pickIndex(rng: Rng, length: number): number {
   return Math.floor(rng() * length);
 }

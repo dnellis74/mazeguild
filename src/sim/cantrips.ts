@@ -4,6 +4,8 @@ import type { DiceExpr } from "./types";
 
 export type CantripCombatType = "attack" | "save" | "utility";
 
+export type CantripCastingTime = "action" | "bonus_action" | "reaction";
+
 export type CantripDamage = DiceExpr & { type: string };
 
 export type CantripEntry = {
@@ -14,6 +16,7 @@ export type CantripEntry = {
   combatType: CantripCombatType;
   damage: CantripDamage | null;
   save: { ability: string; onSuccess: string } | null;
+  castingTime?: CantripCastingTime;
 };
 
 const entries = (cantripData as { cantrips: CantripEntry[] }).cantrips;

@@ -1,17 +1,24 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
 import { pickLearnedAttackCantrip } from "./cantrips";
 import {
+  getSpell,
+  pickLearnedAttackSpell,
   pickLearnedAutoSpell,
+  pickLearnedBonusHealSpell,
+  pickLearnedBuffSpell,
   pickLearnedControlSpell,
+  pickLearnedHealSpell,
   pickLearnedReactionSpell,
   pickLearnedSaveSpell,
 } from "./spells";
 import { abilityMod } from "./rules";
-import { levelForXp, ragesForLevel } from "./leveling";
+import { levelForXp, rageDamageForLevel, ragesForLevel } from "./leveling";
 import type { Rng } from "./rng";
+import { computeAcFromArmor, pickArmorLoadout } from "./armor";
 import {
   archetypeFallbackWeapon,
   defaultUnarmedWeapon,
+  getWeapon,
   monkUnarmedWeapon,
 } from "./weapons";
 import type { Combatant, PartySnapshot, Role, Weapon } from "./types";
@@ -109,7 +116,43 @@ function pickSpellAbility(archetypes: string[]): Ability {
   return "WIS";
 }
 
-function pickWeapon(archetypes: string[]): Weapon {
+const FIGHTING_STYLE_NAMES = [
+  "Archery",
+  "Defense",
+  "Dueling",
+  "Great Weapon Fighting",
+  "Protection",
+  "Two-Weapon Fighting",
+] as const;
+
+/**
+ * Collect earned fighting-style feature names (exact match).
+ * Training does not enforce exclusivity (six Drill Yard skills, all prereq-null);
+ * if more than one is somehow earned, warn and keep all flags for visibility.
+ */
+function collectFightingStyles(ch: Character): string[] {
+  const earned = new Set(
+    (ch.features || []).flatMap((f) => asFeatureList(f.feature)),
+  );
+  const styles = FIGHTING_STYLE_NAMES.filter((n) => earned.has(n));
+  if (styles.length > 1) {
+    console.warn(
+      `[sim] companion ${ch.id || ch.name} has multiple Fighting Styles (${styles.join(", ")}); training should allow only one — applying all earned styles defensively`,
+    );
+  }
+  return [...styles];
+}
+
+function pickWeapon(
+  archetypes: string[],
+  fightingStyles: string[],
+): Weapon {
+  if (fightingStyles.includes("Great Weapon Fighting")) {
+    return getWeapon("greataxe");
+  }
+  if (fightingStyles.includes("Archery")) {
+    return getWeapon("shortbow");
+  }
   if (archetypes.includes("Monk")) return monkUnarmedWeapon();
   for (const a of archetypes) {
     const w = archetypeFallbackWeapon(a);
@@ -127,6 +170,7 @@ function hasUnarmoredDefense(archetypes: string[]): "barbarian" | "monk" | null 
 function armorClass(
   scores: Record<Ability, number>,
   archetypes: string[],
+  fightingStyles: string[],
 ): number {
   const dex = abilityMod(scores.DEX ?? 10);
   const unarmored = hasUnarmoredDefense(archetypes);
@@ -136,7 +180,23 @@ function armorClass(
   if (unarmored === "monk") {
     return 10 + dex + abilityMod(scores.WIS ?? 10);
   }
-  return 10 + dex;
+
+  const loadout = pickArmorLoadout(archetypes);
+  // Two-handed styles: can't wield a shield with greataxe/shortbow.
+  if (
+    fightingStyles.includes("Great Weapon Fighting") ||
+    fightingStyles.includes("Archery")
+  ) {
+    loadout.shield = false;
+  }
+  let ac = computeAcFromArmor(scores, loadout);
+
+  // Defense: +1 AC while wearing armor (exact feature name — not Unarmored Defense).
+  // Applied once here; armorClass is not called repeatedly for the same combatant.
+  if (loadout.armor && fightingStyles.includes("Defense")) {
+    ac += 1;
+  }
+  return ac;
 }
 
 /**
@@ -163,6 +223,7 @@ export function companionToCombatant(
 
   const archetypes = archetypesOf(ch);
   const features = featureText(ch);
+  const fightingStyles = collectFightingStyles(ch);
   const race = titleCaseId(ch.raceId);
   const hitDie = hitDieFor(archetypes);
   const maxHp = Math.max(1, hitDie + abilityMod(abilities.CON));
@@ -175,11 +236,19 @@ export function companionToCombatant(
   const primary = archetypes[0] || "Companion";
   const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
   const spell = pickLearnedAutoSpell(ch.spells);
+  const attackSpell = pickLearnedAttackSpell(ch.spells);
   const controlSpell = pickLearnedControlSpell(ch.spells);
   const saveSpell = pickLearnedSaveSpell(ch.spells);
+  const buffSpell = pickLearnedBuffSpell(ch.spells);
   const reactionSpell = pickLearnedReactionSpell(ch.spells, "before_damage");
+  const healSpell = pickLearnedHealSpell(ch.spells);
+  const bonusHealSpell = pickLearnedBonusHealSpell(ch.spells);
+  const healDice = healSpell
+    ? (getSpell(healSpell)?.healDice ?? { count: 1, sides: 8 })
+    : { count: 1, sides: 8 };
   const level = levelForXp(ch.xp ?? 0);
   const isBarbarian = archetypes.includes("Barbarian");
+  const hasSecondWind = /\bSecond Wind\b/i.test(features);
 
   return {
     id: ch.id || `pc-${index}`,
@@ -190,22 +259,32 @@ export function companionToCombatant(
     role: roleFor(archetypes, features),
     abilities,
     proficiencyBonus: 2,
-    ac: armorClass(abilities, archetypes),
+    ac: armorClass(abilities, archetypes, fightingStyles),
     maxHp,
     hp,
     alive: hp > 0,
     // Casters keep a weapon for turns with no attack cantrip (and for display).
-    weapon: pickWeapon(archetypes),
+    weapon: pickWeapon(archetypes, fightingStyles),
     cantrip,
     spell,
+    attackSpell,
     controlSpell,
     saveSpell,
+    buffSpell,
     reactionSpell,
+    healSpell,
+    bonusHealSpell,
+    fightingStyles,
+    archery: fightingStyles.includes("Archery"),
+    greatWeaponFighting: fightingStyles.includes("Great Weapon Fighting"),
+    secondWindAvailable: hasSecondWind,
+    secondWindLevel: hasSecondWind ? level : 0,
     lucky: /Lucky/i.test(features) || /halfling/i.test(ch.raceId),
     relentless:
       /Relentless Endurance/i.test(features) || /half-?orc/i.test(ch.raceId),
     relentlessUsed: false,
     reactionUsed: false,
+    sneakAttackUsedThisTurn: false,
     tempAcBonus: 0,
     condition: null,
     immunities: [],
@@ -213,6 +292,11 @@ export function companionToCombatant(
     vulnerabilities: [],
     raging: false,
     ragesRemaining: isBarbarian ? ragesForLevel(level) : 0,
+    rageDamage: isBarbarian ? rageDamageForLevel(level) : 0,
+    rageMaintained: false,
+    rageExpiresRound: null,
+    concentratingOn: null,
+    rollModifiers: [],
     sneakAttackDice: /Sneak Attack/i.test(features) ? 1 : 0,
     healSlots: archetypes.some((a) => SPELL_HEALER_ARCHETYPES.has(a))
       ? slots
@@ -220,7 +304,7 @@ export function companionToCombatant(
     layOnHands: /Lay on Hands/i.test(features) ? 5 : 0,
     spellSlots: slots,
     spellMod: abilityMod(abilities[spellAbility]),
-    healDice: { count: 1, sides: 8 },
+    healDice,
     xp: ch.xp ?? 0,
     xpValue: 0,
   };
@@ -265,10 +349,16 @@ export function makeMonster(opts: {
     hp: opts.hp,
     alive: true,
     weapon: opts.weapon,
+    fightingStyles: [],
+    archery: false,
+    greatWeaponFighting: false,
+    secondWindAvailable: false,
+    secondWindLevel: 0,
     lucky: false,
     relentless: false,
     relentlessUsed: false,
     reactionUsed: false,
+    sneakAttackUsedThisTurn: false,
     tempAcBonus: 0,
     condition: null,
     immunities: [],
@@ -276,6 +366,11 @@ export function makeMonster(opts: {
     vulnerabilities: [],
     raging: false,
     ragesRemaining: 0,
+    rageDamage: 0,
+    rageMaintained: false,
+    rageExpiresRound: null,
+    concentratingOn: null,
+    rollModifiers: [],
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,

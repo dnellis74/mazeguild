@@ -27,12 +27,30 @@ export type Weapon = {
 export type Role = "tank" | "healer" | "dps";
 
 /** Timed combat conditions (Sleep, future Color Spray, etc.). */
-export type ConditionName = "unconscious" | "blinded";
+export type ConditionName = "unconscious" | "blinded" | "guided";
 
 export type ActiveCondition = {
   name: ConditionName;
   /** Cleared when combat `round` reaches this value (beginTurn check). */
   expiresRound: number;
+};
+
+/** Active concentration spell; onEnd tears down effects (e.g. Bless modifiers). */
+export type ConcentrationState = {
+  spellName: string;
+  startedRound: number;
+  onEnd: () => void;
+};
+
+/**
+ * Live die bonus/penalty on attack rolls and/or saves.
+ * Rolled fresh each time; same `source` replaces rather than stacks.
+ */
+export type RollModifier = {
+  source: string;
+  affects: "attack" | "save" | "both";
+  die: DiceExpr;
+  sign: 1 | -1;
 };
 
 export type Combatant = {
@@ -54,17 +72,40 @@ export type Combatant = {
   cantrip?: string;
   /** Learned combat spell ready to cast when spellSlots remain, e.g. "Magic Missile". */
   spell?: string;
+  /** Learned leveled spell attack, e.g. "Guiding Bolt" / "Inflict Wounds". */
+  attackSpell?: string;
   /** Learned HP-pool control spell, e.g. "Sleep". */
   controlSpell?: string;
   /** Learned AoE save spell, e.g. "Burning Hands". */
   saveSpell?: string;
-  /** Learned reaction spell, e.g. "Shield". */
+  /** Learned buff/concentration spell, e.g. "Bless". */
+  buffSpell?: string;
+  /** Reaction spell, e.g. "Shield". */
   reactionSpell?: string;
+  /** Preferred heal spell name ("Cure Wounds"). */
+  healSpell?: string;
+  /** Bonus-action heal spell ("Healing Word"). */
+  bonusHealSpell?: string;
+  /** Fighting styles earned (exact SRD names). At most one expected. */
+  fightingStyles: string[];
+  /** Archery: +2 on ranged weapon attack rolls. */
+  archery: boolean;
+  /** Great Weapon Fighting: reroll 1–2 on qualifying melee damage dice. */
+  greatWeaponFighting: boolean;
+  /** Second Wind available (once per short rest ≈ once per run). */
+  secondWindAvailable: boolean;
+  /** Fighter level contribution to Second Wind (1d10 + level). */
+  secondWindLevel: number;
   lucky: boolean;
   relentless: boolean;
   relentlessUsed: boolean;
   /** True after using a reaction; cleared at the start of this combatant's turn. */
   reactionUsed: boolean;
+  /**
+   * True after Sneak Attack damage is applied this turn; cleared at turn start.
+   * Defensive vs future Extra Attack — no multi-attack path exists yet.
+   */
+  sneakAttackUsedThisTurn: boolean;
   /** Temporary AC from Shield until the start of this combatant's next turn. */
   tempAcBonus: number;
   /** Active condition, if any (one at a time for this pass). */
@@ -84,6 +125,19 @@ export type Combatant = {
   raging: boolean;
   /** Remaining Rage uses (from leveling table; 0 for non-Barbarians). */
   ragesRemaining: number;
+  /** Flat damage added to Strength melee weapon hits while raging (Rage Damage column). */
+  rageDamage: number;
+  /**
+   * Attacked a hostile or took damage since the start of this combatant's last turn.
+   * Cleared at turn start after the early-end check; set by combat/applyDamage.
+   */
+  rageMaintained: boolean;
+  /** Round when 1-minute Rage expires (beginTurn clears if round >= this). */
+  rageExpiresRound: number | null;
+  /** Current concentration spell, if any. */
+  concentratingOn: ConcentrationState | null;
+  /** Active roll modifiers (Bless, future Bane, etc.). */
+  rollModifiers: RollModifier[];
   sneakAttackDice: number;
   healSlots: number;
   layOnHands: number;
@@ -117,6 +171,12 @@ export type LogEvent =
     }
   | { event: "step"; n: number; from: Pos; to: Pos; facing: Dir }
   | { event: "encounter_start"; pos: Pos; step: number; enemies: string[] }
+  | {
+      event: "round_start";
+      round: number;
+      /** Combatant names in initiative order (highest first). */
+      order: string[];
+    }
   | {
       event: "attack";
       round: number;
@@ -167,6 +227,21 @@ export type LogEvent =
       targetHpAfter: number;
       /** Thunderwave: failed save pushes 10 ft (logged only; no positions). */
       pushed?: boolean;
+    }
+  | {
+      event: "buff";
+      round: number;
+      actor: string;
+      used: string;
+      /** Names of creatures that received the buff. */
+      affected: string[];
+    }
+  | {
+      event: "rage";
+      round: number;
+      actor: string;
+      /** "Rage" on enter, "End Rage" on voluntary or logged ends. */
+      used: "Rage" | "End Rage";
     }
   | { event: "death"; round: number; name: string }
   | {

@@ -25,10 +25,16 @@ function pc(over: Partial<Combatant> & { id: string }): Combatant {
     hp: 8,
     alive: true,
     weapon: CLUB,
+    fightingStyles: [],
+    archery: false,
+    greatWeaponFighting: false,
+    secondWindAvailable: false,
+    secondWindLevel: 0,
     lucky: false,
     relentless: false,
     relentlessUsed: false,
     reactionUsed: false,
+    sneakAttackUsedThisTurn: false,
     tempAcBonus: 0,
     condition: null,
     immunities: [],
@@ -36,6 +42,11 @@ function pc(over: Partial<Combatant> & { id: string }): Combatant {
     vulnerabilities: [],
     raging: false,
     ragesRemaining: 0,
+    rageDamage: 0,
+    rageMaintained: false,
+    rageExpiresRound: null,
+    concentratingOn: null,
+    rollModifiers: [],
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
@@ -63,10 +74,16 @@ function goblin(over: Partial<Combatant> = {}): Combatant {
     hp: 50,
     alive: true,
     weapon: CLUB,
+    fightingStyles: [],
+    archery: false,
+    greatWeaponFighting: false,
+    secondWindAvailable: false,
+    secondWindLevel: 0,
     lucky: false,
     relentless: false,
     relentlessUsed: false,
     reactionUsed: false,
+    sneakAttackUsedThisTurn: false,
     tempAcBonus: 0,
     condition: null,
     immunities: [],
@@ -74,6 +91,11 @@ function goblin(over: Partial<Combatant> = {}): Combatant {
     vulnerabilities: [],
     raging: false,
     ragesRemaining: 0,
+    rageDamage: 0,
+    rageMaintained: false,
+    rageExpiresRound: null,
+    concentratingOn: null,
+    rollModifiers: [],
     sneakAttackDice: 0,
     healSlots: 0,
     layOnHands: 0,
@@ -104,6 +126,12 @@ describe("runCombat Magic Missile", () => {
     })();
 
     runCombat(rng, [wizard], [foe], log);
+
+    expect(log[0]).toMatchObject({
+      event: "round_start",
+      round: 1,
+      order: ["wiz", "Goblin"],
+    });
 
     const mm = log.find(
       (e) => e.event === "attack" && e.used === "Magic Missile",
@@ -593,13 +621,14 @@ describe("runCombat Burning Hands / Thunderwave", () => {
 });
 
 describe("runCombat Rage resistance", () => {
-  it("halves weapon damage against a raging Barbarian", () => {
+  it("enters Rage via bonus action then resists weapon damage", () => {
     const barb = pc({
       id: "barb",
       archetype: "Barbarian",
       hp: 30,
       maxHp: 30,
       ragesRemaining: 2,
+      rageDamage: 2,
       abilities: { STR: 16, DEX: 18, CON: 14, INT: 8, WIS: 10, CHA: 8 },
     });
     const foe = goblin({
@@ -616,18 +645,67 @@ describe("runCombat Rage resistance", () => {
       },
     });
     const log: LogEvent[] = [];
-    // barb high init → beginRage, then attack; foe target-pick then attacks.
-    // foe: d20=10 (+6)=16 vs AC 12 hit; d6=1 + STR4 = 5 → resist → 2
+    // One round: barb Rage (bonus) + crit kill; foe never acts.
+    // Avoid multi-round fights (1-minute Rage expiry would re-enter and spend a 2nd use).
     const seq = [
       0.95, // barb init
       0, // foe init
-      0.1, // barb attack (miss AC 15)
-      0.5, // foe chooseEnemyAction target pick
-      0.45, // foe d20=10
-      0.0, // d6=1
+      0.95, // barb d20 crit
+      0.9, // damage die high (+STR + rage) kills hp 100? need enough — use lower foe hp
     ];
+    // Lower foe HP so one hit ends the fight
+    foe.maxHp = 8;
+    foe.hp = 8;
     let i = 0;
     const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [barb], [foe], log);
+
+    const r1 = log.filter(
+      (e) =>
+        "round" in e &&
+        e.round === 1 &&
+        ((e.event === "rage" && e.actor === "barb") ||
+          (e.event === "attack" && e.actor === "barb")),
+    );
+    expect(r1[0]).toMatchObject({ event: "rage", used: "Rage" });
+    expect(r1[1]?.event).toBe("attack");
+    expect(barb.ragesRemaining).toBe(1);
+    expect(barb.raging).toBe(false); // cleared at encounter end
+  });
+
+  it("resists slashing while raging after bonus-action entry", () => {
+    const barb = pc({
+      id: "barb",
+      archetype: "Barbarian",
+      hp: 30,
+      maxHp: 30,
+      ragesRemaining: 2,
+      rageDamage: 2,
+      abilities: { STR: 16, DEX: 18, CON: 14, INT: 8, WIS: 10, CHA: 8 },
+    });
+    const foe = goblin({
+      abilities: { STR: 18, DEX: 10, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+      maxHp: 100,
+      hp: 100,
+      weapon: {
+        name: "Scimitar",
+        damage: { count: 1, sides: 6 },
+        damageType: "slashing",
+        properties: [],
+        finesse: false,
+        ranged: false,
+      },
+    });
+    const log: LogEvent[] = [];
+    // Round 1: rage + miss; foe hits for 5 → 2 resisted. Then stop via high foe AC / we only check first hit.
+    const seq = [
+      0.95, 0, 0.1, 0.5, 0.45, 0.0,
+      // round 2+: barb crits to end fight before rage minute expires
+      0.95, 0, 0.95, 0.9,
+    ];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.95);
 
     runCombat(rng, [barb], [foe], log);
 
@@ -639,7 +717,224 @@ describe("runCombat Rage resistance", () => {
         e.hit === true,
     );
     expect(hit).toMatchObject({ damage: 2 });
-    expect(barb.ragesRemaining).toBe(1);
-    expect(barb.raging).toBe(false); // cleared at encounter end
+  });
+});
+
+describe("runCombat Bless integration", () => {
+  it("logs a Bless buff on cast when the cleric has ≥2 allies", () => {
+    const cleric = pc({
+      id: "clr",
+      archetype: "Cleric",
+      buffSpell: "Bless",
+      spellSlots: 1,
+      cantrip: "Sacred Flame",
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
+    });
+    const ally = pc({
+      id: "ally",
+      archetype: "Fighter",
+      abilities: { STR: 16, DEX: 10, CON: 14, INT: 8, WIS: 10, CHA: 8 },
+    });
+    const foe = goblin({ maxHp: 3, hp: 3 });
+    const log: LogEvent[] = [];
+    const seq = [0.95, 0.5, 0];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [cleric, ally], [foe], log);
+
+    const buff = log.find((e) => e.event === "buff" && e.used === "Bless");
+    expect(buff).toMatchObject({
+      event: "buff",
+      used: "Bless",
+    });
+    expect(buff && "affected" in buff ? [...buff.affected].sort() : []).toEqual(
+      ["ally", "clr"],
+    );
+    expect(cleric.spellSlots).toBe(0);
+  });
+});
+
+describe("runCombat Guiding Bolt / heals", () => {
+  it("Guiding Bolt hits, deals radiant damage, applies guided, and spends a slot", () => {
+    const cleric = pc({
+      id: "clr",
+      archetype: "Cleric",
+      attackSpell: "Guiding Bolt",
+      spellSlots: 1,
+      spellMod: 3,
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
+    });
+    const foe = goblin({ ac: 5, maxHp: 8, hp: 8 });
+    const log: LogEvent[] = [];
+    // cleric init, goblin init, d20 hit, 4d6 all 6s
+    const seq = [0.99, 0.5, 0.7, 0.9, 0.9, 0.9, 0.9];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [cleric], [foe], log);
+
+    const atk = log.find(
+      (e) => e.event === "attack" && e.used === "Guiding Bolt",
+    );
+    expect(atk).toMatchObject({
+      event: "attack",
+      hit: true,
+      used: "Guiding Bolt",
+    });
+    expect(atk && "damage" in atk ? atk.damage : 0).toBe(24);
+    expect(foe.condition?.name).toBe("guided");
+    expect(cleric.spellSlots).toBe(0);
+  });
+
+  it("logs Healing Word as bonus heal and still takes an action attack same turn", () => {
+    const healer = pc({
+      id: "clr",
+      archetype: "Cleric",
+      role: "healer",
+      healSlots: 0,
+      healSpell: "Cure Wounds",
+      bonusHealSpell: "Healing Word",
+      healDice: { count: 1, sides: 8 },
+      spellSlots: 2,
+      spellMod: 3,
+      cantrip: "Sacred Flame",
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
+    });
+    const ally = pc({
+      id: "ally",
+      archetype: "Fighter",
+      hp: 2,
+      maxHp: 10,
+    });
+    // High AC so action may miss; we only need the attack log event.
+    const foe = goblin({ maxHp: 50, hp: 50, ac: 20 });
+    const log: LogEvent[] = [];
+    // inits: clr, ally, gob; HW heal die; then action attack d20 (+maybe more)
+    const seq = [0.99, 0.5, 0.4, 0.75, 0.2];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [healer, ally], [foe], log);
+
+    const round1 = log.filter(
+      (e) =>
+        (e.event === "heal" || e.event === "attack") &&
+        "round" in e &&
+        e.round === 1 &&
+        e.actor === "clr",
+    );
+    expect(round1[0]).toMatchObject({
+      event: "heal",
+      used: "Healing Word",
+      target: "ally",
+    });
+    expect(round1[1]).toMatchObject({
+      event: "attack",
+      actor: "clr",
+      used: "Sacred Flame",
+    });
+    expect(healer.spellSlots).toBeLessThan(2);
+  });
+
+  it("Cure-only Cleric has no bonus heal and uses one action-slot heal", () => {
+    const healer = pc({
+      id: "clr",
+      archetype: "Cleric",
+      role: "healer",
+      healSlots: 1,
+      healSpell: "Cure Wounds",
+      healDice: { count: 1, sides: 8 },
+      spellMod: 3,
+      spellSlots: 1,
+      cantrip: "Sacred Flame",
+    });
+    const ally = pc({
+      id: "ally",
+      archetype: "Fighter",
+      hp: 2,
+      maxHp: 10,
+    });
+    const foe = goblin({ maxHp: 1, hp: 1, ac: 20 });
+    const log: LogEvent[] = [];
+    const seq = [0.99, 0.5, 0.5];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [healer, ally], [foe], log);
+
+    const heals = log.filter((e) => e.event === "heal");
+    expect(heals).toHaveLength(1);
+    expect(heals[0]).toMatchObject({ event: "heal", used: "Cure Wounds" });
+    expect(log.some((e) => e.event === "heal" && e.used === "Healing Word")).toBe(
+      false,
+    );
+  });
+
+  it("skips bonus heal with no wounded ally and still takes an action", () => {
+    const healer = pc({
+      id: "clr",
+      archetype: "Cleric",
+      bonusHealSpell: "Healing Word",
+      spellSlots: 2,
+      cantrip: "Sacred Flame",
+      hp: 8,
+      maxHp: 8,
+      abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
+    });
+    const foe = goblin({ maxHp: 3, hp: 3, ac: 5 });
+    const log: LogEvent[] = [];
+    const seq = [0.99, 0.5, 0.7, 0.5];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [healer], [foe], log);
+
+    expect(log.some((e) => e.event === "heal")).toBe(false);
+    expect(
+      log.some(
+        (e) => e.event === "attack" && e.actor === "clr" && e.used === "Sacred Flame",
+      ),
+    ).toBe(true);
+    expect(healer.spellSlots).toBe(2);
+  });
+});
+
+describe("runCombat Second Wind", () => {
+  it("heals via bonus action then still takes an action attack", () => {
+    const fighter = pc({
+      id: "ftr",
+      archetype: "Fighter",
+      role: "tank",
+      secondWindAvailable: true,
+      secondWindLevel: 1,
+      hp: 4,
+      maxHp: 12,
+      abilities: { STR: 16, DEX: 18, CON: 14, INT: 8, WIS: 10, CHA: 8 },
+    });
+    const foe = goblin({ maxHp: 3, hp: 3, ac: 5 });
+    const log: LogEvent[] = [];
+    // ftr init, foe init, Second Wind d10=5 → heal 6; attack d20 + damage
+    const seq = [0.99, 0.4, 0.4, 0.7, 0.5];
+    let i = 0;
+    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+
+    runCombat(rng, [fighter], [foe], log);
+
+    const r1 = log.filter(
+      (e) =>
+        "round" in e &&
+        e.round === 1 &&
+        ((e.event === "heal" && e.actor === "ftr") ||
+          (e.event === "attack" && e.actor === "ftr")),
+    );
+    expect(r1[0]).toMatchObject({
+      event: "heal",
+      used: "Second Wind",
+      target: "ftr",
+      amount: 6,
+    });
+    expect(r1[1]?.event).toBe("attack");
+    expect(fighter.secondWindAvailable).toBe(false);
   });
 });

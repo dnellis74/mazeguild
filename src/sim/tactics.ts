@@ -1,10 +1,13 @@
 import type { Combatant } from "./types";
 
 export type Intent =
-  | { type: "heal"; targetId: string }
+  | { type: "heal"; targetId: string; ability?: string }
   | { type: "attack"; targetId: string; ability?: string }
   | { type: "control"; ability: string }
   | { type: "save"; ability: string }
+  | { type: "buff"; ability: string }
+  | { type: "rage"; mode: "enter" | "end" }
+  | { type: "second_wind" }
   | { type: "none" };
 
 export type ReactionIntent =
@@ -28,11 +31,70 @@ function byId(a: Combatant, b: Combatant): number {
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
+/** Allies below this HP fraction are heal candidates. */
+const WOUNDED_HP_FRAC = 0.9;
+
+function pickWoundedAlly(allies: Combatant[]): Combatant | undefined {
+  return living(allies)
+    .filter((a) => a.hp / a.maxHp < WOUNDED_HP_FRAC)
+    .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || byId(a, b))[0];
+}
+
 /**
- * Action and target selection. No dice, no HP mutation.
- * Priority: heal wounded ally → control (≥2 foes) → AoE save (≥2 foes) →
- * auto spell → cantrip → weapon.
- * A later motivation prompt will bias this layer only.
+ * Bonus-action slot: Healing Word, Second Wind, or Barbarian Rage enter.
+ * Design simplification: AI always resolves bonus before action (not player-chosen order).
+ *
+ * Voluntary End Rage is a valid Intent (`{ type: "rage", mode: "end" }`) for the
+ * resolver, but this function never chooses it — structurally available, unreachable
+ * via current tactics policy.
+ */
+export function chooseBonusAction(
+  actor: Combatant,
+  allies: Combatant[],
+  enemies: Combatant[],
+): Intent {
+  if (
+    actor.bonusHealSpell === "Healing Word" &&
+    actor.spellSlots > 0
+  ) {
+    const wounded = pickWoundedAlly(allies);
+    if (wounded) {
+      return {
+        type: "heal",
+        targetId: wounded.id,
+        ability: "Healing Word",
+      };
+    }
+  }
+
+  // Second Wind: self-heal when wounded (same HP threshold as other heals).
+  if (
+    actor.secondWindAvailable &&
+    actor.alive &&
+    actor.hp / actor.maxHp < WOUNDED_HP_FRAC
+  ) {
+    return { type: "second_wind" };
+  }
+
+  // Rage: enter on first turn with living foes (same practical timing as the
+  // old auto-trigger, but consumes the bonus-action slot).
+  if (
+    actor.archetype === "Barbarian" &&
+    !actor.raging &&
+    actor.ragesRemaining > 0 &&
+    living(enemies).length > 0
+  ) {
+    return { type: "rage", mode: "enter" };
+  }
+
+  return { type: "none" };
+}
+
+/**
+ * Action-slot selection. No dice, no HP mutation.
+ * Priority: Cure Wounds / Lay on Hands → Bless → control → AoE save →
+ * auto spell → leveled attack spell → cantrip → weapon.
+ * Healing Word is not chosen here (bonus-action slot only).
  */
 export function chooseAction(
   actor: Combatant,
@@ -42,20 +104,36 @@ export function chooseAction(
   const foes = living(enemies);
   if (foes.length === 0) return { type: "none" };
 
-  const canHeal = actor.healSlots > 0 || actor.layOnHands > 0;
-  if (canHeal) {
-    const wounded = living(allies)
-      .filter((a) => a.hp / a.maxHp < 0.9)
-      .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || byId(a, b));
-    if (wounded[0]) return { type: "heal", targetId: wounded[0].id };
+  // Action heal: Cure Wounds (healSlots) or Lay on Hands — not Healing Word.
+  const canActionHeal =
+    (actor.healSlots > 0 &&
+      (!actor.healSpell || actor.healSpell === "Cure Wounds")) ||
+    actor.layOnHands > 0;
+  if (canActionHeal) {
+    const wounded = pickWoundedAlly(allies);
+    if (wounded) {
+      return {
+        type: "heal",
+        targetId: wounded.id,
+        ability: actor.healSlots > 0 ? actor.healSpell || "Cure Wounds" : undefined,
+      };
+    }
   }
 
-  // Pool control (Sleep / Color Spray): only when at least two living foes remain.
+  // Bless once when not concentrating and ≥2 living allies (incl. self).
+  if (
+    actor.buffSpell &&
+    actor.spellSlots > 0 &&
+    !actor.concentratingOn &&
+    living(allies).length >= 2
+  ) {
+    return { type: "buff", ability: actor.buffSpell };
+  }
+
   if (actor.controlSpell && actor.spellSlots > 0 && foes.length >= 2) {
     return { type: "control", ability: actor.controlSpell };
   }
 
-  // AoE save (Burning Hands / Thunderwave): same ≥2-foe gate.
   if (actor.saveSpell && actor.spellSlots > 0 && foes.length >= 2) {
     return { type: "save", ability: actor.saveSpell };
   }
@@ -68,6 +146,9 @@ export function chooseAction(
 
   if (actor.spell && actor.spellSlots > 0) {
     return { type: "attack", targetId, ability: actor.spell };
+  }
+  if (actor.attackSpell && actor.spellSlots > 0) {
+    return { type: "attack", targetId, ability: actor.attackSpell };
   }
   if (actor.cantrip) {
     return { type: "attack", targetId, ability: actor.cantrip };

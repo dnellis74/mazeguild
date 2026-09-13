@@ -7,7 +7,9 @@ export type SpellCombatType =
   | "save"
   | "control"
   | "utility"
-  | "reaction";
+  | "reaction"
+  | "buff"
+  | "heal";
 
 export type ReactionTrigger = "before_damage" | "after_damage";
 
@@ -40,7 +42,27 @@ export type SpellEntry = {
   exclude?: string[];
   /** Color Spray: also skip creatures that can't see (already blinded). */
   ignoreCantSee?: boolean;
+  /** Requires concentration while active (Bless). */
+  concentration?: boolean;
+  /** Condition applied to the target on a hit (Guiding Bolt → guided). */
+  onHitCondition?: ConditionName;
+  /** Rounds until onHitCondition expires (Guiding Bolt: end of caster's next turn ≈ 2). */
+  conditionDurationRounds?: number;
+  /** Heal spell dice (Cure Wounds / Healing Word). */
+  healDice?: DiceExpr | null;
+  /**
+   * SRD casting time. Turn slots use action / bonus_action;
+   * reaction is out-of-turn; minute/hour are longer (utility, not combat-cast).
+   */
+  castingTime?: CastingTime;
 };
+
+export type CastingTime =
+  | "action"
+  | "bonus_action"
+  | "reaction"
+  | "minute"
+  | "hour";
 
 const entries = (spellData as { spells: SpellEntry[] }).spells;
 
@@ -71,6 +93,17 @@ export function isCombatControlSpell(name: string): boolean {
   );
 }
 
+/** Concentration buffs (Bless). */
+export function isCombatBuffSpell(name: string): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "buff" &&
+    !!row.concentration &&
+    row.name === "Bless"
+  );
+}
+
 /** AoE save spells (Burning Hands, Thunderwave) — half damage on success. */
 export function isCombatSaveSpell(name: string): boolean {
   const row = byName.get(name);
@@ -80,6 +113,41 @@ export function isCombatSaveSpell(name: string): boolean {
     !!row.damage &&
     row.save?.onSuccess === "half" &&
     (row.name === "Burning Hands" || row.name === "Thunderwave")
+  );
+}
+
+/** Leveled spell attacks (Guiding Bolt, Inflict Wounds). */
+export function isCombatAttackSpell(name: string): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "attack" &&
+    !!row.damage &&
+    (row.name === "Guiding Bolt" || row.name === "Inflict Wounds")
+  );
+}
+
+/** Action-slot heal (Cure Wounds) — spends healSlots. */
+export function isCombatActionHealSpell(name: string): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "heal" &&
+    row.castingTime === "action" &&
+    !!row.healDice &&
+    row.name === "Cure Wounds"
+  );
+}
+
+/** Bonus-action heal (Healing Word) — spends spellSlots. */
+export function isCombatBonusHealSpell(name: string): boolean {
+  const row = byName.get(name);
+  return (
+    !!row &&
+    row.combatType === "heal" &&
+    row.castingTime === "bonus_action" &&
+    !!row.healDice &&
+    row.name === "Healing Word"
   );
 }
 
@@ -128,6 +196,49 @@ export function pickLearnedControlSpell(
 }
 
 /**
+ * Pick a learned leveled spell attack. Prefers Guiding Bolt (advantage setup).
+ * Never invents an unlearned spell.
+ */
+export function pickLearnedAttackSpell(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ].filter(isCombatAttackSpell);
+  if (names.includes("Guiding Bolt")) return "Guiding Bolt";
+  if (names.includes("Inflict Wounds")) return "Inflict Wounds";
+  return undefined;
+}
+
+/**
+ * Pick a learned action-slot heal (Cure Wounds only).
+ * Never invents an unlearned spell; Healing Word is bonus-action only.
+ */
+export function pickLearnedHealSpell(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ].filter(isCombatActionHealSpell);
+  if (names.includes("Cure Wounds")) return "Cure Wounds";
+  return undefined;
+}
+
+/**
+ * Pick a learned bonus-action heal (Healing Word only).
+ * Never invents an unlearned spell.
+ */
+export function pickLearnedBonusHealSpell(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ].filter(isCombatBonusHealSpell);
+  if (names.includes("Healing Word")) return "Healing Word";
+  return undefined;
+}
+
+/**
  * Pick a learned AoE save spell (Burning Hands / Thunderwave).
  * Prefers Burning Hands (higher expected damage: 10.5 vs 9).
  * Never invents an unlearned spell.
@@ -141,6 +252,20 @@ export function pickLearnedSaveSpell(
   if (names.includes("Burning Hands")) return "Burning Hands";
   if (names.includes("Thunderwave")) return "Thunderwave";
   return undefined;
+}
+
+/**
+ * Pick a learned buff spell (Bless). Never invents an unlearned spell.
+ */
+export function pickLearnedBuffSpell(
+  learned: { name: string }[] | null | undefined,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((s) => s.name).filter(Boolean)),
+  ]
+    .filter(isCombatBuffSpell)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  return names[0];
 }
 
 /**

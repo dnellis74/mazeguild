@@ -15,7 +15,8 @@
       "description": "Create up to four torch-sized lights (or combine them into one dim humanoid shape) that hover in the air and that you can move as a bonus action.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 2,
@@ -24,7 +25,8 @@
       "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 3,
@@ -33,7 +35,8 @@
       "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 4,
@@ -42,7 +45,8 @@
       "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 5,
@@ -51,7 +55,8 @@
       "description": "Whisper a message toward a creature within range; only that creature hears it and can whisper a reply back that only you hear.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 6,
@@ -60,7 +65,8 @@
       "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 7,
@@ -69,7 +75,8 @@
       "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 8,
@@ -78,7 +85,8 @@
       "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 9,
@@ -94,7 +102,8 @@
       "save": {
         "ability": "WIS",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 10,
@@ -103,7 +112,8 @@
       "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one ability check of its choice.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 11,
@@ -112,7 +122,8 @@
       "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 12,
@@ -121,7 +132,8 @@
       "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 13,
@@ -130,7 +142,8 @@
       "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one saving throw of its choice.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 14,
@@ -146,7 +159,8 @@
       "save": {
         "ability": "DEX",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 15,
@@ -155,7 +169,8 @@
       "description": "Touch a living creature that has 0 hit points, causing it to become stable.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 16,
@@ -164,7 +179,8 @@
       "description": "Manifest a minor supernatural sign at will: a booming voice, flickering flames, harmless ground tremors, a remote sound, a door flying open or slamming shut, or briefly altered eyes.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 17,
@@ -173,7 +189,8 @@
       "description": "Produce a small nature effect: predict the next 24 hours of weather at your location, make a plant bud or bloom, create a harmless sensory effect, or light or snuff out a small flame.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 18,
@@ -182,7 +199,8 @@
       "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one ability check of its choice.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 19,
@@ -191,7 +209,8 @@
       "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 20,
@@ -207,7 +226,8 @@
       "save": {
         "ability": "CON",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 21,
@@ -220,7 +240,8 @@
         "sides": 8,
         "type": "fire"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 22,
@@ -229,7 +250,8 @@
       "description": "Touch a willing creature; once before the spell ends, it can add 1d4 to one saving throw of its choice.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 23,
@@ -238,7 +260,8 @@
       "description": "Imbue a club or quarterstaff you're holding with nature's power, letting you use your spellcasting ability instead of Strength for its attack and damage rolls, and increasing its damage die to a d8.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "bonus_action"
     },
     {
       "id": 24,
@@ -254,7 +277,8 @@
       "save": {
         "ability": "DEX",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 25,
@@ -267,7 +291,8 @@
         "sides": 8,
         "type": "necrotic"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 26,
@@ -276,7 +301,8 @@
       "description": "Create up to four torch-sized lights (or combine them into one dim humanoid shape) that hover in the air and that you can move as a bonus action.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 27,
@@ -289,7 +315,8 @@
         "sides": 10,
         "type": "fire"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 28,
@@ -298,7 +325,8 @@
       "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 29,
@@ -307,7 +335,8 @@
       "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 30,
@@ -316,7 +345,8 @@
       "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 31,
@@ -325,7 +355,8 @@
       "description": "Whisper a message toward a creature within range; only that creature hears it and can whisper a reply back that only you hear.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 32,
@@ -334,7 +365,8 @@
       "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 33,
@@ -350,7 +382,8 @@
       "save": {
         "ability": "CON",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 34,
@@ -359,7 +392,8 @@
       "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 35,
@@ -372,7 +406,8 @@
         "sides": 8,
         "type": "cold"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 36,
@@ -385,7 +420,8 @@
         "sides": 8,
         "type": "lightning"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 37,
@@ -394,7 +430,8 @@
       "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 38,
@@ -407,7 +444,8 @@
         "sides": 8,
         "type": "necrotic"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 39,
@@ -420,7 +458,8 @@
         "sides": 10,
         "type": "force"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 40,
@@ -429,7 +468,8 @@
       "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 41,
@@ -438,7 +478,8 @@
       "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 42,
@@ -454,7 +495,8 @@
       "save": {
         "ability": "CON",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 43,
@@ -463,7 +505,8 @@
       "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 44,
@@ -472,7 +515,8 @@
       "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 45,
@@ -488,7 +532,8 @@
       "save": {
         "ability": "DEX",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 46,
@@ -501,7 +546,8 @@
         "sides": 8,
         "type": "necrotic"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 47,
@@ -510,7 +556,8 @@
       "description": "Create up to four torch-sized lights (or combine them into one dim humanoid shape) that hover in the air and that you can move as a bonus action.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 48,
@@ -523,7 +570,8 @@
         "sides": 10,
         "type": "fire"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 49,
@@ -532,7 +580,8 @@
       "description": "Touch an object no larger than 10 feet in any dimension, causing it to shed bright light in a 20-foot radius and dim light for 20 feet more, for up to an hour.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 50,
@@ -541,7 +590,8 @@
       "description": "Create a spectral floating hand within range that you can use to manipulate objects, open unlocked doors or containers, or move small items at a distance.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 51,
@@ -550,7 +600,8 @@
       "description": "Repair a single break or tear in an object you touch, as long as the damaged area is no larger than a foot across, leaving no trace of the former damage.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 52,
@@ -559,7 +610,8 @@
       "description": "Whisper a message toward a creature within range; only that creature hears it and can whisper a reply back that only you hear.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 53,
@@ -568,7 +620,8 @@
       "description": "Create a sound or the image of an object within range that lasts up to a minute; physically interacting with the image, or examining it closely, can reveal it as an illusion.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 54,
@@ -584,7 +637,8 @@
       "save": {
         "ability": "CON",
         "onSuccess": "none"
-      }
+      },
+      "castingTime": "action"
     },
     {
       "id": 55,
@@ -593,7 +647,8 @@
       "description": "Create one of several minor magical effects at will: a harmless sensory trick, lighting or snuffing a small flame, cleaning or soiling a small object, briefly flavoring or marking something, or conjuring a small nonmagical trinket.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 56,
@@ -606,7 +661,8 @@
         "sides": 8,
         "type": "cold"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 57,
@@ -619,7 +675,8 @@
         "sides": 8,
         "type": "lightning"
       },
-      "save": null
+      "save": null,
+      "castingTime": "action"
     },
     {
       "id": 58,
@@ -628,7 +685,8 @@
       "description": "Point at a target and briefly read its defenses; on your next turn you gain advantage on your first attack roll against that target, provided the spell hasn't ended.",
       "combatType": "utility",
       "damage": null,
-      "save": null
+      "save": null,
+      "castingTime": "action"
     }
   ]
 }

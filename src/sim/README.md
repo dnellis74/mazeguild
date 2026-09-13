@@ -98,6 +98,12 @@ Full attack-roll spine in `rules.ts` (`rollD20`, `resolveAdvantageMode`, `attack
 Applied in `applyDamage(target, amount, damageType)` via `modifyDamageByTraits`: immunity → 0; resist+vuln cancel → normal; else resist halves (floor) or vuln doubles.  
 **Rage:** Barbarians auto-enter at start of turn (`ragesRemaining` from leveling.json); while raging, resistance to bludgeoning/piercing/slashing. Ends on unconsciousness or end of encounter (simplified vs full SRD duration clock). No rage damage bonus / STR adv in this pass.
 
+### Concentration + roll modifiers
+
+- `concentratingOn: { spellName, startedRound, onEnd } | null` — one spell at a time; new cast ends the old (runs `onEnd`). Damage → CON save DC `max(10, floor(dmg/2))`; unconscious/death ends with no save.
+- `rollModifiers[]` — `{ source, affects: attack|save|both, die, sign }`; same `source` replaces. Dice rolled fresh after the d20, in array order.
+- **Bless** is the first consumer: buff up to 3 allies with +1d4 both, caster concentrates; teardown removes modifiers from all affected.
+
 ### Saves
 
 `spellSaveDC = 8 + proficiencyBonus + spellMod`.  

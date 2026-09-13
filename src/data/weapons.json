@@ -18,6 +18,12 @@
       "damageType": "slashing",
       "properties": ["Versatile (1d10)"]
     },
+    "shortbow": {
+      "name": "Shortbow",
+      "damage": { "count": 1, "sides": 6 },
+      "damageType": "piercing",
+      "properties": ["Ammunition (80/320)", "Two-handed"]
+    },
     "shortsword": {
       "name": "Shortsword",
       "damage": { "count": 1, "sides": 6 },

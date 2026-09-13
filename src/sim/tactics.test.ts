@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chooseAction, chooseBeforeDamageReaction } from "./tactics";
+import { chooseAction, chooseBeforeDamageReaction, chooseBonusAction } from "./tactics";
 import type { Combatant, Role, Weapon } from "./types";
 
 const CLUB: Weapon = {
@@ -29,6 +29,11 @@ function combatant(
     hp: 10,
     alive: true,
     weapon: CLUB,
+    fightingStyles: [],
+    archery: false,
+    greatWeaponFighting: false,
+    secondWindAvailable: false,
+    secondWindLevel: 0,
     lucky: false,
     relentless: false,
     relentlessUsed: false,
@@ -41,6 +46,7 @@ function combatant(
     xp: 0,
     xpValue: 0,
     reactionUsed: false,
+    sneakAttackUsedThisTurn: false,
     tempAcBonus: 0,
     condition: null,
     immunities: [],
@@ -48,6 +54,11 @@ function combatant(
     vulnerabilities: [],
     raging: false,
     ragesRemaining: 0,
+    rageDamage: 0,
+    rageMaintained: false,
+    rageExpiresRound: null,
+    concentratingOn: null,
+    rollModifiers: [],
     ...over,
   };
 }
@@ -69,6 +80,22 @@ describe("chooseAction", () => {
       type: "attack",
       targetId: "gob-low",
       ability: "Ray of Frost",
+    });
+  });
+
+  it("prefers a leveled attack spell over a cantrip when slots remain", () => {
+    const cleric = combatant({
+      id: "clr",
+      archetype: "Cleric",
+      role: "dps",
+      attackSpell: "Guiding Bolt",
+      spellSlots: 1,
+      cantrip: "Sacred Flame",
+    });
+    expect(chooseAction(cleric, [cleric], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-low",
+      ability: "Guiding Bolt",
     });
   });
 
@@ -111,6 +138,95 @@ describe("chooseAction", () => {
     expect(chooseAction(druid, [druid, wounded], foes)).toEqual({
       type: "heal",
       targetId: "ally",
+      ability: "Cure Wounds",
+    });
+  });
+
+  it("chooseBonusAction casts Healing Word on a wounded ally", () => {
+    const cleric = combatant({
+      id: "clr",
+      archetype: "Cleric",
+      role: "healer",
+      bonusHealSpell: "Healing Word",
+      spellSlots: 1,
+    });
+    const wounded = combatant({
+      id: "ally",
+      archetype: "Fighter",
+      role: "tank",
+      hp: 4,
+      maxHp: 12,
+    });
+    expect(chooseBonusAction(cleric, [cleric, wounded], foes)).toEqual({
+      type: "heal",
+      targetId: "ally",
+      ability: "Healing Word",
+    });
+  });
+
+  it("chooseBonusAction enters Rage for a Barbarian with living foes", () => {
+    const barb = combatant({
+      id: "barb",
+      archetype: "Barbarian",
+      role: "tank",
+      ragesRemaining: 2,
+      raging: false,
+    });
+    expect(chooseBonusAction(barb, [barb], foes)).toEqual({
+      type: "rage",
+      mode: "enter",
+    });
+    barb.raging = true;
+    expect(chooseBonusAction(barb, [barb], foes)).toEqual({ type: "none" });
+  });
+
+  it("chooseBonusAction uses Second Wind when wounded", () => {
+    const fighter = combatant({
+      id: "ftr",
+      archetype: "Fighter",
+      role: "tank",
+      secondWindAvailable: true,
+      secondWindLevel: 1,
+      hp: 5,
+      maxHp: 12,
+    });
+    expect(chooseBonusAction(fighter, [fighter], foes)).toEqual({
+      type: "second_wind",
+    });
+    fighter.hp = 12;
+    expect(chooseBonusAction(fighter, [fighter], foes)).toEqual({
+      type: "none",
+    });
+  });
+
+  it("chooseBonusAction is none without Healing Word or wounded allies", () => {
+    const cleric = combatant({
+      id: "clr",
+      archetype: "Cleric",
+      role: "healer",
+      bonusHealSpell: "Healing Word",
+      spellSlots: 1,
+      hp: 10,
+      maxHp: 10,
+    });
+    expect(chooseBonusAction(cleric, [cleric], foes)).toEqual({ type: "none" });
+    const noHw = combatant({
+      id: "clr2",
+      archetype: "Cleric",
+      role: "healer",
+      healSpell: "Cure Wounds",
+      healSlots: 1,
+      spellSlots: 1,
+    });
+    const wounded = combatant({
+      id: "ally",
+      archetype: "Fighter",
+      role: "tank",
+      hp: 4,
+      maxHp: 12,
+    });
+    expect(chooseBonusAction(noHw, [noHw, wounded], foes)).toEqual({
+      type: "none",
     });
   });
 
@@ -267,6 +383,52 @@ describe("chooseAction", () => {
       type: "attack",
       targetId: "gob-low",
       ability: "Fire Bolt",
+    });
+  });
+
+  it("casts Bless when ≥2 allies, slots remain, and not concentrating", () => {
+    const cleric = combatant({
+      id: "clr",
+      archetype: "Cleric",
+      role: "healer",
+      buffSpell: "Bless",
+      spellSlots: 1,
+      cantrip: "Sacred Flame",
+    });
+    const ally = combatant({
+      id: "ally",
+      archetype: "Fighter",
+      role: "tank",
+    });
+    expect(chooseAction(cleric, [cleric, ally], foes)).toEqual({
+      type: "buff",
+      ability: "Bless",
+    });
+  });
+
+  it("skips Bless while already concentrating", () => {
+    const cleric = combatant({
+      id: "clr",
+      archetype: "Cleric",
+      role: "healer",
+      buffSpell: "Bless",
+      spellSlots: 1,
+      cantrip: "Sacred Flame",
+      concentratingOn: {
+        spellName: "Bless",
+        startedRound: 1,
+        onEnd: () => {},
+      },
+    });
+    const ally = combatant({
+      id: "ally",
+      archetype: "Fighter",
+      role: "tank",
+    });
+    expect(chooseAction(cleric, [cleric, ally], foes)).toEqual({
+      type: "attack",
+      targetId: "gob-high",
+      ability: "Sacred Flame",
     });
   });
 });

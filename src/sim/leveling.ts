@@ -61,3 +61,20 @@ export function ragesForLevel(level: number): number {
   }
   return rages;
 }
+
+/**
+ * Barbarian Rage Damage bonus at a given level (leveling.json "Rage Damage").
+ * Returns the numeric bonus (e.g. 2 for "+2"). Non-Barbarians / missing → 0.
+ */
+export function rageDamageForLevel(level: number): number {
+  const rows = TABLES.Barbarian?.levels ?? [];
+  let bonus = 0;
+  for (const row of rows) {
+    const rowLevel = parseLevel(row.Level ?? "1st");
+    if (rowLevel > level) break;
+    const text = (row["Rage Damage"] ?? "0").trim();
+    const n = Number.parseInt(text.replace(/^\+/, ""), 10);
+    if (Number.isFinite(n)) bonus = n;
+  }
+  return bonus;
+}
