@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { companionToCombatant } from "./adapter";
 import {
+  armorFromEquipmentId,
   emptyEquipment,
   isMetalArmorId,
   mergeEquipmentSlots,
@@ -25,6 +26,20 @@ describe("isMetalArmorId", () => {
     expect(isMetalArmorId("hide")).toBe(false);
     expect(isMetalArmorId("shield")).toBe(false);
     expect(isMetalArmorId(null)).toBe(false);
+  });
+});
+
+describe("armorFromEquipmentId", () => {
+  it("reads AC and strengthRequirement from equipment.json", () => {
+    const mail = armorFromEquipmentId("chain_mail");
+    expect(mail).toMatchObject({
+      name: "Chain mail",
+      category: "heavy",
+      baseAC: 16,
+      dexCap: 0,
+      strRequirement: 13,
+    });
+    expect(armorFromEquipmentId("leather")?.strRequirement).toBeNull();
   });
 });
 

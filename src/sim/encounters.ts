@@ -7,33 +7,6 @@ import type { Rng } from "./rng";
 import type { CharacterEquipment } from "@/training/types";
 import type { Combatant } from "./types";
 
-const GOBLIN = {
-  STR: 8,
-  DEX: 14,
-  CON: 10,
-  INT: 10,
-  WIS: 8,
-  CHA: 8,
-};
-
-const HOBGOBLIN = {
-  STR: 13,
-  DEX: 12,
-  CON: 12,
-  INT: 10,
-  WIS: 10,
-  CHA: 9,
-};
-
-const BUGBEAR = {
-  STR: 15,
-  DEX: 14,
-  CON: 13,
-  INT: 8,
-  WIS: 11,
-  CHA: 9,
-};
-
 /** Flavor only. No mechanical effect in this layer. */
 export const LOOT = [
   "a handful of copper coins",
@@ -60,18 +33,28 @@ const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin", "Bugbear"] as const;
  */
 export type MonsterBlueprint = {
   hp: number;
+  speed: number;
   abilities: Record<"STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA", number>;
+  skills?: string[];
+  senses?: string[];
+  languages?: string[];
+  challengeRating: number;
   xpValue: number;
-  equipment: CharacterEquipment;
   /** Named traits (e.g. Bugbear "Brute"). */
   features?: string[];
+  equipment: CharacterEquipment;
 };
 
 export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
   Goblin: {
     hp: 7,
-    abilities: GOBLIN,
+    speed: 30,
+    abilities: { STR: 8, DEX: 14, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+    senses: ["darkvision 60 ft.", "passive Perception 10"],
+    languages: ["Common", "Goblin"],
+    challengeRating: 0.25,
     xpValue: 50,
+    features: ["Nimble Escape"],
     equipment: {
       armor: "leather",
       mainHand: "scimitar",
@@ -81,8 +64,13 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
   },
   Hobgoblin: {
     hp: 11,
-    abilities: HOBGOBLIN,
+    speed: 30,
+    abilities: { STR: 13, DEX: 12, CON: 12, INT: 10, WIS: 10, CHA: 9 },
+    senses: ["darkvision 60 ft.", "passive Perception 10"],
+    languages: ["Common", "Goblin"],
+    challengeRating: 0.5,
     xpValue: 100,
+    features: ["Martial Advantage"],
     equipment: {
       armor: "chain_mail",
       mainHand: "longsword",
@@ -93,10 +81,15 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
   },
   Bugbear: {
     hp: 27,
-    abilities: BUGBEAR,
+    speed: 30,
+    abilities: { STR: 15, DEX: 14, CON: 13, INT: 8, WIS: 11, CHA: 9 },
+    challengeRating: 1,
     xpValue: 200,
     // Brute: melee weapon hits deal one extra die of damage (morningstar 1d8 → 2d8).
-    features: ["Brute"],
+    features: ["Brute","Surprise Attack"],
+    skills: ["stealth +6", "survival +2"],
+    senses: ["darkvision 60 ft.", "passive Perception 10"],
+    languages: ["Common", "Goblin"],
     equipment: {
       armor: "hide",
       mainHand: "morningstar",

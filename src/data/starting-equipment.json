@@ -3,14 +3,14 @@
     "source": "SRD 5.1 class Equipment sections and Equipment Packs section.",
     "structure": "packs are defined once and referenced by id from each class. Each class's equipment is a list of choice groups (the SRD's lettered a/b/c options) plus a separate list of fixed, non-choice grants. Nothing is pre-resolved to a single answer.",
     "option_shapes": [
-      "{ \"weaponId\": \"...\" } \u2014 a specific weapon that exists in weapons.json",
-      "{ \"armorId\": \"...\" } \u2014 a specific armor that exists in the armor data",
+      "{ \"weaponId\": \"...\" } \u2014 a specific weapon that exists in equipment.json",
+      "{ \"armorId\": \"...\" } \u2014 a specific armor that exists in equipment.json",
       "{ \"packId\": \"...\" } \u2014 references an entry in the top-level packs object",
-      "{ \"item\": \"...\" } \u2014 a specific named item with no id yet in weapons.json/armor data (see gap list below)",
+      "{ \"item\": \"...\" } \u2014 a specific named item with no id yet in equipment.json (see gap list below)",
       "{ \"category\": \"...\" } \u2014 a generic SRD category (\"any simple weapon\", etc.) with no single resolved answer; the SRD leaves this to the player"
     ],
     "data_gaps": [
-      "Named items referenced below with no matching id in weapons.json: warhammer, quarterstaff, javelin, handaxe, light crossbow, shortbow, wooden shield (distinct from the armor system's generic shield). Add these before any code tries to resolve a menu choice into an equipped item."
+      "Named items referenced below with no matching id in equipment.json: wooden shield (distinct from the generic shield). Add these before any code tries to resolve a menu choice into an equipped item."
     ]
   },
 

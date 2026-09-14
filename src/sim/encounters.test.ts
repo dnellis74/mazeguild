@@ -87,7 +87,7 @@ describe("monster equipment (CharacterEquipment)", () => {
   });
 
   it("Bugbear has Brute; morningstar stays catalog 1d8", () => {
-    expect(MONSTER_STATS.Bugbear!.features).toEqual(["Brute"]);
+    expect(MONSTER_STATS.Bugbear!.features).toEqual(["Brute", "Surprise Attack"]);
 
     const bug = makeMonster({
       id: "b1",

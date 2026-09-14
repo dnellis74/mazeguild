@@ -21,6 +21,7 @@ type EquipArmorRow = {
   name: string;
   acStructured?: { base: number; dexCap: number | null };
   acBonus?: number;
+  strengthRequirement?: number | null;
   /** e.g. ["metal"] for Shocking Grasp / similar checks. */
   material?: string[];
 };
@@ -153,7 +154,7 @@ export function armorFromEquipmentId(id: string): ArmorDef | null {
     category: cat,
     baseAC: found.row.acStructured.base,
     dexCap: found.row.acStructured.dexCap,
-    strRequirement: null,
+    strRequirement: found.row.strengthRequirement ?? null,
     material: [...(found.row.material ?? [])],
   };
 }

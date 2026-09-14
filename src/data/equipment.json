@@ -3,7 +3,7 @@
     "source": "SRD 5.1 Weapons table and Armor table, transcribed in full.",
     "conventions": [
       "cost and weight are kept as literal strings matching the SRD table's own units (sp/gp/cp, lb.) rather than converted to a single numeric unit.",
-      "damage is split into count/sides/type for weapons, matching the convention already used in weapons.json.",
+      "damage is split into count/sides/type for weapons.",
       "properties are the raw SRD property strings for each weapon, including any range or versatile-damage annotation exactly as printed.",
       "armor AC is given both as the literal SRD string and as structured fields (base, dexCap) for code use: dexCap is null for light armor (full Dex, uncapped), 2 for medium armor, and 0 for heavy armor (no Dex at all).",
       "material is a string array of physical materials for rules hooks (e.g. Shocking Grasp). Metal armors include \"metal\"; leather/hide/padded and shields use an empty array.",

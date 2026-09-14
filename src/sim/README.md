@@ -159,7 +159,7 @@ Any new roll must consume the rng in a fixed order or determinism breaks.
 |----------------|---------------|
 | `spells.ts` | `public/data/spells_level1.json` |
 | `cantrips.ts` | `public/data/cantrips.json` |
-| `weapons.ts` | `src/data/weapons.json` |
+| `weapons.ts` | unarmed helpers; catalog weapons via `equipment.json` / `loadout.ts` |
 | `encounterScaling.ts` | encounter tables under `src/data` / related |
 
 Combat classification fields on spells and cantrips (`combatType`, `damage`, `save`, `pool`, `condition`, `trigger`, `effect`, `ranged` on attack entries) drive which code path runs — paraphrased `description` text is not parsed.

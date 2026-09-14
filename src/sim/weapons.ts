@@ -1,40 +1,38 @@
-import weaponsData from "@/data/weapons.json";
+import { weaponFromEquipmentId } from "./loadout";
 import type { Weapon } from "./types";
 
-type WeaponDef = {
-  name: string;
-  damage: { count: number; sides: number };
-  damageType: string;
-  properties: string[];
-};
-
-type WeaponsFile = {
-  weapons: Record<string, WeaponDef>;
-};
-
-const DATA = weaponsData as unknown as WeaponsFile;
-
-function toWeapon(def: WeaponDef): Weapon {
+/** SRD unarmed strike (1 bludgeoning). Not catalog gear. */
+export function defaultUnarmedWeapon(): Weapon {
   return {
-    name: def.name,
-    damage: def.damage,
-    damageType: def.damageType,
-    properties: def.properties,
-    finesse: def.properties.some((p) => /finesse/i.test(p)),
-    ranged: def.properties.some((p) => /ammunition/i.test(p)),
+    name: "Unarmed strike",
+    damage: { count: 1, sides: 1 },
+    damageType: "bludgeoning",
+    properties: [],
+    finesse: false,
+    ranged: false,
   };
 }
 
-export function getWeapon(key: string): Weapon {
-  const def = DATA.weapons[key];
-  if (!def) throw new Error(`Unknown weapon: ${key}`);
-  return toWeapon(def);
-}
-
+/** Monk Martial Arts unarmed strike (1d4 finesse). Not catalog gear. */
 export function monkUnarmedWeapon(): Weapon {
-  return getWeapon("monk_unarmed");
+  return {
+    name: "Unarmed strike",
+    damage: { count: 1, sides: 4 },
+    damageType: "bludgeoning",
+    properties: ["Finesse"],
+    finesse: true,
+    ranged: false,
+  };
 }
 
-export function defaultUnarmedWeapon(): Weapon {
-  return getWeapon("unarmed");
+/**
+ * Resolve a weapon by equipment.json id, or the special unarmed keys.
+ * Prefer `weaponFromEquipmentId` for inventory slots.
+ */
+export function getWeapon(key: string): Weapon {
+  if (key === "unarmed") return defaultUnarmedWeapon();
+  if (key === "monk_unarmed") return monkUnarmedWeapon();
+  const fromEquip = weaponFromEquipmentId(key);
+  if (fromEquip) return fromEquip;
+  throw new Error(`Unknown weapon: ${key}`);
 }
