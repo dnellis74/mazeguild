@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 import { applyShortRest } from "./shortRest";
 import type { Combatant, LogEvent, Weapon } from "./types";
 
@@ -27,6 +27,8 @@ function pc(over: Partial<Combatant> & { id: string }): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     hitDieSides: 10,
     weapon: CLUB,
     fightingStyles: [],

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { companionToCombatant } from "./adapter";
 import {
   emptyEquipment,
+  isMetalArmorId,
   mergeEquipmentSlots,
   normalizeEquipment,
   resolveDefaultLoadout,
@@ -14,6 +15,18 @@ import type { Character } from "@/training/types";
 import { runDungeon } from "./run";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
+describe("isMetalArmorId", () => {
+  it("reads material: [\"metal\"] from equipment.json", () => {
+    expect(isMetalArmorId("chain_mail")).toBe(true);
+    expect(isMetalArmorId("scale_mail")).toBe(true);
+    expect(isMetalArmorId("plate")).toBe(true);
+    expect(isMetalArmorId("leather")).toBe(false);
+    expect(isMetalArmorId("hide")).toBe(false);
+    expect(isMetalArmorId("shield")).toBe(false);
+    expect(isMetalArmorId(null)).toBe(false);
+  });
+});
 
 describe("resolveDefaultLoadout", () => {
   it("Fighter: first options — chain mail, martial weapon→longsword+shield, dungeoneer's pack", () => {

@@ -30,7 +30,7 @@ runDungeon(seed, party)
 | **Combat loop** | `combat.ts` | Rounds, initiative, spend slots, call rules, append log |
 | **Rules** | `rules.ts` | Dice math: attacks, saves, heals, HP pools, conditions |
 | **Data loaders** | `spells.ts`, `cantrips.ts`, `weapons.ts` | Catalog lookup + “is this castable?” helpers |
-| **Encounters** | `encounters.ts`, `encounterScaling.ts` | Monster packs by difficulty |
+| **Encounters** | `encounters.ts`, `encounterScaling.ts` | Monster packs by difficulty; `MONSTER_STATS.equipment` is `CharacterEquipment` |
 | **World** | `maze.ts`, `rng.ts`, `leveling.ts` | Geometry, PRNG, XP→level |
 
 **Rule of thumb:** tactics picks *what*; rules rolls *how*; combat wires them and mutates state.
@@ -99,7 +99,7 @@ Crits are natural 20 and ignore AC — Shield cannot turn a crit into a miss.
 ### Advantage / disadvantage
 
 Full attack-roll spine in `rules.ts` (`rollD20`, `resolveAdvantageMode`, `attackRollMode`).  
-**Only blinded, guided, and unconscious defenders grant advantage today** (blinded attacker → disadvantage; both cancel). Unconscious also auto-crits melee hits — weapons with `ranged: false`, and attack cantrips/spells with catalog `ranged: false` (Shocking Grasp, Inflict Wounds). Ranged weapons / ranged spell attacks get advantage only.
+**Only blinded, guided, and unconscious defenders grant advantage today** (blinded attacker → disadvantage; both cancel), plus Shocking Grasp’s `advantageVsMetalArmor` when the defender’s `wearingMetalArmor` is true. Unconscious also auto-crits melee hits — weapons with `ranged: false`, and attack cantrips/spells with catalog `ranged: false` (Shocking Grasp, Inflict Wounds). Ranged weapons / ranged spell attacks get advantage only.
 
 ### Damage traits
 

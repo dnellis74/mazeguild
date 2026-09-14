@@ -12,3 +12,13 @@ export const HIT_DICE_DEFAULTS = {
   hitDiceRemaining: 1,
   hitDieSides: 8,
 } as const;
+
+/** Default combat flags for test factories / monsters without gear. */
+export const WEAR_DEFAULTS = {
+  wearingMetalArmor: false,
+} as const;
+
+/** Optional monster/PC combat traits. */
+export const TRAIT_DEFAULTS = {
+  brute: false,
+} as const;

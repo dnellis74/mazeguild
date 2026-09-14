@@ -4,7 +4,7 @@ import {
   type EncounterMonsterGroup,
 } from "./encounterScaling";
 import type { Rng } from "./rng";
-import { monsterWeapon } from "./weapons";
+import type { CharacterEquipment } from "@/training/types";
 import type { Combatant } from "./types";
 
 const GOBLIN = {
@@ -52,31 +52,57 @@ export const LOOT = [
 
 const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin", "Bugbear"] as const;
 
-type MonsterBlueprint = {
-  ac: number;
+/**
+ * Monster blueprint. `equipment` uses the same `CharacterEquipment` shape as
+ * PCs (`armor` / `mainHand` / `offHand` / `pack`). Combat weapon, AC, and
+ * wearingMetalArmor are derived from equipment at spawn (not from a separate
+ * monster_weapons table).
+ */
+export type MonsterBlueprint = {
   hp: number;
   abilities: Record<"STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA", number>;
   xpValue: number;
+  equipment: CharacterEquipment;
+  /** Named traits (e.g. Bugbear "Brute"). */
+  features?: string[];
 };
 
-const MONSTER_STATS: Record<string, MonsterBlueprint> = {
+export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
   Goblin: {
-    ac: 15,
     hp: 7,
     abilities: GOBLIN,
     xpValue: 50,
+    equipment: {
+      armor: "leather",
+      mainHand: "scimitar",
+      offHand: "shield",
+      pack: { name: "Carried", contents: ["shortbow"] },
+    },
   },
   Hobgoblin: {
-    ac: 18,
     hp: 11,
     abilities: HOBGOBLIN,
     xpValue: 100,
+    equipment: {
+      armor: "chain_mail",
+      mainHand: "longsword",
+      offHand: "shield",
+      // Longsword is Versatile (1d10), but shield occupies off hand → one-handed 1d8 only.
+      pack: { name: "Carried", contents: ["longbow"] },
+    },
   },
   Bugbear: {
-    ac: 16,
     hp: 27,
     abilities: BUGBEAR,
     xpValue: 200,
+    // Brute: melee weapon hits deal one extra die of damage (morningstar 1d8 → 2d8).
+    features: ["Brute"],
+    equipment: {
+      armor: "hide",
+      mainHand: "morningstar",
+      offHand: "shield",
+      pack: { name: "Carried", contents: ["javelin"] },
+    },
   },
 };
 
@@ -95,10 +121,10 @@ function expandGroups(
         makeMonster({
           id: `mon-${step}-${index}`,
           name: `${group.type} ${index}`,
-          ac: stats.ac,
           hp: stats.hp,
           abilities: stats.abilities,
-          weapon: monsterWeapon(group.type),
+          equipment: stats.equipment,
+          features: stats.features,
           xpValue: stats.xpValue,
         }),
       );

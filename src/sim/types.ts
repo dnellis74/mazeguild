@@ -67,6 +67,11 @@ export type Combatant = {
   maxHp: number;
   hp: number;
   alive: boolean;
+  /**
+   * True when wearing metal armor (chain, scale, plate, etc. — not leather/hide).
+   * Used by Shocking Grasp's advantageVsMetalArmor.
+   */
+  wearingMetalArmor: boolean;
   /** Temporary hit points (absorbed before real HP; do not stack). */
   tempHp: number;
   /** Death saving throw successes while at 0 HP (PCs only). */
@@ -155,6 +160,11 @@ export type Combatant = {
   /** Active roll modifiers (Bless, future Bane, etc.). */
   rollModifiers: RollModifier[];
   sneakAttackDice: number;
+  /**
+   * Bugbear Brute: on a melee weapon hit, roll one extra die of the weapon's
+   * damage (e.g. morningstar 1d8 → 2d8). Included in the attack; doubles on crit.
+   */
+  brute: boolean;
   healSlots: number;
   layOnHands: number;
   /** Remaining 1st-level spell slots (offense). Separate from healSlots. */

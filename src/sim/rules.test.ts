@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { companionToCombatant } from "./adapter";
-import { pickLearnedAttackCantrip } from "./cantrips";
+import { getCantrip, pickLearnedAttackCantrip } from "./cantrips";
 import { createRng, diceRerollLow } from "./rng";
 import {
   resolveAttack,
@@ -35,7 +35,7 @@ import {
 import { rageDamageForLevel, ragesForLevel } from "./leveling";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
-import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -71,6 +71,8 @@ function basePc(over: Partial<Combatant> = {}): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,
@@ -122,6 +124,8 @@ function foe(ac = 10): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,
@@ -933,6 +937,57 @@ describe("unconscious attack rules", () => {
   });
 });
 
+describe("Shocking Grasp vs metal armor", () => {
+  function seqRng(values: number[]): () => number {
+    let i = 0;
+    return () => (i < values.length ? values[i++]! : 0.5);
+  }
+
+  const grasp = getCantrip("Shocking Grasp");
+
+  it("grants advantage when the target wears metal armor", () => {
+    expect(grasp?.advantageVsMetalArmor).toBe(true);
+    const attacker = basePc({
+      cantrip: "Shocking Grasp",
+      spellMod: 3,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    const target = foe(15);
+    target.wearingMetalArmor = true;
+    expect(attackRollMode(attacker, target, { attackCantrip: grasp })).toBe(
+      "advantage",
+    );
+    // Advantage: 3 then 18 → keep 18; spellMod+prof=5 → total 23 hits AC 15
+    const result = resolveAttack(
+      seqRng([0.1, 0.85, 0.5]),
+      attacker,
+      target,
+      0,
+    );
+    expect(result.advantageMode).toBe("advantage");
+    expect(result.d20).toBe(18);
+    expect(result.hit).toBe(true);
+  });
+
+  it("does not grant metal-armor advantage vs leather / unarmored", () => {
+    const attacker = basePc({
+      cantrip: "Shocking Grasp",
+      spellMod: 3,
+      abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+    });
+    const leather = foe(15);
+    leather.wearingMetalArmor = false;
+    expect(
+      attackRollMode(attacker, leather, { attackCantrip: grasp }),
+    ).toBe("none");
+    // Single d20=3; total 8 misses AC 15
+    const result = resolveAttack(seqRng([0.1, 0.5]), attacker, leather, 0);
+    expect(result.advantageMode).toBe("none");
+    expect(result.d20).toBe(3);
+    expect(result.hit).toBe(false);
+  });
+});
+
 describe("resolveHpPool (Color Spray)", () => {
   function seqRng(values: number[]): () => number {
     let i = 0;
@@ -1462,5 +1517,76 @@ describe("Archery / Great Weapon Fighting / diceRerollLow", () => {
     const result = resolveAttack(seqRng([0.7, 0.0, 0.8]), gwf, target, 0);
     expect(result.hit).toBe(true);
     expect(result.damage).toBe(13);
+  });
+});
+
+describe("Bugbear Brute", () => {
+  const MORNINGSTAR: Weapon = {
+    name: "Morningstar",
+    damage: { count: 1, sides: 8 },
+    damageType: "piercing",
+    properties: [],
+    finesse: false,
+    ranged: false,
+  };
+  const JAVELIN: Weapon = {
+    name: "Javelin",
+    damage: { count: 1, sides: 6 },
+    damageType: "piercing",
+    properties: ["Thrown"],
+    finesse: false,
+    ranged: true,
+  };
+
+  it("adds one extra weapon die on a melee hit (morningstar 1d8 → 2d8)", () => {
+    const bug = basePc({
+      brute: true,
+      weapon: MORNINGSTAR,
+      abilities: { STR: 15, DEX: 14, CON: 13, INT: 8, WIS: 11, CHA: 9 },
+      proficiencyBonus: 2,
+    });
+    const target = foe(5);
+    // d20=15 hit; d8=1 + d8=5 + STR(+2) = 8
+    const result = resolveAttack(seqRng([0.7, 0.0, 0.5]), bug, target, 0);
+    expect(result.hit).toBe(true);
+    expect(result.damage).toBe(8);
+  });
+
+  it("does not inflate the catalog morningstar die (still 1d8 on the weapon)", () => {
+    const bug = basePc({ brute: true, weapon: MORNINGSTAR });
+    expect(bug.weapon.damage).toEqual({ count: 1, sides: 8 });
+  });
+
+  it("does not apply Brute to ranged weapon attacks", () => {
+    const bug = basePc({
+      brute: true,
+      weapon: JAVELIN,
+      abilities: { STR: 15, DEX: 14, CON: 13, INT: 8, WIS: 11, CHA: 9 },
+      proficiencyBonus: 2,
+    });
+    const target = foe(5);
+    // d20=15 hit; only 1d6=4 + DEX(+2) = 6 (no second die; ranged uses DEX)
+    const result = resolveAttack(seqRng([0.7, 0.5]), bug, target, 0);
+    expect(result.hit).toBe(true);
+    expect(result.damage).toBe(6);
+  });
+
+  it("doubles Brute dice on a critical hit", () => {
+    const bug = basePc({
+      brute: true,
+      weapon: MORNINGSTAR,
+      abilities: { STR: 15, DEX: 14, CON: 13, INT: 8, WIS: 11, CHA: 9 },
+      proficiencyBonus: 2,
+    });
+    const target = foe(5);
+    // nat 20; 4d8 (2d8 doubled) all 1s + STR2 = 6
+    const result = resolveAttack(
+      seqRng([0.95, 0.0, 0.0, 0.0, 0.0]),
+      bug,
+      target,
+      0,
+    );
+    expect(result.crit).toBe(true);
+    expect(result.damage).toBe(6);
   });
 });

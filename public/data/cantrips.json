@@ -420,6 +420,7 @@
       "description": "Make a melee spell attack (with advantage if the target wears metal armor) that deals 1d8 lightning damage and prevents the target from taking reactions until its next turn.",
       "combatType": "attack",
       "ranged": false,
+      "advantageVsMetalArmor": true,
       "damage": {
         "count": 1,
         "sides": 8,
@@ -681,6 +682,7 @@
       "description": "Make a melee spell attack (with advantage if the target wears metal armor) that deals 1d8 lightning damage and prevents the target from taking reactions until its next turn.",
       "combatType": "attack",
       "ranged": false,
+      "advantageVsMetalArmor": true,
       "damage": {
         "count": 1,
         "sides": 8,

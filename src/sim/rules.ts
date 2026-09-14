@@ -6,7 +6,7 @@ import type {
 } from "./types";
 import type { Rng } from "./rng";
 import { d, dice, diceRerollLow } from "./rng";
-import { getCantrip } from "./cantrips";
+import { getCantrip, type CantripEntry } from "./cantrips";
 import { getSpell, type SpellEntry } from "./spells";
 
 /** SRD 5.1 ability modifier. */
@@ -50,16 +50,22 @@ export function resolveAdvantageMode(
  * - unconscious defender → advantage (SRD; persists until woken/expiry)
  * - blinded defender → advantage (persists until expiry)
  * - guided defender → advantage (consumed on the next attack roll; see resolveAttack)
+ * - Shocking Grasp (cantrip.advantageVsMetalArmor) vs wearingMetalArmor → advantage
  * - blinded attacker → disadvantage
  */
 export function attackRollMode(
   attacker: Combatant,
   defender: Combatant,
+  opts?: { attackCantrip?: CantripEntry | null },
 ): AdvantageMode {
+  const metalAdv =
+    opts?.attackCantrip?.advantageVsMetalArmor === true &&
+    defender.wearingMetalArmor;
   const adv =
     hasCondition(defender, "unconscious") ||
     hasCondition(defender, "blinded") ||
-    hasCondition(defender, "guided");
+    hasCondition(defender, "guided") ||
+    metalAdv;
   const disadv = hasCondition(attacker, "blinded");
   return resolveAdvantageMode(adv, disadv);
 }
@@ -342,7 +348,9 @@ export function resolveAttack(
 
   // Consume guided on the attack roll (hit or miss); blinded/unconscious persist.
   const guided = hasCondition(defender, "guided");
-  const mode = attackRollMode(attacker, defender);
+  const mode = attackRollMode(attacker, defender, {
+    attackCantrip: useCantrip ? cantrip : null,
+  });
   if (guided) clearCondition(defender);
 
   const { d20 } = rollD20(rng, { mode, lucky: attacker.lucky });
@@ -397,7 +405,11 @@ export function resolveAttack(
 
   const abi = attackAbility(attacker);
   const die = attacker.weapon.damage;
-  const dieCount = crit ? die.count * 2 : die.count;
+  // Bugbear Brute: one extra die of the weapon's damage on a melee weapon hit.
+  const bruteExtra =
+    attacker.brute && !useSpellAttack && !attacker.weapon.ranged ? 1 : 0;
+  let dieCount = die.count + bruteExtra;
+  if (crit) dieCount *= 2;
   // Great Weapon Fighting: melee Two-handed/Versatile — reroll 1s and 2s once.
   const gwf =
     attacker.greatWeaponFighting &&

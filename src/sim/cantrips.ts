@@ -19,6 +19,8 @@ export type CantripEntry = {
    * true = ranged spell attack (e.g. Fire Bolt). Omitted on non-attack cantrips.
    */
   ranged?: boolean;
+  /** Shocking Grasp: advantage on the attack roll vs metal armor. */
+  advantageVsMetalArmor?: boolean;
   damage: CantripDamage | null;
   save: { ability: string; onSuccess: string } | null;
   castingTime?: CantripCastingTime;

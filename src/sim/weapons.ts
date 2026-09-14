@@ -10,7 +10,6 @@ type WeaponDef = {
 
 type WeaponsFile = {
   weapons: Record<string, WeaponDef>;
-  monster_weapons: Record<string, string>;
 };
 
 const DATA = weaponsData as unknown as WeaponsFile;
@@ -38,10 +37,4 @@ export function monkUnarmedWeapon(): Weapon {
 
 export function defaultUnarmedWeapon(): Weapon {
   return getWeapon("unarmed");
-}
-
-export function monsterWeapon(monsterType: string): Weapon {
-  const key = DATA.monster_weapons[monsterType];
-  if (!key) throw new Error(`Unknown monster weapon: ${monsterType}`);
-  return getWeapon(key);
 }

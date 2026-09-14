@@ -21,6 +21,8 @@ type EquipArmorRow = {
   name: string;
   acStructured?: { base: number; dexCap: number | null };
   acBonus?: number;
+  /** e.g. ["metal"] for Shocking Grasp / similar checks. */
+  material?: string[];
 };
 
 type EquipmentFile = {
@@ -152,7 +154,20 @@ export function armorFromEquipmentId(id: string): ArmorDef | null {
     baseAC: found.row.acStructured.base,
     dexCap: found.row.acStructured.dexCap,
     strRequirement: null,
+    material: [...(found.row.material ?? [])],
   };
+}
+
+/**
+ * True when the armor id’s catalog `material` includes `"metal"`.
+ * Missing/unknown ids and shields are false.
+ */
+export function isMetalArmorId(id: string | null | undefined): boolean {
+  if (!id) return false;
+  const key = equipId(id);
+  const found = findArmorRow(key);
+  if (!found) return false;
+  return (found.row.material ?? []).includes("metal");
 }
 
 export function shieldAcBonus(): number {

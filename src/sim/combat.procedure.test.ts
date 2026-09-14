@@ -8,7 +8,7 @@ import {
   takeTurns,
   beginNextRound,
 } from "./combat";
-import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 import type { Combatant, LogEvent, Weapon } from "./types";
 
 const CLUB: Weapon = {
@@ -35,6 +35,8 @@ function pc(over: Partial<Combatant> & { id: string }): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,

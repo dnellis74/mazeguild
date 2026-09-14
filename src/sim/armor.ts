@@ -9,4 +9,6 @@ export type ArmorDef = {
   /** null = full DEX; 2 = medium cap; 0 = heavy (no DEX). */
   dexCap: number | null;
   strRequirement: number | null;
+  /** Catalog materials, e.g. `["metal"]`. */
+  material?: string[];
 };

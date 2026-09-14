@@ -13,7 +13,7 @@ import {
   startConcentration,
 } from "./rules";
 import type { Combatant, Weapon } from "./types";
-import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -39,6 +39,8 @@ function combatant(over: Partial<Combatant> & { id: string }): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,

@@ -1,6 +1,6 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
 import { pickLearnedAttackCantrip, pickLearnedStabilizeCantrip } from "./cantrips";
-import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 import {
   getSpell,
   pickLearnedAttackSpell,
@@ -18,6 +18,7 @@ import type { Rng } from "./rng";
 import {
   armorFromEquipmentId,
   ensureCharacterEquipment,
+  isMetalArmorId,
   shieldAcBonus,
   weaponFromEquipmentId,
 } from "./loadout";
@@ -26,7 +27,7 @@ import {
   monkUnarmedWeapon,
 } from "./weapons";
 import type { Combatant, PartySnapshot, Role, Weapon } from "./types";
-import type { Character } from "@/training/types";
+import type { Character, CharacterEquipment } from "@/training/types";
 import { asFeatureList } from "@/training/features";
 import { characterLabel, titleCaseId } from "@/training/companion";
 import { hitDiceTotalFor } from "@/training/townRest";
@@ -275,6 +276,9 @@ export function companionToCombatant(
     hp,
     alive: hp > 0,
     ...DYING_DEFAULTS,
+    wearingMetalArmor:
+      !hasUnarmoredDefense(archetypes) &&
+      isMetalArmorId(ch.equipment?.armor ?? null),
     // Casters keep a weapon for turns with no attack cantrip (and for display).
     weapon: resolveWeapon(ch, archetypes),
     cantrip,
@@ -314,6 +318,7 @@ export function companionToCombatant(
     concentratingOn: null,
     rollModifiers: [],
     sneakAttackDice: /Sneak Attack/i.test(features) ? 1 : 0,
+    ...TRAIT_DEFAULTS,
     healSlots: archetypes.some((a) => SPELL_HEALER_ARCHETYPES.has(a))
       ? slots
       : 0,
@@ -342,15 +347,41 @@ export function companionToPartySnapshot(
   };
 }
 
+/** AC from CharacterEquipment + DEX (same rules as PC armor, no Fighting Style). */
+export function armorClassFromEquipment(
+  equipment: CharacterEquipment,
+  scores: Record<Ability, number>,
+): number {
+  const dex = abilityMod(scores.DEX ?? 10);
+  const armor = equipment.armor ? armorFromEquipmentId(equipment.armor) : null;
+  let ac: number;
+  if (armor) {
+    ac = armor.baseAC;
+    if (armor.dexCap === null) ac += dex;
+    else if (armor.dexCap > 0) ac += Math.min(dex, armor.dexCap);
+  } else {
+    ac = 10 + dex;
+  }
+  if (equipment.offHand === "shield") ac += shieldAcBonus();
+  return ac;
+}
+
 export function makeMonster(opts: {
   id: string;
   name: string;
-  ac: number;
   hp: number;
   abilities: Record<Ability, number>;
-  weapon: Weapon;
+  /** Same shape as PC `Character.equipment`. */
+  equipment: CharacterEquipment;
+  /** Named traits from the MM (e.g. "Brute"). */
+  features?: string[];
   xpValue: number;
 }): Combatant {
+  const equipment = opts.equipment;
+  const traits = opts.features ?? [];
+  const weapon =
+    (equipment.mainHand && weaponFromEquipmentId(equipment.mainHand)) ||
+    defaultUnarmedWeapon();
   return {
     id: opts.id,
     name: opts.name,
@@ -360,13 +391,17 @@ export function makeMonster(opts: {
     role: "dps",
     abilities: opts.abilities,
     proficiencyBonus: 2,
-    ac: opts.ac,
+    ac: armorClassFromEquipment(equipment, opts.abilities),
     maxHp: opts.hp,
     hp: opts.hp,
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
-    weapon: opts.weapon,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
+    wearingMetalArmor: isMetalArmorId(equipment.armor),
+    brute: traits.some((f) => /^Brute$/i.test(f)),
+    weapon,
     fightingStyles: [],
     archery: false,
     greatWeaponFighting: false,

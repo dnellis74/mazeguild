@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { runCombat } from "./combat";
 import type { Combatant, LogEvent, Weapon } from "./types";
-import { DYING_DEFAULTS, HIT_DICE_DEFAULTS } from "./dyingDefaults";
+import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -27,6 +27,8 @@ function pc(over: Partial<Combatant> & { id: string }): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,
@@ -78,6 +80,8 @@ function goblin(over: Partial<Combatant> = {}): Combatant {
     alive: true,
     ...DYING_DEFAULTS,
     ...HIT_DICE_DEFAULTS,
+    ...WEAR_DEFAULTS,
+    ...TRAIT_DEFAULTS,
     weapon: CLUB,
     fightingStyles: [],
     archery: false,
