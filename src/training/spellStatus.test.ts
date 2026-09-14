@@ -90,7 +90,7 @@ describe("milestone 2 spell status", () => {
     for (const row of offered) {
       expect(getStatus(row.name)).toBe("implemented");
     }
-    expect(offered.some((r) => r.name === "Sacred Flame")).toBe(false);
+    expect(offered.some((r) => r.name === "Sacred Flame")).toBe(true);
     expect(offered.some((r) => r.name === "Ray of Frost")).toBe(false);
     expect(offered.some((r) => r.name === "Mage Armor")).toBe(false);
   });
@@ -114,8 +114,8 @@ describe("milestone 2 spell status", () => {
     const placeholder = Object.values(SPELL_STATUS).filter(
       (s) => s === "placeholder",
     ).length;
-    expect(implemented).toBe(14);
-    expect(placeholder).toBe(20);
+    expect(implemented).toBe(17);
+    expect(placeholder).toBe(17);
     expect(assertSpellEffectAllowed).toBeTypeOf("function");
   });
 });

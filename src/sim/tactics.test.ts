@@ -95,7 +95,7 @@ describe("chooseAction", () => {
       role: "dps",
       attackSpell: "Guiding Bolt",
       spellSlots: 1,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
     });
     expect(chooseAction(cleric, [cleric], foes)).toEqual({
       type: "attack",
@@ -398,7 +398,7 @@ describe("chooseAction", () => {
       role: "healer",
       buffSpell: "Bless",
       spellSlots: 1,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
     });
     const ally = combatant({
       id: "ally",
@@ -418,7 +418,7 @@ describe("chooseAction", () => {
       role: "healer",
       buffSpell: "Bless",
       spellSlots: 1,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
       concentratingOn: {
         spellName: "Bless",
         startedRound: 1,

@@ -48,6 +48,11 @@ export function isStabilizeCantrip(name: string): boolean {
   return !!row && row.combatType === "stabilize";
 }
 
+export function isSaveCantrip(name: string): boolean {
+  const row = byName.get(name);
+  return !!row && row.combatType === "save" && !!row.damage && !!row.save;
+}
+
 /**
  * Pick an attack-roll cantrip the character actually learned.
  * Multiple matches: sorted by name, then chosen with the seeded rng.
@@ -77,4 +82,22 @@ export function pickLearnedStabilizeCantrip(
     .filter(isStabilizeCantrip)
     .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   return names[0];
+}
+
+/**
+ * Pick a save cantrip the character learned (e.g. Sacred Flame).
+ * Multiple matches: sorted by name, then chosen with the seeded rng.
+ */
+export function pickLearnedSaveCantrip(
+  learned: { name: string }[] | null | undefined,
+  rng?: Rng,
+): string | undefined {
+  const names = [
+    ...new Set((learned || []).map((c) => c.name).filter(Boolean)),
+  ]
+    .filter(isSaveCantrip)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  if (names.length === 0) return undefined;
+  if (names.length === 1 || !rng) return names[0];
+  return names[Math.floor(rng() * names.length)]!;
 }

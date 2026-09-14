@@ -100,7 +100,7 @@ function pickDyingAlly(allies: Combatant[]): Combatant | undefined {
 /**
  * Action-slot selection. No dice, no HP mutation.
  * Priority: Spare the Dying → Cure Wounds / Lay on Hands → Bless → control →
- * AoE save → auto spell → leveled attack spell → cantrip → weapon.
+ * AoE save → auto spell → leveled attack spell → save cantrip → attack cantrip → weapon.
  * Healing Word is not chosen here (bonus-action slot only).
  */
 export function chooseAction(
@@ -168,6 +168,9 @@ export function chooseAction(
   }
   if (actor.attackSpell && actor.spellSlots > 0) {
     return { type: "attack", targetId, ability: actor.attackSpell };
+  }
+  if (actor.saveCantrip) {
+    return { type: "attack", targetId, ability: actor.saveCantrip };
   }
   if (actor.cantrip) {
     return { type: "attack", targetId, ability: actor.cantrip };

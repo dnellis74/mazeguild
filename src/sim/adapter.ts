@@ -1,5 +1,5 @@
 import { ABILITY_ORDER, type Ability } from "@/lib/abilities";
-import { pickLearnedAttackCantrip, pickLearnedStabilizeCantrip } from "./cantrips";
+import { pickLearnedAttackCantrip, pickLearnedSaveCantrip, pickLearnedStabilizeCantrip } from "./cantrips";
 import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
 import {
   getSpell,
@@ -257,6 +257,7 @@ export function companionToCombatant(
   const primary = archetypes[0] || "Companion";
   const cantrip = pickLearnedAttackCantrip(ch.cantrips, rng);
   const stabilizeCantrip = pickLearnedStabilizeCantrip(ch.cantrips);
+  const saveCantrip = pickLearnedSaveCantrip(ch.cantrips, rng);
   const spell = pickLearnedAutoSpell(ch.spells);
   const attackSpell = pickLearnedAttackSpell(ch.spells);
   const controlSpell = pickLearnedControlSpell(ch.spells);
@@ -303,6 +304,7 @@ export function companionToCombatant(
     weapon: resolveWeapon(ch, archetypes),
     cantrip,
     stabilizeCantrip,
+    saveCantrip,
     spell,
     attackSpell,
     controlSpell,

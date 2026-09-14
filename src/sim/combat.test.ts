@@ -752,7 +752,7 @@ describe("runCombat Bless integration", () => {
       archetype: "Cleric",
       buffSpell: "Bless",
       spellSlots: 1,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
       abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
     });
     const ally = pc({
@@ -823,7 +823,7 @@ describe("runCombat Guiding Bolt / heals", () => {
       healDice: { count: 1, sides: 8 },
       spellSlots: 2,
       spellMod: 3,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
       abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
     });
     const ally = pc({
@@ -832,10 +832,10 @@ describe("runCombat Guiding Bolt / heals", () => {
       hp: 2,
       maxHp: 10,
     });
-    // High AC so action may miss; we only need the attack log event.
+    // High AC so weapon path is unattractive; Sacred Flame uses a save.
     const foe = goblin({ maxHp: 50, hp: 50, ac: 20 });
     const log: LogEvent[] = [];
-    // inits: clr, ally, gob; HW heal die; then action attack d20 (+maybe more)
+    // inits: clr, ally, gob; HW heal die; then Sacred Flame d8 + DEX save
     const seq = [0.99, 0.5, 0.4, 0.75, 0.2];
     let i = 0;
     const rng = () => (i < seq.length ? seq[i++]! : 0.1);
@@ -844,7 +844,7 @@ describe("runCombat Guiding Bolt / heals", () => {
 
     const round1 = log.filter(
       (e) =>
-        (e.event === "heal" || e.event === "attack") &&
+        (e.event === "heal" || e.event === "save") &&
         "round" in e &&
         e.round === 1 &&
         e.actor === "clr",
@@ -855,7 +855,7 @@ describe("runCombat Guiding Bolt / heals", () => {
       target: "ally",
     });
     expect(round1[1]).toMatchObject({
-      event: "attack",
+      event: "save",
       actor: "clr",
       used: "Sacred Flame",
     });
@@ -872,7 +872,7 @@ describe("runCombat Guiding Bolt / heals", () => {
       healDice: { count: 1, sides: 8 },
       spellMod: 3,
       spellSlots: 1,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
     });
     const ally = pc({
       id: "ally",
@@ -902,7 +902,7 @@ describe("runCombat Guiding Bolt / heals", () => {
       archetype: "Cleric",
       bonusHealSpell: "Healing Word",
       spellSlots: 2,
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
       hp: 8,
       maxHp: 8,
       abilities: { STR: 8, DEX: 18, CON: 12, INT: 10, WIS: 16, CHA: 10 },
@@ -918,7 +918,7 @@ describe("runCombat Guiding Bolt / heals", () => {
     expect(log.some((e) => e.event === "heal")).toBe(false);
     expect(
       log.some(
-        (e) => e.event === "attack" && e.actor === "clr" && e.used === "Sacred Flame",
+        (e) => e.event === "save" && e.actor === "clr" && e.used === "Sacred Flame",
       ),
     ).toBe(true);
     expect(healer.spellSlots).toBe(2);

@@ -274,7 +274,7 @@ describe("Spare the Dying", () => {
     const cleric = pc({
       id: "clr",
       stabilizeCantrip: "Spare the Dying",
-      cantrip: "Sacred Flame",
+      saveCantrip: "Sacred Flame",
     });
     const dying = pc({
       id: "down",

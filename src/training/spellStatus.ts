@@ -22,7 +22,10 @@ const IMPLEMENTED: ReadonlySet<string> = new Set([
   "Fire Bolt",
   "Shocking Grasp",
   "Chill Touch",
+  "Sacred Flame",
   "Spare the Dying",
+  "Light",
+  "Thaumaturgy",
   "Magic Missile",
   "Shield",
   "Sleep",
@@ -39,10 +42,7 @@ const IMPLEMENTED: ReadonlySet<string> = new Set([
  * Milestone 2 shortlist entries without a combat resolver yet.
  */
 const PLACEHOLDER: ReadonlySet<string> = new Set([
-  "Sacred Flame",
   "Guidance",
-  "Light",
-  "Thaumaturgy",
   "Mage Hand",
   "Minor Illusion",
   "Shield of Faith",

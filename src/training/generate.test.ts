@@ -132,7 +132,7 @@ describe("generateCharacter", () => {
     expect(isGenerateError(ch)).toBe(false);
     if (isGenerateError(ch)) return;
     expect(ch.features.map((f) => f.id)).toEqual(["f_05k2v7", "f_06q9m3"]);
-    expect(ch.cantrips.length).toBeGreaterThan(0);
+    expect(ch.cantrips.length).toBe(3);
     expect(ch.spells.length).toBeGreaterThan(0);
   });
 });

@@ -1,4 +1,4 @@
-import { d, type Rng } from "./rng";
+import { d, dice, type Rng } from "./rng";
 import {
   abilityMod,
   addRollModifier,
@@ -25,7 +25,7 @@ import {
   tickRageAtTurnStart,
   type AttackResult,
 } from "./rules";
-import { getCantrip } from "./cantrips";
+import { getCantrip, isSaveCantrip } from "./cantrips";
 import {
   getSpell,
   isCombatAttackSpell,
@@ -593,6 +593,57 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           reaction,
           ...attackRollFields(result),
         });
+      }
+    }
+    return party.some((p) => p.alive) && ctx.enemies.some((e) => e.alive);
+  }
+
+  // Save cantrips (Sacred Flame) — single target, no slot cost.
+  if (
+    actor.kind === "pc" &&
+    intent.ability &&
+    actor.saveCantrip === intent.ability &&
+    isSaveCantrip(intent.ability)
+  ) {
+    const cantrip = getCantrip(intent.ability);
+    if (cantrip?.damage && cantrip.save) {
+      assertSpellEffectAllowed(intent.ability);
+      const damageFull = dice(rng, cantrip.damage.count, cantrip.damage.sides);
+      const saveAbility = cantrip.save.ability as Ability;
+      const onSuccess = cantrip.save.onSuccess === "half" ? "half" : "none";
+      const result = resolveSave(rng, actor, target, {
+        ability: saveAbility,
+        onSuccess,
+        damageFull,
+      });
+      const applied = applyDamage(
+        target,
+        result.damage,
+        cantrip.damage.type,
+        rng,
+      );
+      log.push({
+        event: "save",
+        round,
+        actor: actor.name,
+        target: target.name,
+        used: intent.ability,
+        dc: result.dc,
+        d20: result.d20,
+        d20Rolls: result.d20Rolls,
+        total: result.total,
+        success: result.success,
+        ...(result.advantageMode === "advantage" ||
+        result.advantageMode === "disadvantage"
+          ? { advantageMode: result.advantageMode }
+          : {}),
+        damageFull: result.damageFull,
+        damage: applied,
+        targetHpAfter: target.hp,
+      });
+      runAfterDamageReaction(target);
+      if (!target.alive) {
+        log.push({ event: "death", round, name: target.name });
       }
     }
     return party.some((p) => p.alive) && ctx.enemies.some((e) => e.alive);

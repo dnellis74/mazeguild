@@ -95,6 +95,8 @@ export type Combatant = {
   cantrip?: string;
   /** Learned stabilize cantrip, e.g. "Spare the Dying". */
   stabilizeCantrip?: string;
+  /** Learned save cantrip, e.g. "Sacred Flame". */
+  saveCantrip?: string;
   /** Learned combat spell ready to cast when spellSlots remain, e.g. "Magic Missile". */
   spell?: string;
   /** Learned leveled spell attack, e.g. "Guiding Bolt" / "Inflict Wounds". */
