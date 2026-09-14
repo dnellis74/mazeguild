@@ -108,10 +108,12 @@ describe("SRD combat phase structure", () => {
     const calls: string[] = [];
     const spy = (name: keyof typeof combatPhases) => {
       const original = combatPhases[name];
-      vi.spyOn(combatPhases, name).mockImplementation((...args: never[]) => {
-        calls.push(name);
-        return (original as (...a: never[]) => unknown)(...args);
-      });
+      vi.spyOn(combatPhases, name).mockImplementation(
+        ((...args: unknown[]) => {
+          calls.push(name);
+          return (original as (...a: unknown[]) => unknown)(...args);
+        }) as typeof original,
+      );
     };
     spy("determineSurprise");
     spy("establishPositions");

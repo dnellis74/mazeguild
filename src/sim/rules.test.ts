@@ -876,11 +876,7 @@ describe("unconscious attack rules", () => {
     expect(result.crit).toBe(true);
   });
 
-  it.each([
-    ["Fire Bolt", 10],
-    ["Produce Flame", 8],
-    ["Eldritch Blast", 10],
-  ] as const)(
+  it.each(["Fire Bolt", "Produce Flame", "Eldritch Blast"] as const)(
     "%s (ranged cantrip) vs unconscious has advantage but does not auto-crit",
     (name) => {
       const attacker = basePc({
