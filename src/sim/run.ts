@@ -8,6 +8,7 @@ import { createRng, dice } from "./rng";
 import { applyShortRest } from "./shortRest";
 import { PARTY_CAP } from "./constants";
 import type { DungeonInput, DungeonResult, LogEvent } from "./types";
+import { narrativeLines } from "@/replay/project";
 
 const STEP_CAP = 5000;
 
@@ -155,6 +156,7 @@ export function runDungeon(input: DungeonInput): DungeonResult {
       exit: maze.exit,
     },
     log,
+    narrative: narrativeLines(log),
     score,
     stepsTaken,
     cellsVisited: visited.size,

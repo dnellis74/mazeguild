@@ -32,15 +32,22 @@ export function describeEvent(e: LogEvent): string | null {
       return null;
     case "encounter_start":
       return `Encounter! ${e.enemies.join(", ")}`;
-    case "attack":
+    case "attack": {
+      const rollNote =
+        e.advantageMode === "advantage"
+          ? " (advantage)"
+          : e.advantageMode === "disadvantage"
+            ? " (disadvantage)"
+            : "";
       if (!e.hit) {
         return e.used
-          ? `${e.actor} misses ${e.target} with ${e.used}.`
-          : `${e.actor} misses ${e.target}.`;
+          ? `${e.actor} misses ${e.target} with ${e.used}${rollNote}.`
+          : `${e.actor} misses ${e.target}${rollNote}.`;
       }
       return e.used
-        ? `${e.actor} hits ${e.target} with ${e.used}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`
-        : `${e.actor} hits ${e.target}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`;
+        ? `${e.actor} hits ${e.target} with ${e.used}${rollNote}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`
+        : `${e.actor} hits ${e.target}${rollNote}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`;
+    }
     case "heal":
       return e.used
         ? `${e.actor} heals ${e.target} with ${e.used} for ${e.amount} (${e.targetHpAfter} hp).`
@@ -185,4 +192,15 @@ export function projectFrame(
 
 export function isNarrative(e: LogEvent): boolean {
   return e.event !== "step";
+}
+
+/** Same lines the EventLog UI shows (skips silent step events). */
+export function narrativeLines(log: LogEvent[]): string[] {
+  const lines: string[] = [];
+  for (const e of log) {
+    if (!isNarrative(e)) continue;
+    const text = describeEvent(e);
+    if (text) lines.push(text);
+  }
+  return lines;
 }

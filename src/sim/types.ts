@@ -216,6 +216,11 @@ export type LogEvent =
       used?: string;
       /** Reaction that altered this attack, e.g. "Shield". */
       reaction?: string;
+      /**
+       * Net attack-roll advantage/disadvantage (omitted when neither, or for
+       * auto-hit spells with no attack roll).
+       */
+      advantageMode?: "advantage" | "disadvantage";
     }
   | {
       event: "heal";
@@ -337,6 +342,12 @@ export type DungeonResult = {
     exit: Pos;
   };
   log: LogEvent[];
+  /**
+   * Human-readable lines shown in the EventLog UI (same strings as
+   * `describeEvent` for narrative events). Included so downloads / API JSON
+   * are readable without a renderer.
+   */
+  narrative: string[];
   score: number;
   stepsTaken: number;
   cellsVisited: number;

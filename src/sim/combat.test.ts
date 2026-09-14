@@ -405,7 +405,12 @@ describe("runCombat Sleep", () => {
     const wizHit = log.find(
       (e) => e.event === "attack" && e.actor === "wiz" && e.hit === true,
     );
-    expect(wizHit).toBeTruthy();
+    expect(wizHit).toMatchObject({
+      event: "attack",
+      hit: true,
+      advantageMode: "advantage",
+      used: "Fire Bolt",
+    });
     // Woken by damage (may still be alive or dead depending on damage)
     if (sleeper.alive) {
       expect(sleeper.condition).toBeNull();

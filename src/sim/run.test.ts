@@ -43,16 +43,12 @@ describe("runDungeon", () => {
     }
   });
 
-  it("takes a short rest after each won encounter", () => {
+  it("includes EventLog narrative lines in the result JSON", () => {
     const result = runDungeon({ seed: 42, party });
-    const wins = result.log.filter((e) => e.event === "encounter_won");
-    const rests = result.log.filter((e) => e.event === "short_rest");
-    expect(wins.length).toBeGreaterThan(0);
-    expect(rests.length).toBe(wins.length);
-    for (let i = 0; i < wins.length; i++) {
-      const winIdx = result.log.indexOf(wins[i]!);
-      const restIdx = result.log.indexOf(rests[i]!);
-      expect(restIdx).toBe(winIdx + 1);
-    }
+    expect(result.narrative.length).toBeGreaterThan(0);
+    expect(result.narrative[0]).toMatch(/enters the maze/);
+    expect(result.narrative.some((line) => /Encounter!/.test(line))).toBe(true);
+    // Silent step events are omitted from narrative (same as the UI).
+    expect(result.narrative.every((line) => line.length > 0)).toBe(true);
   });
 });

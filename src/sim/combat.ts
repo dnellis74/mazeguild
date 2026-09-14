@@ -99,6 +99,16 @@ function clearEncounterState(combatants: Combatant[]): void {
 }
 
 
+/** Include advantageMode on attack log events only when it is not a flat roll. */
+function attackRollNote(
+  mode: AttackResult["advantageMode"],
+): { advantageMode: "advantage" | "disadvantage" } | Record<string, never> {
+  if (mode === "advantage" || mode === "disadvantage") {
+    return { advantageMode: mode };
+  }
+  return {};
+}
+
 /** Damage type for the ability/weapon used on this attack. */
 function damageTypeForAttack(actor: Combatant, used: string): string {
   if (actor.cantrip && used === actor.cantrip) {
@@ -155,6 +165,7 @@ function runBeforeDamageReaction(
         damage: 0,
         d20: result.d20,
         total: result.total,
+        advantageMode: result.advantageMode,
       },
       reaction: "Shield",
     };
@@ -524,6 +535,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           targetHpAfter: target.hp,
           used,
           reaction,
+          ...attackRollNote(result.advantageMode),
         });
         runAfterDamageReaction(target);
         if (!target.alive) {
@@ -538,6 +550,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           hit: false,
           used,
           reaction,
+          ...attackRollNote(result.advantageMode),
         });
       }
     }
@@ -572,6 +585,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
       targetHpAfter: target.hp,
       used,
       reaction,
+      ...attackRollNote(result.advantageMode),
     });
     runAfterDamageReaction(target);
     if (!target.alive) {
@@ -586,6 +600,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
       hit: false,
       used,
       reaction,
+      ...attackRollNote(result.advantageMode),
     });
   }
   return party.some((p) => p.alive) && ctx.enemies.some((e) => e.alive);
