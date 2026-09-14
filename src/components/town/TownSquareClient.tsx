@@ -9,11 +9,15 @@ import {
   upsertRosterEntry,
 } from "@/lib/rosterStorage";
 import { ensureStarterRoster } from "@/lib/seedRoster";
-import { stashQuestParty } from "@/lib/questHandoff";
+import {
+  consumeTownLevelUps,
+  stashQuestParty,
+  type TownLevelUpNotice,
+} from "@/lib/questHandoff";
 import { fetchJsonOnce } from "@/lib/fetchOnce";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
-import { xpForNextLevel } from "@/sim/leveling";
+import { levelForXp, xpForNextLevel } from "@/sim/leveling";
 import { ensureCharacterEquipment } from "@/sim/loadout";
 import { earnedArchetypes } from "@/training/features";
 import {
@@ -60,6 +64,7 @@ export function TownSquareClient() {
   const [labels, setLabels] = useState<CatalogLabels | null>(null);
   const [questBusy, setQuestBusy] = useState(false);
   const [questError, setQuestError] = useState<string | null>(null);
+  const [levelUpNotes, setLevelUpNotes] = useState<TownLevelUpNotice[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +83,9 @@ export function TownSquareClient() {
           setRoster(current);
           setReady(true);
         }
+      }
+      if (!cancelled) {
+        setLevelUpNotes(consumeTownLevelUps());
       }
     })();
     void fetchJsonOnce<{
@@ -275,8 +283,21 @@ export function TownSquareClient() {
               ) : null}
             </div>
 
-            <div className="sheet-block">
-              <div className="sheet-label">Companions</div>
+              {levelUpNotes.length > 0 ? (
+                <div className="sheet-block" style={{ marginBottom: 12 }}>
+                  <div className="sheet-label">Level up</div>
+                  {levelUpNotes.map((n) => (
+                    <p key={n.id} className="mechanic-note" style={{ marginTop: 6 }}>
+                      {n.name} reached level {n.toLevel} — gained{" "}
+                      {n.levelsGained} Hit Die
+                      {n.levelsGained === 1 ? "" : "s"} and {n.featurePointsGranted}{" "}
+                      feature points.
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+              <div className="sheet-block">
+                <div className="sheet-label">Companions</div>
               {roster.length === 0 ? (
                 <p className="empty-note">
                   {seeding
@@ -291,6 +312,7 @@ export function TownSquareClient() {
                     const identity = companionLine(entry, labels);
                     const archetypes = featureArchetypes(entry);
                     const vitals = companionToPartySnapshot(entry, 0);
+                    const level = levelForXp(entry.xp ?? 0);
                     return (
                       <div key={entry.id} className="town-roster-item">
                         <button
@@ -303,14 +325,6 @@ export function TownSquareClient() {
                           }
                         >
                           <span className="town-roster-name-text">{entry.name}</span>
-                          <span className="town-roster-vitals">
-                            <span className="town-roster-hp">
-                              {vitals.hp}/{vitals.maxHp} HP
-                            </span>
-                            <span className="town-roster-hp">
-                              {entry.xp ?? 0}/{xpForNextLevel(entry.xp ?? 0)} XP
-                            </span>
-                          </span>
                         </button>
                         <button
                           type="button"
@@ -319,6 +333,17 @@ export function TownSquareClient() {
                           onClick={() => toggle(entry.id)}
                           aria-pressed={on}
                         >
+                          <span className="town-roster-vitals">
+                            <span className="town-roster-hp">
+                              {vitals.hp}/{vitals.maxHp} HP
+                            </span>
+                            <span className="town-roster-hp">
+                              Level {level}
+                            </span>
+                            <span className="town-roster-hp">
+                              {entry.xp ?? 0}/{xpForNextLevel(entry.xp ?? 0)} XP
+                            </span>
+                          </span>
                           <span className="choice-sub">{identity}</span>
                           {archetypes ? (
                             <span className="choice-sub">{archetypes}</span>

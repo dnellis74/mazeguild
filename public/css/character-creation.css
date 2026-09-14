@@ -190,11 +190,8 @@
     gap:6px;
   }
   .town-roster-name{
-    align-self:stretch;
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    gap:12px;
+    align-self:flex-start;
+    display:block;
     margin:0;
     padding:0;
     border:none;
@@ -214,14 +211,13 @@
     min-width:0;
   }
   .town-roster-vitals{
-    flex-shrink:0;
     display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:2px;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:8px 14px;
+    margin-bottom:4px;
   }
   .town-roster-hp{
-    flex-shrink:0;
     font-size:12px;
     letter-spacing:0.08em;
     color:var(--ink-soft);

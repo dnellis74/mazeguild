@@ -1,6 +1,14 @@
 import type { Character } from "@/training/types";
 import { generateUniqueFantasyName } from "@/lib/fantasyNames";
-import { restoreAfterTownReturn } from "@/training/townRest";
+import {
+  restoreAfterTownReturn,
+  type TownReturnLevelUp,
+} from "@/training/townRest";
+
+export type RosterLevelUp = TownReturnLevelUp & {
+  id: string;
+  name: string;
+};
 
 /**
  * Multi-character roster for Town Square (`Character[]` in localStorage).
@@ -170,19 +178,30 @@ export function removeRosterEntry(id: string): void {
 /**
  * Apply maze XP and full town recovery to roster companions (matched by id).
  * HP / Hit Dice / rest resources are restored unconditionally — maze HP is
- * not persisted (see restoreAfterTownReturn).
+ * not persisted (see restoreAfterTownReturn). Level-ups grant Hit Dice and
+ * feature points.
  */
 export function applyQuestAftermath(
   updates: Array<{ id: string; xp: number }>,
-): void {
-  if (updates.length === 0) return;
+): RosterLevelUp[] {
+  if (updates.length === 0) return [];
   const roster = loadRoster();
+  const levelUps: RosterLevelUp[] = [];
   let changed = false;
   for (const u of updates) {
     const idx = roster.findIndex((e) => e.id === u.id);
     if (idx < 0) continue;
-    roster[idx] = restoreAfterTownReturn(roster[idx]!, u.xp);
+    const { character, levelUp } = restoreAfterTownReturn(roster[idx]!, u.xp);
+    roster[idx] = character;
+    if (levelUp) {
+      levelUps.push({
+        ...levelUp,
+        id: character.id,
+        name: character.name,
+      });
+    }
     changed = true;
   }
   if (changed) writeRaw(roster);
+  return levelUps;
 }

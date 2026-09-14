@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GameClient } from "@/components/wizardry/GameClient";
-import { clearQuestParty, readQuestParty } from "@/lib/questHandoff";
+import { clearQuestParty, readQuestParty, stashTownLevelUps } from "@/lib/questHandoff";
 import { applyQuestAftermath } from "@/lib/rosterStorage";
 import type { Character } from "@/training/types";
 import type { DungeonResult } from "@/sim/types";
@@ -32,7 +32,10 @@ export function QuestPageClient() {
 
   const returnToTown = (partyAfter?: DungeonResult["partyAfter"]) => {
     if (partyAfter?.length) {
-      applyQuestAftermath(partyAfter.map((p) => ({ id: p.id, xp: p.xp })));
+      const levelUps = applyQuestAftermath(
+        partyAfter.map((p) => ({ id: p.id, xp: p.xp })),
+      );
+      stashTownLevelUps(levelUps);
     }
     clearQuestParty();
     router.push("/");

@@ -32,7 +32,7 @@ import { asFeatureList } from "@/training/features";
 import { characterLabel, titleCaseId } from "@/training/companion";
 import { hitDiceTotalFor } from "@/training/townRest";
 
-/** Hit die by feature archetype — used only to derive starting HP. */
+/** Hit die by feature archetype — starting HP and higher-level averages. */
 const ARCHETYPE_HIT_DIE: Record<string, number> = {
   Barbarian: 12,
   Fighter: 10,
@@ -100,6 +100,26 @@ function hitDieFor(archetypes: string[]): number {
     if (die != null && die > best) best = die;
   }
   return best;
+}
+
+/** Fixed average of a Hit Die (d8 → 5, d10 → 6), matching leveling.json “or N”. */
+export function averageHitDie(sides: number): number {
+  return Math.floor(sides / 2) + 1;
+}
+
+/**
+ * Max HP at a given level: max die + CON at 1st, then average die + CON each level after.
+ * Each level contributes at least 1 hp.
+ */
+export function maxHpForLevel(
+  hitDieSides: number,
+  conMod: number,
+  level: number,
+): number {
+  const L = Math.max(1, Math.floor(level));
+  const first = Math.max(1, hitDieSides + conMod);
+  const perLevel = Math.max(1, averageHitDie(hitDieSides) + conMod);
+  return first + (L - 1) * perLevel;
 }
 
 export { hitDieFor };
@@ -226,7 +246,8 @@ export function companionToCombatant(
   const fightingStyles = collectFightingStyles(ch);
   const race = titleCaseId(ch.raceId);
   const hitDie = hitDieFor(archetypes);
-  const maxHp = Math.max(1, hitDie + abilityMod(abilities.CON));
+  const level = levelForXp(ch.xp ?? 0);
+  const maxHp = maxHpForLevel(hitDie, abilityMod(abilities.CON), level);
   const hp =
     typeof ch.hp === "number" && Number.isFinite(ch.hp)
       ? Math.min(Math.max(0, Math.floor(ch.hp)), maxHp)
@@ -247,7 +268,6 @@ export function companionToCombatant(
   const healDice = healSpell
     ? (getSpell(healSpell)?.healDice ?? { count: 1, sides: 8 })
     : { count: 1, sides: 8 };
-  const level = levelForXp(ch.xp ?? 0);
   const isBarbarian = archetypes.includes("Barbarian");
   const hasSecondWind = /\bSecond Wind\b/i.test(features);
   const hitDiceTotal = Math.max(

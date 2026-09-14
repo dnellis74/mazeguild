@@ -542,7 +542,7 @@ function SheetPanel({
       <div className="sheet-block">
         <div className="sheet-label">Feature points</div>
         <div className="points-pill">
-          <strong>{sheet.featurePoints}</strong> of 2 remaining
+          <strong>{sheet.featurePoints}</strong> remaining
         </div>
       </div>
       <div className="sheet-block">
