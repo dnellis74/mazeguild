@@ -221,6 +221,12 @@ export type LogEvent =
        * auto-hit spells with no attack roll).
        */
       advantageMode?: "advantage" | "disadvantage";
+      /** Kept d20 (after adv/disadv / Lucky). Omitted for auto-hit spells. */
+      d20?: number;
+      /** Raw d20 faces (1 normal, 2 with adv/disadv). */
+      d20Rolls?: number[];
+      /** Attack roll total (d20 + modifiers). */
+      total?: number;
     }
   | {
       event: "heal";
@@ -249,8 +255,11 @@ export type LogEvent =
       used: string;
       dc: number;
       d20: number;
+      /** Raw d20 faces (2 when the save has advantage, e.g. Rage vs STR). */
+      d20Rolls?: number[];
       total: number;
       success: boolean;
+      advantageMode?: "advantage" | "disadvantage";
       /** Shared full damage before save reduction. */
       damageFull: number;
       /** Damage applied after save (full or half). */

@@ -43,6 +43,22 @@ export function levelForXp(xp: number): number {
 }
 
 /**
+ * Total XP required to reach the next level.
+ * At maximum level, returns the threshold for the current (max) level.
+ */
+export function xpForNextLevel(xp: number): number {
+  if (XP_ROWS.length === 0) return 0;
+  const level = levelForXp(xp);
+  for (const row of XP_ROWS) {
+    if (parseLevel(row.Level ?? "1st") === level + 1) {
+      return parseXp(row["XP Required"] ?? "0");
+    }
+  }
+  const maxRow = XP_ROWS[XP_ROWS.length - 1];
+  return parseXp(maxRow?.["XP Required"] ?? "0");
+}
+
+/**
  * Barbarian Rage uses at a given level (leveling.json "Rages" column).
  * Non-Barbarians / missing rows → 0. "Unlimited" → a large finite cap.
  */

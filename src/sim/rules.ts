@@ -206,7 +206,10 @@ export type AttackResult = {
   hit: boolean;
   crit: boolean;
   damage: number;
+  /** Kept d20 after advantage / disadvantage / Lucky. */
   d20: number;
+  /** Raw d20 faces before keep (length 1, or 2 with adv/disadv). */
+  d20Rolls: number[];
   total: number;
   advantageMode?: AdvantageMode;
 };
@@ -353,7 +356,10 @@ export function resolveAttack(
   });
   if (guided) clearCondition(defender);
 
-  const { d20 } = rollD20(rng, { mode, lucky: attacker.lucky });
+  const { d20, rolls: d20Rolls } = rollD20(rng, {
+    mode,
+    lucky: attacker.lucky,
+  });
   const modBonus = rollModifierBonus(rng, attacker, "attack");
 
   const bonus = useSpellAttack
@@ -385,6 +391,7 @@ export function resolveAttack(
       crit: false,
       damage: 0,
       d20,
+      d20Rolls,
       total,
       advantageMode: mode,
     };
@@ -398,6 +405,7 @@ export function resolveAttack(
       crit,
       damage: Math.max(0, damage),
       d20,
+      d20Rolls,
       total,
       advantageMode: mode,
     };
@@ -453,6 +461,7 @@ export function resolveAttack(
     crit,
     damage: Math.max(0, damage),
     d20,
+    d20Rolls,
     total,
     advantageMode: mode,
   };
@@ -488,8 +497,10 @@ export function spellSaveDC(caster: Combatant): number {
 export type SaveResult = {
   success: boolean;
   d20: number;
+  d20Rolls: number[];
   total: number;
   dc: number;
+  advantageMode: AdvantageMode;
   /** Damage applied after onSuccess handling. */
   damage: number;
   damageFull: number;
@@ -518,7 +529,7 @@ export function resolveSave(
   const dc = spellSaveDC(caster);
   const mode: AdvantageMode =
     opts.ability === "STR" && defender.raging ? "advantage" : "none";
-  const { d20 } = rollD20(rng, { mode });
+  const { d20, rolls: d20Rolls } = rollD20(rng, { mode });
   const modBonus = rollModifierBonus(rng, defender, "save");
   const total =
     d20 + abilityMod(defender.abilities[opts.ability]) + modBonus;
@@ -531,8 +542,10 @@ export function resolveSave(
   return {
     success,
     d20,
+    d20Rolls,
     total,
     dc,
+    advantageMode: mode,
     damage,
     damageFull: opts.damageFull,
     pushed: !success && !!opts.pushOnFail,

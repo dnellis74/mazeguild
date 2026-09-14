@@ -19,6 +19,12 @@
 /** Keep in sync with ROSTER_KEY in src/lib/rosterStorage.ts */
 const ROSTER_KEY = 'mazeguild.roster';
 
+/** Keep in sync with CLASS_ARCHETYPES in src/training/archetypeFeatures.ts */
+const CLASS_ARCHETYPES = [
+  'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk',
+  'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard',
+];
+
 /** Debug: show quiz option weights under each answer. Flip to false to hide. */
 const DEBUG_SHOW_WEIGHTS = true;
 
@@ -229,6 +235,10 @@ function renderEntry(){
       <button class="choice-card" data-action="start-pick">
         <span class="choice-title">Choose your race</span>
         <span class="choice-sub">Skip ahead to the full list.</span>
+      </button>
+      <button class="choice-card" data-action="random-archetype">
+        <span class="choice-title">Random archetype</span>
+        <span class="choice-sub">Instant companion — random race, alignment, and class with starter features.</span>
       </button>
       <button class="choice-card is-locked" disabled>
         <span class="choice-title">Describe your character</span>
@@ -518,6 +528,50 @@ function bindEvents(){
 
 
 
+function pickRandom(list){
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function loadRosterLocal(){
+  try {
+    const roster = JSON.parse(localStorage.getItem(ROSTER_KEY) || '[]');
+    return Array.isArray(roster) ? roster : [];
+  } catch {
+    return [];
+  }
+}
+
+async function createRandomArchetypeCompanion(btn){
+  if(btn) btn.disabled = true;
+  const roster = loadRosterLocal();
+  const race = pickRandom(RACES);
+  const align = pickRandom(ALIGNMENTS);
+  const archetype = pickRandom(CLASS_ARCHETYPES);
+  try {
+    const res = await fetch('/api/characters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        raceId: race.id,
+        alignmentId: align.id,
+        archetype,
+        taken: roster.map(e => e && e.name).filter(Boolean),
+      }),
+    });
+    const data = await res.json();
+    if(!res.ok || !data.character){
+      throw new Error(data.error || 'Could not generate character');
+    }
+    roster.push(data.character);
+    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+    window.location.href = '/';
+  } catch (err) {
+    console.error(err);
+    showToast(err instanceof Error ? err.message : 'Random create failed');
+    if(btn) btn.disabled = false;
+  }
+}
+
 function onAction(e){
   const action = e.currentTarget.dataset.action;
   const ui = state.ui, ch = state.character;
@@ -532,6 +586,9 @@ function onAction(e){
     ui.expandedId=null;
     ui.screen='pick';
     render();
+  }
+  else if(action==='random-archetype'){
+    void createRandomArchetypeCompanion(e.currentTarget);
   }
   else if(action==='answer'){
     const idx = parseInt(e.currentTarget.dataset.index,10);

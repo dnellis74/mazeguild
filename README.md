@@ -149,3 +149,7 @@ In rough order:
 3. Guild / conscription (parties of up to six, including offline members)
 4. A written motivation prompt that biases **tactics only**
 5. Automatic full recovery on return to town (HP, Hit Dice, rest resources)
+
+## Console debug stuff
+* Clear the roster
+** localStorage.removeItem("mazeguild.roster"); location.reload();

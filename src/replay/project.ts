@@ -24,6 +24,37 @@ export type ReplayFrame = {
 
 const START_FACING: Dir = "s";
 
+/** Format d20 faces for narrative (shows both dice on adv/disadv). */
+export function formatD20Roll(opts: {
+  d20?: number;
+  d20Rolls?: number[];
+  total?: number;
+  advantageMode?: "advantage" | "disadvantage" | "none";
+}): string {
+  const kept = opts.d20;
+  const rolls = opts.d20Rolls;
+  if (kept == null && (!rolls || rolls.length === 0)) {
+    if (opts.advantageMode === "advantage") return " (advantage)";
+    if (opts.advantageMode === "disadvantage") return " (disadvantage)";
+    return "";
+  }
+  const faces = rolls && rolls.length > 0 ? rolls : kept != null ? [kept] : [];
+  const mode =
+    opts.advantageMode === "advantage" || opts.advantageMode === "disadvantage"
+      ? opts.advantageMode
+      : null;
+  let dicePart: string;
+  if (faces.length >= 2 && mode) {
+    dicePart = `${mode} ${faces.join(", ")} → ${kept ?? Math.max(...faces)}`;
+  } else if (faces.length >= 2) {
+    dicePart = `d20 ${faces.join(", ")} → ${kept ?? faces[0]}`;
+  } else {
+    dicePart = `d20 ${kept ?? faces[0]}`;
+  }
+  if (opts.total != null) return ` (${dicePart}; total ${opts.total})`;
+  return ` (${dicePart})`;
+}
+
 export function describeEvent(e: LogEvent): string | null {
   switch (e.event) {
     case "run_start":
@@ -33,12 +64,12 @@ export function describeEvent(e: LogEvent): string | null {
     case "encounter_start":
       return `Encounter! ${e.enemies.join(", ")}`;
     case "attack": {
-      const rollNote =
-        e.advantageMode === "advantage"
-          ? " (advantage)"
-          : e.advantageMode === "disadvantage"
-            ? " (disadvantage)"
-            : "";
+      const rollNote = formatD20Roll({
+        d20: e.d20,
+        d20Rolls: e.d20Rolls,
+        total: e.total,
+        advantageMode: e.advantageMode,
+      });
       if (!e.hit) {
         return e.used
           ? `${e.actor} misses ${e.target} with ${e.used}${rollNote}.`
@@ -47,6 +78,17 @@ export function describeEvent(e: LogEvent): string | null {
       return e.used
         ? `${e.actor} hits ${e.target} with ${e.used}${rollNote}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`
         : `${e.actor} hits ${e.target}${rollNote}${e.crit ? " (CRIT)" : ""} for ${e.damage} (${e.targetHpAfter} hp).`;
+    }
+    case "save": {
+      const rollNote = formatD20Roll({
+        d20: e.d20,
+        d20Rolls: e.d20Rolls,
+        total: e.total,
+        advantageMode: e.advantageMode,
+      });
+      const outcome = e.success ? "succeeds" : "fails";
+      const push = e.pushed ? " and is pushed" : "";
+      return `${e.target} ${outcome} vs ${e.used} (DC ${e.dc})${rollNote}${push}; ${e.damage} damage (${e.targetHpAfter} hp).`;
     }
     case "heal":
       return e.used

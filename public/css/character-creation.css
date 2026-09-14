@@ -213,6 +213,13 @@
   .town-roster-name-text{
     min-width:0;
   }
+  .town-roster-vitals{
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:2px;
+  }
   .town-roster-hp{
     flex-shrink:0;
     font-size:12px;

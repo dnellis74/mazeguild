@@ -99,14 +99,30 @@ function clearEncounterState(combatants: Combatant[]): void {
 }
 
 
-/** Include advantageMode on attack log events only when it is not a flat roll. */
-function attackRollNote(
-  mode: AttackResult["advantageMode"],
-): { advantageMode: "advantage" | "disadvantage" } | Record<string, never> {
-  if (mode === "advantage" || mode === "disadvantage") {
-    return { advantageMode: mode };
+/** Attack-roll fields for the combat log (skip auto-hit spells). */
+function attackRollFields(result: AttackResult): {
+  d20: number;
+  d20Rolls: number[];
+  total: number;
+  advantageMode?: "advantage" | "disadvantage";
+} {
+  const fields: {
+    d20: number;
+    d20Rolls: number[];
+    total: number;
+    advantageMode?: "advantage" | "disadvantage";
+  } = {
+    d20: result.d20,
+    d20Rolls: result.d20Rolls,
+    total: result.total,
+  };
+  if (
+    result.advantageMode === "advantage" ||
+    result.advantageMode === "disadvantage"
+  ) {
+    fields.advantageMode = result.advantageMode;
   }
-  return {};
+  return fields;
 }
 
 /** Damage type for the ability/weapon used on this attack. */
@@ -164,6 +180,7 @@ function runBeforeDamageReaction(
         crit: false,
         damage: 0,
         d20: result.d20,
+        d20Rolls: result.d20Rolls,
         total: result.total,
         advantageMode: result.advantageMode,
       },
@@ -425,8 +442,13 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           used: intent.ability,
           dc: result.dc,
           d20: result.d20,
+          d20Rolls: result.d20Rolls,
           total: result.total,
           success: result.success,
+          ...(result.advantageMode === "advantage" ||
+          result.advantageMode === "disadvantage"
+            ? { advantageMode: result.advantageMode }
+            : {}),
           damageFull: result.damageFull,
           damage: applied,
           targetHpAfter: target.hp,
@@ -535,7 +557,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           targetHpAfter: target.hp,
           used,
           reaction,
-          ...attackRollNote(result.advantageMode),
+          ...attackRollFields(result),
         });
         runAfterDamageReaction(target);
         if (!target.alive) {
@@ -550,7 +572,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
           hit: false,
           used,
           reaction,
-          ...attackRollNote(result.advantageMode),
+          ...attackRollFields(result),
         });
       }
     }
@@ -585,7 +607,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
       targetHpAfter: target.hp,
       used,
       reaction,
-      ...attackRollNote(result.advantageMode),
+      ...attackRollFields(result),
     });
     runAfterDamageReaction(target);
     if (!target.alive) {
@@ -600,7 +622,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
       hit: false,
       used,
       reaction,
-      ...attackRollNote(result.advantageMode),
+      ...attackRollFields(result),
     });
   }
   return party.some((p) => p.alive) && ctx.enemies.some((e) => e.alive);

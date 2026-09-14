@@ -8,10 +8,12 @@ import {
   loadRoster,
   upsertRosterEntry,
 } from "@/lib/rosterStorage";
+import { ensureStarterRoster } from "@/lib/seedRoster";
 import { stashQuestParty } from "@/lib/questHandoff";
 import { fetchJsonOnce } from "@/lib/fetchOnce";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
+import { xpForNextLevel } from "@/sim/leveling";
 import { ensureCharacterEquipment } from "@/sim/loadout";
 import { earnedArchetypes } from "@/training/features";
 import {
@@ -54,13 +56,30 @@ export function TownSquareClient() {
   const [roster, setRoster] = useState<Character[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [labels, setLabels] = useState<CatalogLabels | null>(null);
   const [questBusy, setQuestBusy] = useState(false);
   const [questError, setQuestError] = useState<string | null>(null);
 
   useEffect(() => {
-    setRoster(loadRoster());
-    setReady(true);
+    let cancelled = false;
+    void (async () => {
+      const current = loadRoster();
+      if (current.length === 0) {
+        setSeeding(true);
+        const seeded = await ensureStarterRoster();
+        if (!cancelled) {
+          setRoster(seeded);
+          setSeeding(false);
+          setReady(true);
+        }
+      } else {
+        if (!cancelled) {
+          setRoster(current);
+          setReady(true);
+        }
+      }
+    })();
     void fetchJsonOnce<{
       races?: { id: string; name: string }[];
       alignments?: { id: string; name: string }[];
@@ -70,11 +89,14 @@ export function TownSquareClient() {
         const alignments: Record<string, string> = {};
         for (const r of data.races || []) races[r.id] = r.name;
         for (const a of data.alignments || []) alignments[a.id] = a.name;
-        setLabels({ races, alignments });
+        if (!cancelled) setLabels({ races, alignments });
       })
       .catch(() => {
         /* fall back to raw ids on the cards */
       });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const refresh = useCallback(() => {
@@ -159,7 +181,11 @@ export function TownSquareClient() {
       <div className="stage">
         <div className="app">
           <div className="screen">
-            <p className="lede">Loading Town Square…</p>
+            <p className="lede">
+              {seeding
+                ? "Travelers gather in the square…"
+                : "Loading Town Square…"}
+            </p>
           </div>
         </div>
       </div>
@@ -253,7 +279,9 @@ export function TownSquareClient() {
               <div className="sheet-label">Companions</div>
               {roster.length === 0 ? (
                 <p className="empty-note">
-                  Welcome a stranger to begin. They will return here when their story is set.
+                  {seeding
+                    ? "Companions of every calling are arriving…"
+                    : "Welcome a stranger to begin. They will return here when their story is set."}
                 </p>
               ) : (
                 <div className="choice-list town-roster">
@@ -275,8 +303,13 @@ export function TownSquareClient() {
                           }
                         >
                           <span className="town-roster-name-text">{entry.name}</span>
-                          <span className="town-roster-hp">
-                            {vitals.hp}/{vitals.maxHp} HP
+                          <span className="town-roster-vitals">
+                            <span className="town-roster-hp">
+                              {vitals.hp}/{vitals.maxHp} HP
+                            </span>
+                            <span className="town-roster-hp">
+                              {entry.xp ?? 0}/{xpForNextLevel(entry.xp ?? 0)} XP
+                            </span>
                           </span>
                         </button>
                         <button

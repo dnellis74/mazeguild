@@ -411,6 +411,10 @@ describe("runCombat Sleep", () => {
       advantageMode: "advantage",
       used: "Fire Bolt",
     });
+    expect(wizHit && "d20Rolls" in wizHit ? wizHit.d20Rolls : []).toHaveLength(
+      2,
+    );
+    expect(wizHit && "d20" in wizHit ? wizHit.d20 : 0).toBe(20);
     // Woken by damage (may still be alive or dead depending on damage)
     if (sleeper.alive) {
       expect(sleeper.condition).toBeNull();
