@@ -34,6 +34,7 @@ import {
   isCombatControlSpell,
   isCombatSaveSpell,
 } from "./spells";
+import { assertSpellEffectAllowed } from "@/training/spellStatus";
 import {
   chooseAction,
   chooseAfterDamageReaction,
@@ -46,6 +47,18 @@ import type { Ability, Combatant, LogEvent } from "./types";
 
 function allyCount(actor: Combatant, party: Combatant[]): number {
   return party.filter((p) => p.alive && p.id !== actor.id).length;
+}
+
+function packTacticsAllyPresent(
+  actor: Combatant,
+  allies: Combatant[],
+): boolean {
+  return allies.some(
+    (a) =>
+      a.id !== actor.id &&
+      a.alive &&
+      !hasCondition(a, "unconscious"),
+  );
 }
 
 function rollInitiativeScore(rng: Rng, c: Combatant): number {
@@ -167,6 +180,7 @@ function runBeforeDamageReaction(
   const bonus = spell?.effect?.acBonus ?? 5;
   if (defender.spellSlots <= 0) return { result };
 
+  assertSpellEffectAllowed("Shield");
   defender.spellSlots -= 1;
   defender.reactionUsed = true;
   defender.tempAcBonus = Math.max(defender.tempAcBonus || 0, bonus);
@@ -285,6 +299,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
     const target = allies.find((a) => a.id === intent.targetId);
     if (!target?.alive) return true;
     const used = intent.ability || actor.stabilizeCantrip || "Spare the Dying";
+    assertSpellEffectAllowed(used);
     if (!stabilizeCombatant(target)) return true;
     log.push({
       event: "stabilize",
@@ -311,15 +326,17 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
       ) {
         return true;
       }
+      assertSpellEffectAllowed("Healing Word");
       const spell = getSpell("Healing Word");
       const diceExpr = spell?.healDice ?? { count: 1, sides: 4 };
       actor.spellSlots -= 1;
       amount = resolveHealAmount(rng, actor, diceExpr);
       used = "Healing Word";
     } else if (actor.healSlots > 0) {
+      used = intent.ability || actor.healSpell || "Cure Wounds";
+      assertSpellEffectAllowed(used);
       actor.healSlots -= 1;
       amount = resolveCureWounds(rng, actor);
-      used = intent.ability || actor.healSpell || "Cure Wounds";
     } else if (actor.layOnHands > 0) {
       amount = Math.min(actor.layOnHands, target.maxHp - target.hp);
       actor.layOnHands -= amount;
@@ -347,6 +364,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
     actor.spellSlots > 0 &&
     isCombatBuffSpell(intent.ability)
   ) {
+    assertSpellEffectAllowed(intent.ability);
     actor.spellSlots -= 1;
     const targets = allies
       .filter((a) => a.alive)
@@ -415,6 +433,7 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
   ) {
     const spell = getSpell(intent.ability);
     if (spell?.damage && spell.save) {
+      assertSpellEffectAllowed(intent.ability);
       actor.spellSlots -= 1;
       const damageFull = rollSpellDamage(rng, spell);
       const saveAbility = spell.save.ability as Ability;
@@ -584,6 +603,9 @@ function resolveIntent(ctx: TurnCtx, intentIn: Intent): boolean {
     actor,
     target,
     actor.kind === "pc" ? allyCount(actor, party) : 1,
+    {
+      packTacticsAlly: packTacticsAllyPresent(actor, allies),
+    },
   );
 
   let reaction: string | undefined;

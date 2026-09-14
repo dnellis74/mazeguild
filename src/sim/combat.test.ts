@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { runCombat } from "./combat";
 import type { Combatant, LogEvent, Weapon } from "./types";
 import { DYING_DEFAULTS, HIT_DICE_DEFAULTS, TRAIT_DEFAULTS, WEAR_DEFAULTS } from "./dyingDefaults";
+import { withSpellStatusOverrides } from "@/training/spellStatus";
 
 const CLUB: Weapon = {
   name: "Club",
@@ -446,42 +447,44 @@ describe("runCombat Sleep", () => {
 
 describe("runCombat Color Spray", () => {
   it("blinds foes covered by the pool", () => {
-    const wizard = pc({
-      id: "wiz",
-      controlSpell: "Color Spray",
-      spellSlots: 1,
-      cantrip: "Fire Bolt",
-      abilities: { STR: 8, DEX: 18, CON: 12, INT: 16, WIS: 10, CHA: 10 },
-    });
-    const a = goblin({ id: "a", name: "A", maxHp: 3, hp: 3 });
-    const b = goblin({ id: "b", name: "B", maxHp: 4, hp: 4 });
-    const c = goblin({
-      id: "c",
-      name: "C",
-      maxHp: 50,
-      hp: 50,
-      abilities: { STR: 8, DEX: 8, CON: 10, INT: 10, WIS: 8, CHA: 8 },
-    });
-    const log: LogEvent[] = [];
-    // wiz init high; 6× d10=2 → pool 12 covers A+B, not C
-    const seq = [
-      0.95, 0, 0, 0,
-      0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
-    ];
-    let i = 0;
-    const rng = () => (i < seq.length ? seq[i++]! : 0.1);
+    withSpellStatusOverrides({ "Color Spray": "implemented" }, () => {
+      const wizard = pc({
+        id: "wiz",
+        controlSpell: "Color Spray",
+        spellSlots: 1,
+        cantrip: "Fire Bolt",
+        abilities: { STR: 8, DEX: 18, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+      });
+      const a = goblin({ id: "a", name: "A", maxHp: 3, hp: 3 });
+      const b = goblin({ id: "b", name: "B", maxHp: 4, hp: 4 });
+      const c = goblin({
+        id: "c",
+        name: "C",
+        maxHp: 50,
+        hp: 50,
+        abilities: { STR: 8, DEX: 8, CON: 10, INT: 10, WIS: 8, CHA: 8 },
+      });
+      const log: LogEvent[] = [];
+      // wiz init high; 6× d10=2 → pool 12 covers A+B, not C
+      const seq = [
+        0.95, 0, 0, 0,
+        0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+      ];
+      let i = 0;
+      const rng = () => (i < seq.length ? seq[i++]! : 0.1);
 
-    runCombat(rng, [wizard], [a, b, c], log);
+      runCombat(rng, [wizard], [a, b, c], log);
 
-    const ctrl = log.find(
-      (e) => e.event === "control" && e.used === "Color Spray",
-    );
-    expect(ctrl).toMatchObject({
-      used: "Color Spray",
-      pool: 12,
-      affected: ["A", "B"],
+      const ctrl = log.find(
+        (e) => e.event === "control" && e.used === "Color Spray",
+      );
+      expect(ctrl).toMatchObject({
+        used: "Color Spray",
+        pool: 12,
+        affected: ["A", "B"],
+      });
+      expect(wizard.spellSlots).toBe(0);
     });
-    expect(wizard.spellSlots).toBe(0);
   });
 });
 

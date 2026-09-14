@@ -1,6 +1,6 @@
 import type { Character, FeatureRef, Skill } from "./types";
 import type { Catalog } from "./catalog";
-import { skillById } from "./catalog";
+import { isOfferArchetype, skillById } from "./catalog";
 
 export function asFeatureList(feature: FeatureRef | undefined | null): string[] {
   if (Array.isArray(feature)) return feature.filter(Boolean).map(String);
@@ -61,6 +61,7 @@ export function availableActivities(
 ) {
   return activities.filter((act) => {
     const skill = skillById(catalog, act.id);
-    return skill ? prereqMet(ch, skill) : false;
+    if (!skill || !isOfferArchetype(catalog, skill.archetype)) return false;
+    return prereqMet(ch, skill);
   });
 }

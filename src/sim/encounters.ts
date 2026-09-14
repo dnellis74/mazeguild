@@ -1,5 +1,6 @@
 import { makeMonster } from "./adapter";
 import {
+  enabledMonsters,
   generateEncounter,
   type EncounterMonsterGroup,
 } from "./encounterScaling";
@@ -26,8 +27,6 @@ export const LOOT = [
   "a small brass key",
   "a moth-eaten cloak",
 ] as const;
-
-const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin", "Bugbear"] as const;
 
 function equipmentOrEmpty(
   partial: Partial<CharacterEquipment> | undefined,
@@ -59,7 +58,15 @@ function expandGroups(
           abilities: stats.abilities,
           equipment: equipmentOrEmpty(stats.equipment),
           features: stats.features,
+          traits: stats.traits,
           xpValue: stats.xpValue,
+          acOverride: stats.acOverride,
+          naturalArmor: stats.naturalArmor,
+          naturalWeapons: stats.naturalWeapons,
+          damageVulnerabilities: stats.damageVulnerabilities,
+          damageImmunities: stats.damageImmunities,
+          conditionImmunities: stats.conditionImmunities,
+          savingThrows: stats.savingThrows,
         }),
       );
     }
@@ -81,7 +88,7 @@ export function spawnEncounter(
     party,
     "easy",
     seed,
-    [...AVAILABLE_MONSTERS],
+    enabledMonsters(),
   );
   const enemies = expandGroups(plan.monsters, step);
   if (enemies.length > 0) return enemies;

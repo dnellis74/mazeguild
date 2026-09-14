@@ -1,4 +1,5 @@
-import spellData from "../../public/data/spells_level1.json";
+import spellDataL1 from "../../public/data/spells_level1.json";
+import spellDataL2 from "../../public/data/spells_level2.json";
 import type { ConditionName, DiceExpr } from "./types";
 
 export type SpellCombatType =
@@ -65,11 +66,16 @@ export type SpellEntry = {
 export type CastingTime =
   | "action"
   | "bonus_action"
+  | "bonus action"
   | "reaction"
   | "minute"
-  | "hour";
+  | "hour"
+  | string;
 
-const entries = (spellData as { spells: SpellEntry[] }).spells;
+const entries = [
+  ...(spellDataL1 as { spells: SpellEntry[] }).spells,
+  ...(spellDataL2 as { spells: SpellEntry[] }).spells,
+];
 
 const byName = new Map<string, SpellEntry>();
 for (const row of entries) {
@@ -150,7 +156,7 @@ export function isCombatBonusHealSpell(name: string): boolean {
   return (
     !!row &&
     row.combatType === "heal" &&
-    row.castingTime === "bonus_action" &&
+    (row.castingTime === "bonus_action" || row.castingTime === "bonus action") &&
     !!row.healDice &&
     row.name === "Healing Word"
   );

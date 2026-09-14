@@ -1,21 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { getCatalog } from "./catalog";
+import { getCatalog, skillById } from "./catalog";
+import { CLASS_ARCHETYPES } from "./archetypeFeatures";
 import {
   generateCharacter,
   isGenerateError,
   orderSkillsForEarn,
   resolveSkillRef,
 } from "./generate";
-import { skillById } from "./catalog";
 
 function seqRng(values: number[]) {
   let i = 0;
   return () => (i < values.length ? values[i++]! : 0.5);
 }
 
+/** Full skill/cantrip/spell catalog for tests that cover inactive archetypes. */
+function fullCatalog() {
+  return getCatalog({
+    archetypes: CLASS_ARCHETYPES,
+    spellStatuses: ["implemented", "placeholder", "deferred"],
+  });
+}
+
 describe("resolveSkillRef", () => {
   it("resolves by id and by feature name", () => {
-    const catalog = getCatalog();
+    const catalog = fullCatalog();
     expect(resolveSkillRef(catalog, "f_01r8k4")?.feature).toBe("Rage");
     expect(resolveSkillRef(catalog, "Rage")?.id).toBe("f_01r8k4");
     expect(resolveSkillRef(catalog, "nope")).toBeNull();
@@ -24,7 +32,7 @@ describe("resolveSkillRef", () => {
 
 describe("orderSkillsForEarn", () => {
   it("puts the prerequisite first", () => {
-    const catalog = getCatalog();
+    const catalog = fullCatalog();
     const cantrips = skillById(catalog, "f_03x5n2")!;
     const casting = skillById(catalog, "f_04p6t8")!;
     expect(orderSkillsForEarn(casting, cantrips)?.map((s) => s.id)).toEqual([
@@ -36,7 +44,7 @@ describe("orderSkillsForEarn", () => {
 
 describe("generateCharacter", () => {
   it("builds a barbarian with gear and ability scores", () => {
-    const catalog = getCatalog();
+    const catalog = fullCatalog();
     const ch = generateCharacter(catalog, {
       id: "c1",
       name: "Grok",
@@ -55,7 +63,7 @@ describe("generateCharacter", () => {
   });
 
   it("resolves unique feature names (Rage)", () => {
-    const catalog = getCatalog();
+    const catalog = fullCatalog();
     const ch = generateCharacter(catalog, {
       id: "c1b",
       name: "Grok",
@@ -68,7 +76,7 @@ describe("generateCharacter", () => {
   });
 
   it("accepts skill ids and fills magic for a bard path", () => {
-    const catalog = getCatalog();
+    const catalog = fullCatalog();
     const ch = generateCharacter(catalog, {
       id: "c2",
       name: "Lyra",
@@ -86,7 +94,7 @@ describe("generateCharacter", () => {
   });
 
   it("rejects unknown race and unmet prerequisites", () => {
-    const catalog = getCatalog();
+    const catalog = fullCatalog();
     expect(
       generateCharacter(catalog, {
         id: "x",

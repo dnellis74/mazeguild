@@ -1,11 +1,21 @@
-import { getCatalog } from "@/training/catalog";
+import { ACTIVE_ARCHETYPES, getCatalog } from "@/training/catalog";
 import {
-  CLASS_ARCHETYPES,
   featuresForArchetype,
+  resolveArchetype,
 } from "@/training/archetypeFeatures";
 import { generateCharacter, isGenerateError } from "@/training/generate";
 import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 import type { Character } from "@/training/types";
+
+const OFFERED_ARCHETYPES = [...ACTIVE_ARCHETYPES];
+
+function isOfferedArchetype(name: string): boolean {
+  const resolved = resolveArchetype(name);
+  return (
+    resolved != null &&
+    (ACTIVE_ARCHETYPES as readonly string[]).includes(resolved)
+  );
+}
 
 /**
  * Generate a combat-ready character from race, alignment, and either
@@ -79,12 +89,21 @@ export async function POST(request: Request) {
     }
     featurePair = [features[0], features[1]];
   } else if (typeof archetype === "string" && archetype.trim()) {
+    if (!isOfferedArchetype(archetype)) {
+      return Response.json(
+        {
+          error: `Unknown or inactive archetype: ${archetype}`,
+          archetypes: OFFERED_ARCHETYPES,
+        },
+        { status: 400 },
+      );
+    }
     const fromArch = featuresForArchetype(archetype);
     if (!fromArch) {
       return Response.json(
         {
           error: `Unknown archetype: ${archetype}`,
-          archetypes: CLASS_ARCHETYPES,
+          archetypes: OFFERED_ARCHETYPES,
         },
         { status: 400 },
       );
@@ -94,7 +113,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         error: "archetype or features required",
-        archetypes: CLASS_ARCHETYPES,
+        archetypes: OFFERED_ARCHETYPES,
       },
       { status: 400 },
     );

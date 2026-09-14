@@ -1,10 +1,41 @@
 import type { CharacterEquipment } from "@/training/types";
 
+/** Rider attached to a natural weapon (often recorded until conditions exist). */
+export type SaveRider = {
+  ability: string;
+  dc: number;
+  onFail: string;
+  damageDice?: string;
+  damageType?: string;
+  halfOnSuccess?: boolean;
+  duration?: string;
+  repeatSaveAtEndOfTargetTurn?: boolean;
+  immuneRaces?: string[];
+  immuneTypes?: string[];
+  /** Implementation status for this rider; omitted = treat as recorded. */
+  status?: "implemented" | "recorded";
+};
+
+export type NaturalWeapon = {
+  name: string;
+  toHit: number;
+  damageDice: { count: number; sides: number };
+  damageBonus: number;
+  damageType: string;
+  rider?: SaveRider;
+};
+
+export type MonsterTrait = {
+  name: string;
+  status: "implemented" | "recorded";
+};
+
 /**
  * Monster blueprint. `equipment` uses the same slot ids as PC
  * `CharacterEquipment` (`armor` / `mainHand` / `offHand` / `pack`); omitted
  * slots are treated as empty at spawn. Combat weapon, AC, and
- * wearingMetalArmor are derived from equipment (not a separate weapons table).
+ * wearingMetalArmor are derived from equipment unless overrides /
+ * naturalWeapons are set.
  */
 export type MonsterBlueprint = {
   /** Display name when it differs from the MONSTER_STATS key. */
@@ -28,6 +59,7 @@ export type MonsterBlueprint = {
   tags?: string[];
   /** SRD alignment string (includes Unaligned / Any … variants). */
   alignment: string;
+  /** Informational SRD AC; combat may use acOverride / naturalArmor / equipment. */
   ac: number;
   hp: number;
   speed: number;
@@ -37,10 +69,23 @@ export type MonsterBlueprint = {
   languages?: string[];
   challengeRating: number;
   xpValue: number;
-  /** Named traits (e.g. Bugbear "Brute"). */
+  /** Named traits (e.g. Bugbear "Brute") — legacy string list. */
   features?: string[];
   /** Partial loadout; missing slots are null at spawn. */
   equipment?: Partial<CharacterEquipment>;
+  /** AC bonus beyond 10 + DEX (natural armor). */
+  naturalArmor?: number;
+  /** Explicit AC; wins over naturalArmor and equipment derivation. */
+  acOverride?: number;
+  /** Inline natural attacks (not equipment catalog items). */
+  naturalWeapons?: NaturalWeapon[];
+  damageVulnerabilities?: string[];
+  damageImmunities?: string[];
+  conditionImmunities?: string[];
+  /** Explicit save bonuses keyed by ability (e.g. wis: 0). */
+  savingThrows?: Record<string, number>;
+  /** Structured traits with implementation status. */
+  traits?: MonsterTrait[];
 };
 
 export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
@@ -186,6 +231,7 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       tags: ["kobold"],
       alignment: "Lawful Evil",
       ac: 12,
+      acOverride: 12,
       hp: 5, // 5 (2d6 − 2)
       speed: 30,
       abilities: { STR: 7, DEX: 15, CON: 9, INT: 8, WIS: 7, CHA: 8 },
@@ -193,7 +239,11 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       languages: ["Common", "Draconic"],
       challengeRating: 0.125,
       xpValue: 25,
-      features: ["Sunlight Sensitivity", "Pack Tactics"],
+      features: [],
+      traits: [
+        { name: "Pack Tactics", status: "implemented" },
+        { name: "Sunlight Sensitivity", status: "recorded" },
+      ],
       equipment: {
         mainHand: "dagger",
         pack: { name: "Carried", contents: ["sling"] },
@@ -435,7 +485,8 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       type: "Undead",
       tags: [],
       alignment: "Lawful Evil",
-      ac: 13, // armor scraps
+      ac: 13,
+      acOverride: 13,
       hp: 13, // 13 (2d8 + 4)
       speed: 30,
       abilities: { STR: 10, DEX: 14, CON: 15, INT: 6, WIS: 8, CHA: 5 },
@@ -444,13 +495,12 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       challengeRating: 0.25,
       xpValue: 50,
       features: [],
-      // vulnerable: bludgeoning
-      // immune: poison
-      // condition immune: exhaustion, poisoned
+      damageVulnerabilities: ["bludgeoning"],
+      damageImmunities: ["poison"],
+      conditionImmunities: ["exhaustion", "poisoned"],
       equipment: {
-        armor: "armor_scraps",
         mainHand: "shortsword",
-        pack: { name: "Carried", contents: ["shortbow"] },
+        pack: { name: "Carried", contents: ["shortbow", "arrows"] },
       },
     },
     Sprite: {
@@ -518,6 +568,7 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       tags: [],
       alignment: "Neutral Evil",
       ac: 8,
+      acOverride: 8,
       hp: 22, // 22 (3d8 + 9)
       speed: 20,
       abilities: { STR: 13, DEX: 6, CON: 16, INT: 3, WIS: 6, CHA: 5 },
@@ -525,11 +576,26 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       languages: ["understands the languages it knew in life but can’t speak"],
       challengeRating: 0.25,
       xpValue: 50,
-      features: ["Undead Fortitude"],
-      // actions: Slam
-      // immune: poison
-      // condition immune: poisoned
-      // saving throws: Wis +0
+      features: [],
+      savingThrows: { wis: 0 },
+      damageImmunities: ["poison"],
+      conditionImmunities: ["poisoned"],
+      naturalWeapons: [
+        {
+          name: "Slam",
+          toHit: 3,
+          damageDice: { count: 1, sides: 6 },
+          damageBonus: 1,
+          damageType: "bludgeoning",
+        },
+      ],
+      traits: [{ name: "Undead Fortitude", status: "implemented" }],
+      equipment: {
+        armor: null,
+        mainHand: null,
+        offHand: null,
+        pack: null,
+      },
     },
     Cockatrice: {
       size: "Small",
@@ -771,11 +837,53 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       languages: ["Common", "Orc"],
       challengeRating: 0.5,
       xpValue: 100,
-      features: ["Aggressive"],
+      features: [],
+      traits: [{ name: "Aggressive", status: "recorded" }],
       equipment: {
         armor: "hide",
         mainHand: "greataxe",
         pack: { name: "Carried", contents: ["javelin"] },
+      },
+    },
+    Wolf: {
+      size: "Medium",
+      type: "Beast",
+      tags: [],
+      alignment: "Unaligned",
+      ac: 13,
+      naturalArmor: 1,
+      hp: 11,
+      speed: 40,
+      abilities: { STR: 12, DEX: 15, CON: 12, INT: 3, WIS: 12, CHA: 6 },
+      senses: ["passive Perception 13"],
+      languages: [],
+      challengeRating: 0.25,
+      xpValue: 50,
+      features: [],
+      naturalWeapons: [
+        {
+          name: "Bite",
+          toHit: 4,
+          damageDice: { count: 2, sides: 4 },
+          damageBonus: 2,
+          damageType: "piercing",
+          rider: {
+            ability: "STR",
+            dc: 11,
+            onFail: "prone",
+            status: "recorded",
+          },
+        },
+      ],
+      traits: [
+        { name: "Pack Tactics", status: "implemented" },
+        { name: "Keen Hearing and Smell", status: "recorded" },
+      ],
+      equipment: {
+        armor: null,
+        mainHand: null,
+        offHand: null,
+        pack: null,
       },
     },
     RustMonster: {
@@ -1068,6 +1176,7 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       tags: [],
       alignment: "Chaotic Evil",
       ac: 12,
+      acOverride: 12,
       hp: 22, // 22 (5d8)
       speed: 30,
       abilities: { STR: 13, DEX: 15, CON: 10, INT: 7, WIS: 10, CHA: 6 },
@@ -1076,9 +1185,87 @@ export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
       challengeRating: 1,
       xpValue: 200,
       features: [],
-      // actions: Bite, Claws (paralysis)
-      // immune: poison
-      // condition immune: charmed, exhaustion, poisoned
+      damageImmunities: ["poison"],
+      conditionImmunities: ["charmed", "exhaustion", "poisoned"],
+      naturalWeapons: [
+        {
+          name: "Bite",
+          toHit: 2,
+          damageDice: { count: 2, sides: 6 },
+          damageBonus: 2,
+          damageType: "piercing",
+        },
+        {
+          name: "Claws",
+          toHit: 4,
+          damageDice: { count: 2, sides: 4 },
+          damageBonus: 2,
+          damageType: "slashing",
+          rider: {
+            ability: "CON",
+            dc: 10,
+            onFail: "paralyzed",
+            duration: "1 minute",
+            repeatSaveAtEndOfTargetTurn: true,
+            immuneRaces: ["Elf"],
+            immuneTypes: ["Undead"],
+            status: "recorded",
+          },
+        },
+      ],
+      equipment: {
+        armor: null,
+        mainHand: null,
+        offHand: null,
+        pack: null,
+      },
+    },
+    GiantSpider: {
+      name: "Giant Spider",
+      size: "Large",
+      type: "Beast",
+      tags: [],
+      alignment: "Unaligned",
+      ac: 14,
+      naturalArmor: 1,
+      hp: 26,
+      speed: 30,
+      abilities: { STR: 14, DEX: 16, CON: 12, INT: 2, WIS: 11, CHA: 4 },
+      senses: ["blindsight 10 ft.", "darkvision 60 ft.", "passive Perception 10"],
+      languages: [],
+      challengeRating: 1,
+      xpValue: 200,
+      features: [],
+      naturalWeapons: [
+        {
+          name: "Bite",
+          toHit: 5,
+          damageDice: { count: 1, sides: 8 },
+          damageBonus: 3,
+          damageType: "piercing",
+          rider: {
+            ability: "CON",
+            dc: 11,
+            onFail: "poison damage",
+            damageDice: "2d8",
+            damageType: "poison",
+            halfOnSuccess: true,
+            status: "recorded",
+          },
+        },
+      ],
+      traits: [
+        { name: "Spider Climb", status: "recorded" },
+        { name: "Web Sense", status: "recorded" },
+        { name: "Web Walker", status: "recorded" },
+        { name: "Web", status: "recorded" },
+      ],
+      equipment: {
+        armor: null,
+        mainHand: null,
+        offHand: null,
+        pack: null,
+      },
     },
     Harpy: {
       size: "Medium",

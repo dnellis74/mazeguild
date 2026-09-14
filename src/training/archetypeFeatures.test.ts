@@ -9,7 +9,7 @@ import { getCatalog, skillById } from "./catalog";
 
 describe("archetype starter features", () => {
   it("covers every SRD class with two distinct catalog skills", () => {
-    const catalog = getCatalog();
+    const catalog = getCatalog({ archetypes: CLASS_ARCHETYPES });
     expect(CLASS_ARCHETYPES).toContain("Cleric");
     for (const arch of CLASS_ARCHETYPES) {
       const [a, b] = ARCHETYPE_STARTER_FEATURES[arch];

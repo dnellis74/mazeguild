@@ -22,6 +22,16 @@ export type Weapon = {
   properties: string[];
   finesse: boolean;
   ranged: boolean;
+  /**
+   * When set (natural weapons), used as the full attack bonus instead of
+   * ability mod + proficiency.
+   */
+  attackBonus?: number;
+  /**
+   * When set (natural weapons), used as the flat damage bonus instead of
+   * the attack ability modifier.
+   */
+  damageBonus?: number;
 };
 
 export type Role = "tank" | "healer" | "dps";
@@ -165,6 +175,13 @@ export type Combatant = {
    * damage (e.g. morningstar 1d8 → 2d8). Included in the attack; doubles on crit.
    */
   brute: boolean;
+  /**
+   * Pack Tactics: advantage on attack rolls while at least one other living,
+   * non-incapacitated ally shares the encounter (no position model).
+   */
+  packTactics: boolean;
+  /** Undead Fortitude: CON save to remain at 1 HP when reduced to 0. */
+  undeadFortitude: boolean;
   healSlots: number;
   layOnHands: number;
   /** Remaining 1st-level spell slots (offense). Separate from healSlots. */

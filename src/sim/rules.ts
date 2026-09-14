@@ -8,6 +8,7 @@ import type { Rng } from "./rng";
 import { d, dice, diceRerollLow } from "./rng";
 import { getCantrip, type CantripEntry } from "./cantrips";
 import { getSpell, type SpellEntry } from "./spells";
+import { assertSpellEffectAllowed } from "@/training/spellStatus";
 
 /** SRD 5.1 ability modifier. */
 export function abilityMod(score: number): number {
@@ -56,16 +57,22 @@ export function resolveAdvantageMode(
 export function attackRollMode(
   attacker: Combatant,
   defender: Combatant,
-  opts?: { attackCantrip?: CantripEntry | null },
+  opts?: {
+    attackCantrip?: CantripEntry | null;
+    /** Pack Tactics: at least one other living non-incapacitated ally. */
+    packTacticsAlly?: boolean;
+  },
 ): AdvantageMode {
   const metalAdv =
     opts?.attackCantrip?.advantageVsMetalArmor === true &&
     defender.wearingMetalArmor;
+  const packAdv = !!attacker.packTactics && !!opts?.packTacticsAlly;
   const adv =
     hasCondition(defender, "unconscious") ||
     hasCondition(defender, "blinded") ||
     hasCondition(defender, "guided") ||
-    metalAdv;
+    metalAdv ||
+    packAdv;
   const disadv = hasCondition(attacker, "blinded");
   return resolveAdvantageMode(adv, disadv);
 }
@@ -231,6 +238,7 @@ export function resolveAutoSpell(
   rng: Rng,
   spell: SpellEntry,
 ): AutoSpellResult {
+  assertSpellEffectAllowed(spell.name);
   const die = spell.damage;
   if (!die) return { damage: 0 };
   const per = Math.max(1, die.per ?? 1);
@@ -252,6 +260,7 @@ export function resolveHpPool(
   spell: SpellEntry,
   foes: Combatant[],
 ): HpPoolResult {
+  assertSpellEffectAllowed(spell.name);
   const die = spell.pool;
   if (!die) return { pool: 0, affected: [] };
   const pool = dice(rng, die.count, die.sides);
@@ -327,7 +336,7 @@ export function resolveAttack(
   attacker: Combatant,
   defender: Combatant,
   allyCount: number,
-  opts?: { spellAttack?: string },
+  opts?: { spellAttack?: string; packTacticsAlly?: boolean },
 ): AttackResult {
   const leveledName = opts?.spellAttack;
   const leveled =
@@ -342,6 +351,9 @@ export function resolveAttack(
   const useCantrip =
     !!cantrip && cantrip.combatType === "attack" && !!cantrip.damage;
 
+  if (useLeveled && leveledName) assertSpellEffectAllowed(leveledName);
+  if (useCantrip && attacker.cantrip) assertSpellEffectAllowed(attacker.cantrip);
+
   const useSpellAttack = useLeveled || useCantrip;
   const spellDie = useLeveled
     ? leveled!.damage!
@@ -353,6 +365,7 @@ export function resolveAttack(
   const guided = hasCondition(defender, "guided");
   const mode = attackRollMode(attacker, defender, {
     attackCantrip: useCantrip ? cantrip : null,
+    packTacticsAlly: opts?.packTacticsAlly,
   });
   if (guided) clearCondition(defender);
 
@@ -362,13 +375,21 @@ export function resolveAttack(
   });
   const modBonus = rollModifierBonus(rng, attacker, "attack");
 
+  const abi = attackAbility(attacker);
   const bonus = useSpellAttack
     ? attacker.spellMod + attacker.proficiencyBonus
-    : abilityMod(attacker.abilities[attackAbility(attacker)]) +
-      attacker.proficiencyBonus;
+    : attacker.weapon.attackBonus != null
+      ? attacker.weapon.attackBonus
+      : abilityMod(attacker.abilities[abi]) + attacker.proficiencyBonus;
   // Archery: +2 to attack rolls with ranged weapons (weapon attacks only).
+  // Skipped when the weapon carries a fixed attackBonus (natural weapons).
   const archeryBonus =
-    !useSpellAttack && attacker.archery && attacker.weapon.ranged ? 2 : 0;
+    !useSpellAttack &&
+    attacker.weapon.attackBonus == null &&
+    attacker.archery &&
+    attacker.weapon.ranged
+      ? 2
+      : 0;
   const total = d20 + bonus + modBonus + archeryBonus;
   const nat20 = d20 === 20;
   const nat1 = d20 === 1;
@@ -411,7 +432,6 @@ export function resolveAttack(
     };
   }
 
-  const abi = attackAbility(attacker);
   const die = attacker.weapon.damage;
   // Bugbear Brute: one extra die of the weapon's damage on a melee weapon hit.
   const bruteExtra =
@@ -428,8 +448,11 @@ export function resolveAttack(
   const weaponDice = gwf
     ? diceRerollLow(rng, dieCount, die.sides, 2)
     : dice(rng, dieCount, die.sides);
-  let damage = weaponDice + abilityMod(attacker.abilities[abi]);
-
+  const flatBonus =
+    attacker.weapon.damageBonus != null
+      ? attacker.weapon.damageBonus
+      : abilityMod(attacker.abilities[abi]);
+  let damage = weaponDice + flatBonus;
   // Rage: +Rage Damage on Strength melee weapon attacks (not DEX finesse, not ranged).
   if (
     attacker.raging &&
@@ -635,6 +658,24 @@ export function applyDamage(
     target.relentlessUsed = true;
     if (rng) checkConcentrationOnDamage(rng, target, applied);
     return applied;
+  }
+
+  // Undead Fortitude: CON save DC 5 + damage taken; success → 1 HP.
+  // Skipped on radiant damage or a critical hit.
+  if (
+    target.kind === "monster" &&
+    target.undeadFortitude &&
+    !critical &&
+    damageType.toLowerCase() !== "radiant" &&
+    rng
+  ) {
+    const dc = 5 + applied;
+    const saveTotal =
+      d(rng, 20) + abilityMod(target.abilities.CON ?? 10);
+    if (saveTotal >= dc) {
+      target.hp = 1;
+      return applied;
+    }
   }
 
   const leftover = hpDamage - hpBefore;

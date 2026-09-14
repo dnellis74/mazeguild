@@ -375,13 +375,66 @@ export function makeMonster(opts: {
   equipment: CharacterEquipment;
   /** Named traits from the MM (e.g. "Brute"). */
   features?: string[];
+  /** Structured traits with implementation status. */
+  traits?: { name: string; status: "implemented" | "recorded" }[];
   xpValue: number;
+  acOverride?: number;
+  naturalArmor?: number;
+  naturalWeapons?: {
+    name: string;
+    toHit: number;
+    damageDice: { count: number; sides: number };
+    damageBonus: number;
+    damageType: string;
+  }[];
+  damageVulnerabilities?: string[];
+  damageImmunities?: string[];
+  conditionImmunities?: string[];
+  savingThrows?: Record<string, number>;
 }): Combatant {
   const equipment = opts.equipment;
-  const traits = opts.features ?? [];
-  const weapon =
-    (equipment.mainHand && weaponFromEquipmentId(equipment.mainHand)) ||
-    defaultUnarmedWeapon();
+  const featureNames = opts.features ?? [];
+  const structured = opts.traits ?? [];
+  const implemented = (name: string) =>
+    structured.some(
+      (t) => t.status === "implemented" && t.name.toLowerCase() === name.toLowerCase(),
+    );
+
+  const natural = opts.naturalWeapons ?? [];
+  // Prefer the highest to-hit natural weapon when several exist (e.g. Ghoul Claws).
+  const primaryNatural =
+    natural.length === 0
+      ? null
+      : [...natural].sort((a, b) => b.toHit - a.toHit)[0]!;
+
+  let weapon: Weapon;
+  if (primaryNatural) {
+    weapon = {
+      name: primaryNatural.name,
+      damage: primaryNatural.damageDice,
+      damageType: primaryNatural.damageType,
+      properties: [],
+      finesse: false,
+      ranged: false,
+      attackBonus: primaryNatural.toHit,
+      damageBonus: primaryNatural.damageBonus,
+    };
+  } else {
+    weapon =
+      (equipment.mainHand && weaponFromEquipmentId(equipment.mainHand)) ||
+      defaultUnarmedWeapon();
+  }
+
+  const dex = abilityMod(opts.abilities.DEX ?? 10);
+  let ac: number;
+  if (opts.acOverride != null) {
+    ac = opts.acOverride;
+  } else if (opts.naturalArmor != null) {
+    ac = 10 + dex + opts.naturalArmor;
+  } else {
+    ac = armorClassFromEquipment(equipment, opts.abilities);
+  }
+
   return {
     id: opts.id,
     name: opts.name,
@@ -391,7 +444,7 @@ export function makeMonster(opts: {
     role: "dps",
     abilities: opts.abilities,
     proficiencyBonus: 2,
-    ac: armorClassFromEquipment(equipment, opts.abilities),
+    ac,
     maxHp: opts.hp,
     hp: opts.hp,
     alive: true,
@@ -400,7 +453,9 @@ export function makeMonster(opts: {
     ...WEAR_DEFAULTS,
     ...TRAIT_DEFAULTS,
     wearingMetalArmor: isMetalArmorId(equipment.armor),
-    brute: traits.some((f) => /^Brute$/i.test(f)),
+    brute: featureNames.some((f) => /^Brute$/i.test(f)),
+    packTactics: implemented("Pack Tactics"),
+    undeadFortitude: implemented("Undead Fortitude"),
     weapon,
     fightingStyles: [],
     archery: false,
@@ -414,9 +469,9 @@ export function makeMonster(opts: {
     sneakAttackUsedThisTurn: false,
     tempAcBonus: 0,
     condition: null,
-    immunities: [],
+    immunities: [...(opts.damageImmunities ?? [])],
     resistances: [],
-    vulnerabilities: [],
+    vulnerabilities: [...(opts.damageVulnerabilities ?? [])],
     raging: false,
     ragesRemaining: 0,
     rageDamage: 0,

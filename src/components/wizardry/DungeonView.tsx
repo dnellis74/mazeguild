@@ -9,6 +9,14 @@ const MONSTER_SPRITES: Record<string, string> = {
   Goblin: "/monsters/goblin.png",
   Hobgoblin: "/monsters/hobgoblin.png",
   Bugbear: "/monsters/bugbear.png",
+  Kobold: "/monsters/kobold.png",
+  Skeleton: "/monsters/skeleton.png",
+  Zombie: "/monsters/zombie.png",
+  Wolf: "/monsters/wolf.png",
+  Orc: "/monsters/orc.png",
+  Ghoul: "/monsters/ghoul.png",
+  // Encounter names use the roster key (`GiantSpider 1`), not the display name.
+  GiantSpider: "/monsters/giant-spider.png",
 };
 
 function hasWall(

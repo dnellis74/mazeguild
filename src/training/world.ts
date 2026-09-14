@@ -1,4 +1,5 @@
 import type { Catalog } from "./catalog";
+import { isOfferArchetype } from "./catalog";
 import { asFeatureList } from "./features";
 import type { Character, Skill } from "./types";
 import {
@@ -36,6 +37,7 @@ export function buildWorld(catalog: Catalog): WorldArea[] {
 
   for (const f of catalog.skills) {
     if (!f.id) continue;
+    if (!isOfferArchetype(catalog, f.archetype)) continue;
     if (!areas[f.area]) areas[f.area] = { name: f.area, buildings: {} };
     const a = areas[f.area]!;
     if (!a.buildings[f.building]) a.buildings[f.building] = { name: f.building, rooms: {} };

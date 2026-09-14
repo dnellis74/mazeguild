@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCatalog } from "@/training/catalog";
+import { ACTIVE_ARCHETYPES, getCatalog } from "@/training/catalog";
 import { migrateCharacter, defaultTrainingUi } from "@/training/character";
 import { createEmptyCompanion } from "@/training/companion";
 import { applyTrainingAction } from "@/training/actions";
@@ -64,7 +64,10 @@ describe("training API domain", () => {
   });
 
   it("lists Town Square beside Tavern in the Walled City", () => {
-    const catalog = getCatalog();
+    // Tavern is Bard-only; use a full-archetype catalog so the building exists.
+    const catalog = getCatalog({
+      archetypes: ["Bard", "Cleric", "Fighter", "Rogue", "Wizard"],
+    });
     const walled = buildWorld(catalog).find((a) => a.name === TOWN_SQUARE_AREA);
     const names = walled?.buildings.map((b) => b.name) ?? [];
     expect(names).toContain(TOWN_SQUARE_BUILDING);
@@ -175,5 +178,55 @@ describe("training API domain", () => {
     expect(() =>
       migrateCharacter(catalog, { raceId: "human", alignment: { alignmentId: "lg" } }),
     ).toThrow(/missing id/i);
+  });
+
+  it("offers activities for exactly the four active archetypes", () => {
+    const catalog = getCatalog();
+    const arches = new Set(
+      buildWorld(catalog).flatMap((a) =>
+        a.buildings.flatMap((b) =>
+          b.rooms.flatMap((r) => r.activities.map((act) => act.archetype)),
+        ),
+      ),
+    );
+    expect([...arches].sort()).toEqual([...ACTIVE_ARCHETYPES].sort());
+    expect(arches.size).toBe(4);
+  });
+
+  it("still resolves Rage in combat for a character holding that feature", () => {
+    const catalog = getCatalog();
+    const character = migrateCharacter(catalog, {
+      ...createEmptyCompanion(catalog, {
+        id: "c-rage",
+        name: "Grok",
+        raceId: "halforc",
+        alignment: { alignmentId: "cn" },
+      }),
+      features: [
+        {
+          id: "f_01r8k4",
+          archetype: "Barbarian",
+          feature: ["Rage"],
+        },
+        {
+          id: "f_02m7q9",
+          archetype: "Barbarian",
+          feature: ["Unarmored Defense"],
+        },
+      ],
+      abilityScores: {
+        STR: 16,
+        DEX: 14,
+        CON: 15,
+        INT: 8,
+        WIS: 10,
+        CHA: 8,
+      },
+      abilityScoresAssigned: true,
+    });
+    const combatant = companionToCombatant(character, 0);
+    expect(combatant.archetype).toBe("Barbarian");
+    expect(combatant.ragesRemaining).toBeGreaterThan(0);
+    expect(combatant.rageDamage).toBeGreaterThan(0);
   });
 });

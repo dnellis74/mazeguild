@@ -1,0 +1,473 @@
+{
+  "known": {
+    "Cleric": 0,
+    "Wizard": 0
+  },
+  "spells": [
+    {
+      "id": 1,
+      "level": 2,
+      "name": "Acid Arrow",
+      "description": "A shimmering green arrow streaks toward a target; on a hit it deals acid damage immediately and again at the end of its next turn, or deals reduced damage on a miss.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 2,
+      "level": 2,
+      "name": "Aid",
+      "description": "Bolster the hit points of up to three creatures; each gains 5 temporary hit points for 8 hours.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action",
+      "concentration": false,
+      "duration": "8 hours",
+      "save": null
+    },
+    {
+      "id": 3,
+      "level": 2,
+      "name": "Alter Self",
+      "description": "Assume a different form with natural weapons, aquatic adaptation, or a changed appearance while you concentrate.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 4,
+      "level": 2,
+      "name": "Arcane Lock",
+      "description": "Touch a closed door, window, gate, chest, or other entryway to lock it magically until the spell is dispelled or suppressed.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 5,
+      "level": 2,
+      "name": "Arcanist's Magic Aura",
+      "description": "Mask the magic of an object so divination spells treat it as nonmagical, or give a nonmagical object a false magical aura, for a long duration.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 6,
+      "level": 2,
+      "name": "Augury",
+      "description": "Using special tokens, receive an omen about a planned action within 30 minutes as weal, woe, weal and woe, or nothing.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "1 minute"
+    },
+    {
+      "id": 7,
+      "level": 2,
+      "name": "Blindness/Deafness",
+      "description": "Force a creature to make a Constitution save or become blinded or deafened (your choice) for 1 minute, repeating the save at the end of each of its turns.",
+      "archetypes": [
+        "Cleric",
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 8,
+      "level": 2,
+      "name": "Blur",
+      "description": "Your body becomes blurred, imposing disadvantage on attack rolls against you while you concentrate, unless the attacker does not rely on sight.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 9,
+      "level": 2,
+      "name": "Calm Emotions",
+      "description": "Attempt to suppress strong emotions in a group; creatures that fail a Charisma save become indifferent or have charm/fear effects suppressed while you concentrate.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 10,
+      "level": 2,
+      "name": "Continual Flame",
+      "description": "Create a flame that sheds light like a torch but produces no heat and consumes no oxygen; it lasts until dispelled.",
+      "archetypes": [
+        "Cleric",
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 11,
+      "level": 2,
+      "name": "Darkness",
+      "description": "Fill a 15-foot-radius sphere with magical darkness that blocks even darkvision, unless a creature can see through magical darkness.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 12,
+      "level": 2,
+      "name": "Darkvision",
+      "description": "Touch a willing creature to grant it darkvision out to 60 feet for 8 hours.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 13,
+      "level": 2,
+      "name": "Detect Thoughts",
+      "description": "Read surface thoughts of creatures you focus on, and probe deeper if they fail a Wisdom save, while you concentrate.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 14,
+      "level": 2,
+      "name": "Enhance Ability",
+      "description": "Touch a creature to grant advantage on checks with one chosen ability, and related benefits such as temporary hit points or doubled carrying capacity, while you concentrate.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 15,
+      "level": 2,
+      "name": "Enlarge/Reduce",
+      "description": "Cause a creature or object to grow or shrink for the duration; an unwilling creature can negate the effect with a Constitution save.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 16,
+      "level": 2,
+      "name": "Find Traps",
+      "description": "Sense the presence of any trap within line of sight out to a limited range; you learn the danger exists but not its exact location or nature.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 17,
+      "level": 2,
+      "name": "Flaming Sphere",
+      "description": "Create a 5-foot-diameter sphere of fire you can move as a bonus action; creatures ending their turn near it, or hit by it, take fire damage on a failed Dexterity save.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 18,
+      "level": 2,
+      "name": "Gentle Repose",
+      "description": "Touch a corpse or other remains so they don't decay and can't become undead for 10 days.",
+      "archetypes": [
+        "Cleric",
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 19,
+      "level": 2,
+      "name": "Gust of Wind",
+      "description": "A line of strong wind blasts from you; creatures that fail a Strength save are pushed, and the wind disperses gases and extinguishes unprotected flames.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 20,
+      "level": 2,
+      "name": "Hold Person",
+      "description": "A humanoid you can see must succeed on a Wisdom save or be paralyzed for the duration; it repeats the save at the end of each of its turns.",
+      "archetypes": [
+        "Cleric",
+        "Wizard"
+      ],
+      "castingTime": "action",
+      "concentration": true,
+      "duration": "Concentration, up to 1 minute",
+      "save": {
+        "ability": "WIS",
+        "onSuccess": "none"
+      }
+    },
+    {
+      "id": 21,
+      "level": 2,
+      "name": "Invisibility",
+      "description": "A creature you touch becomes invisible until it attacks or casts a spell, or until the duration ends.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action",
+      "concentration": true,
+      "duration": "Concentration, up to 1 hour",
+      "save": null
+    },
+    {
+      "id": 22,
+      "level": 2,
+      "name": "Knock",
+      "description": "Make a loud knock that unlocks or unbars a locked object, suppresses arcane lock for a time, or opens a stuck door or similar.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action",
+      "concentration": false,
+      "duration": "Instantaneous",
+      "save": null
+    },
+    {
+      "id": 23,
+      "level": 2,
+      "name": "Lesser Restoration",
+      "description": "Touch a creature and end one disease or one condition among blinded, deafened, paralyzed, or poisoned.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action",
+      "concentration": false,
+      "duration": "Instantaneous",
+      "save": null
+    },
+    {
+      "id": 24,
+      "level": 2,
+      "name": "Levitate",
+      "description": "One willing creature or object rises vertically and remains suspended while you concentrate; you can change its altitude as part of your move.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 25,
+      "level": 2,
+      "name": "Locate Object",
+      "description": "Sense the direction to a familiar object within 1,000 feet, or the nearest object of a described general type, while you concentrate.",
+      "archetypes": [
+        "Cleric",
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 26,
+      "level": 2,
+      "name": "Magic Mouth",
+      "description": "Implant a message in an object that is spoken aloud when a trigger condition you define occurs.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "1 minute"
+    },
+    {
+      "id": 27,
+      "level": 2,
+      "name": "Magic Weapon",
+      "description": "Touch a nonmagical weapon to make it a magic weapon with a bonus to attack and damage rolls while you concentrate.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 28,
+      "level": 2,
+      "name": "Mirror Image",
+      "description": "Three illusory duplicates of you appear; attacks that would hit you may strike an image instead until the images are destroyed or the spell ends.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action",
+      "concentration": false,
+      "duration": "1 minute",
+      "save": null
+    },
+    {
+      "id": 29,
+      "level": 2,
+      "name": "Misty Step",
+      "description": "As a bonus action, briefly surround yourself with silvery mist and teleport up to 30 feet to an unoccupied space you can see.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "bonus_action"
+    },
+    {
+      "id": 30,
+      "level": 2,
+      "name": "Prayer of Healing",
+      "description": "Over 10 minutes, restore hit points to up to six creatures of your choice within range.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "10 minutes",
+      "concentration": false,
+      "duration": "Instantaneous",
+      "save": null
+    },
+    {
+      "id": 31,
+      "level": 2,
+      "name": "Protection from Poison",
+      "description": "Touch a creature to neutralize poison and grant advantage on saves against being poisoned, plus resistance to poison damage, for 1 hour.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 32,
+      "level": 2,
+      "name": "Ray of Enfeeblement",
+      "description": "A black ray forces a creature hit by a ranged spell attack to deal only half damage with Strength-based weapon attacks until it succeeds on a Constitution save.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 33,
+      "level": 2,
+      "name": "Rope Trick",
+      "description": "A rope rises into an extradimensional space that holds up to eight creatures for the duration; the rope can be pulled up to hide the entrance.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 34,
+      "level": 2,
+      "name": "Scorching Ray",
+      "description": "Hurl three rays of fire; make a ranged spell attack for each ray, dealing fire damage on a hit.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action",
+      "concentration": false,
+      "duration": "Instantaneous",
+      "save": null
+    },
+    {
+      "id": 35,
+      "level": 2,
+      "name": "See Invisibility",
+      "description": "For the duration you see invisible creatures and objects as if they were visible, and can see into the Ethereal Plane.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 36,
+      "level": 2,
+      "name": "Shatter",
+      "description": "A sudden loud ringing noise deals thunder damage in a sphere; creatures take a Constitution save for half, and nonmagical objects that aren't worn or carried also take the damage.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 37,
+      "level": 2,
+      "name": "Silence",
+      "description": "Create a 20-foot-radius sphere of silence for the duration; no sound can be created inside or pass through, blocking verbal components.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 38,
+      "level": 2,
+      "name": "Spider Climb",
+      "description": "Touch a willing creature so it can move up, down, and across vertical surfaces and ceilings while leaving its hands free.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 39,
+      "level": 2,
+      "name": "Spiritual Weapon",
+      "description": "Create a floating spectral weapon that strikes a creature for force damage and can be moved and attacked with again as a bonus action on later turns.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "bonus action",
+      "concentration": false,
+      "duration": "1 minute",
+      "save": null
+    },
+    {
+      "id": 40,
+      "level": 2,
+      "name": "Suggestion",
+      "description": "Suggest a course of activity limited to a sentence or two; a creature that fails a Wisdom save pursues the suggestion in a way that isn't obviously harmful.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 41,
+      "level": 2,
+      "name": "Warding Bond",
+      "description": "Touch a willing creature; while within 60 feet you both share a protective bond that improves its defenses and splits damage it takes with you.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 42,
+      "level": 2,
+      "name": "Web",
+      "description": "Fill an area with thick, sticky webbing that is difficult terrain and can restrain creatures that fail a Dexterity save while you concentrate.",
+      "archetypes": [
+        "Wizard"
+      ],
+      "castingTime": "action"
+    },
+    {
+      "id": 43,
+      "level": 2,
+      "name": "Zone of Truth",
+      "description": "Creatures in an area that fail a Charisma save cannot deliberately lie for the duration, though they may avoid answering.",
+      "archetypes": [
+        "Cleric"
+      ],
+      "castingTime": "action"
+    }
+  ]
+}

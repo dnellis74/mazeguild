@@ -1,9 +1,9 @@
 import { fetchJsonOnce } from "@/lib/fetchOnce";
 import { loadRoster, upsertRosterEntry } from "@/lib/rosterStorage";
-import { CLASS_ARCHETYPES } from "@/training/archetypeFeatures";
+import { ACTIVE_ARCHETYPES } from "@/training/catalog";
 import type { Character } from "@/training/types";
 
-/** Cycle races / alignments so the seeded square isn’t twelve identical humans. */
+/** Cycle races / alignments so the seeded square isn’t identical humans. */
 const SEED_RACES = [
   "human",
   "elf",
@@ -31,7 +31,7 @@ const SEED_ALIGNMENTS = [
 let seedInflight: Promise<Character[]> | null = null;
 
 /**
- * When the Town Square roster is empty, create one companion per class
+ * When the Town Square roster is empty, create one companion per active
  * archetype via POST /api/characters and persist them.
  */
 export async function ensureStarterRoster(): Promise<Character[]> {
@@ -45,8 +45,8 @@ export async function ensureStarterRoster(): Promise<Character[]> {
     if (again.length > 0) return again;
 
     const taken: string[] = [];
-    for (let i = 0; i < CLASS_ARCHETYPES.length; i++) {
-      const archetype = CLASS_ARCHETYPES[i]!;
+    for (let i = 0; i < ACTIVE_ARCHETYPES.length; i++) {
+      const archetype = ACTIVE_ARCHETYPES[i]!;
       const raceId = SEED_RACES[i % SEED_RACES.length]!;
       const alignmentId = SEED_ALIGNMENTS[i % SEED_ALIGNMENTS.length]!;
       const { ok, data } = await fetchJsonOnce<{

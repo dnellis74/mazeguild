@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   adjustedMonsterXp,
   difficultyAchievedFor,
+  enabledMonsters,
   encounterMultiplier,
   generateEncounter,
   monsterCountBucket,
+  monsterXp,
   partyThreshold,
 } from "./encounterScaling";
+import { MONSTER_STATS } from "@/data/monsters";
 
 describe("monsterCountBucket", () => {
   it("maps counts onto the DMG range keys", () => {
@@ -53,6 +56,29 @@ describe("DMG worked example", () => {
 });
 
 const GOBLINOIDS = ["Goblin", "Hobgoblin", "Bugbear"];
+
+describe("enabled roster", () => {
+  it("lists enabled keys whose XP comes from MONSTER_STATS", () => {
+    const enabled = enabledMonsters();
+    expect(enabled.length).toBeGreaterThanOrEqual(10);
+    expect(enabled).toEqual(expect.arrayContaining(GOBLINOIDS));
+    expect(enabled).toEqual(
+      expect.arrayContaining([
+        "Kobold",
+        "Skeleton",
+        "Zombie",
+        "Wolf",
+        "Orc",
+        "Ghoul",
+        "GiantSpider",
+      ]),
+    );
+    for (const type of enabled) {
+      expect(MONSTER_STATS[type]?.xpValue).toBeGreaterThan(0);
+      expect(monsterXp(type)).toBe(MONSTER_STATS[type]!.xpValue);
+    }
+  });
+});
 
 describe("generateEncounter", () => {
   it("is deterministic for the same seed", () => {

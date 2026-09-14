@@ -1,6 +1,14 @@
 import type { Catalog } from "./catalog";
+import { isOfferArchetype } from "./catalog";
 import { earnedArchetypes, earnedFeatureNames, asFeatureList } from "./features";
+import { getStatus, type SpellStatus } from "./spellStatus";
 import type { Character, KnownCantrip, KnownSpell } from "./types";
+
+function isCatalogMagicOfferable(catalog: Catalog, name: string): boolean {
+  return (catalog.offerStatuses as readonly SpellStatus[]).includes(
+    getStatus(name),
+  );
+}
 
 export function hasCantripAccess(ch: Character, archetype: string): boolean {
   return earnedFeatureNames(ch, archetype).some((n) => /cantrips/i.test(n));
@@ -83,7 +91,9 @@ export function spellcastingRoomForArchetype(catalog: Catalog, archetype: string
 export function openCantripSlots(catalog: Catalog, ch: Character) {
   const arches = new Set([...earnedArchetypes(ch), ...Object.keys(catalog.cantripKnown)]);
   return [...arches]
-    .filter((a) => cantripsRemaining(catalog, ch, a) > 0)
+    .filter(
+      (a) => isOfferArchetype(catalog, a) && cantripsRemaining(catalog, ch, a) > 0,
+    )
     .map((a) => ({
       archetype: a,
       remaining: cantripsRemaining(catalog, ch, a),
@@ -95,7 +105,9 @@ export function openCantripSlots(catalog: Catalog, ch: Character) {
 export function openSpellSlots(catalog: Catalog, ch: Character) {
   const arches = new Set([...earnedArchetypes(ch), ...Object.keys(catalog.spellKnown)]);
   return [...arches]
-    .filter((a) => spellsRemaining(catalog, ch, a) > 0)
+    .filter(
+      (a) => isOfferArchetype(catalog, a) && spellsRemaining(catalog, ch, a) > 0,
+    )
     .map((a) => ({
       archetype: a,
       remaining: spellsRemaining(catalog, ch, a),
@@ -105,9 +117,18 @@ export function openSpellSlots(catalog: Catalog, ch: Character) {
 }
 
 export function cantripsForArchetype(catalog: Catalog, archetype: string) {
-  return catalog.cantrips.filter((c) => c.archetype === archetype);
+  if (!isOfferArchetype(catalog, archetype)) return [];
+  return catalog.cantrips.filter(
+    (c) =>
+      c.archetype === archetype && isCatalogMagicOfferable(catalog, c.name),
+  );
 }
 
 export function spellsForArchetype(catalog: Catalog, archetype: string) {
-  return catalog.spells.filter((s) => s.archetypes.includes(archetype));
+  if (!isOfferArchetype(catalog, archetype)) return [];
+  return catalog.spells.filter(
+    (s) =>
+      s.archetypes.includes(archetype) &&
+      isCatalogMagicOfferable(catalog, s.name),
+  );
 }

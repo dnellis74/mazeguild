@@ -32,6 +32,7 @@ import {
   pickLearnedHealSpell,
   pickLearnedSaveSpell,
 } from "./spells";
+import { withSpellStatusOverrides } from "@/training/spellStatus";
 import { rageDamageForLevel, ragesForLevel } from "./leveling";
 import type { Character } from "@/training/types";
 import type { Combatant, Weapon } from "./types";
@@ -439,24 +440,28 @@ describe("resolveAttack temp AC", () => {
 
 describe("resolveAttack cantrips", () => {
   it("rolls Ray of Frost d8 with spell attack bonus, not club d4 + STR", () => {
-    const attacker = basePc({ cantrip: "Ray of Frost", weapon: CLUB });
-    const target = foe(10);
-    // crit d20=20, then 2× d8 forced to 4 each → damage 8; total 20+3+2
-    const result = resolveAttack(seqRng([0.95, 0.4, 0.4]), attacker, target, 1);
-    expect(result.hit).toBe(true);
-    expect(result.crit).toBe(true);
-    expect(result.damage).toBe(8);
-    expect(result.total).toBe(25);
+    withSpellStatusOverrides({ "Ray of Frost": "implemented" }, () => {
+      const attacker = basePc({ cantrip: "Ray of Frost", weapon: CLUB });
+      const target = foe(10);
+      // crit d20=20, then 2× d8 forced to 4 each → damage 8; total 20+3+2
+      const result = resolveAttack(seqRng([0.95, 0.4, 0.4]), attacker, target, 1);
+      expect(result.hit).toBe(true);
+      expect(result.crit).toBe(true);
+      expect(result.damage).toBe(8);
+      expect(result.total).toBe(25);
+    });
   });
 
   it("uses cantrip d8 sides on a normal hit (not weapon d4)", () => {
-    const attacker = basePc({ cantrip: "Ray of Frost", weapon: CLUB });
-    const target = foe(5);
-    // d20=10, damage die=7
-    const result = resolveAttack(seqRng([0.45, 0.8]), attacker, target, 0);
-    expect(result.hit).toBe(true);
-    expect(result.crit).toBe(false);
-    expect(result.damage).toBe(7);
+    withSpellStatusOverrides({ "Ray of Frost": "implemented" }, () => {
+      const attacker = basePc({ cantrip: "Ray of Frost", weapon: CLUB });
+      const target = foe(5);
+      // d20=10, damage die=7
+      const result = resolveAttack(seqRng([0.45, 0.8]), attacker, target, 0);
+      expect(result.hit).toBe(true);
+      expect(result.crit).toBe(false);
+      expect(result.damage).toBe(7);
+    });
   });
 
   it("does not add sneak attack dice on a cantrip attack", () => {
@@ -879,24 +884,26 @@ describe("unconscious attack rules", () => {
   it.each(["Fire Bolt", "Produce Flame", "Eldritch Blast"] as const)(
     "%s (ranged cantrip) vs unconscious has advantage but does not auto-crit",
     (name) => {
-      const attacker = basePc({
-        cantrip: name,
-        spellMod: 3,
-        abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+      withSpellStatusOverrides({ [name]: "implemented" }, () => {
+        const attacker = basePc({
+          cantrip: name,
+          spellMod: 3,
+          abilities: { STR: 10, DEX: 10, CON: 12, INT: 16, WIS: 10, CHA: 10 },
+        });
+        const target = foe(10);
+        target.condition = { name: "unconscious", expiresRound: 99 };
+        expect(attackRollMode(attacker, target)).toBe("advantage");
+        const result = resolveAttack(
+          seqRng([0.1, 0.7, 0.5]),
+          attacker,
+          target,
+          0,
+        );
+        expect(result.advantageMode).toBe("advantage");
+        expect(result.d20).toBe(15);
+        expect(result.hit).toBe(true);
+        expect(result.crit).toBe(false);
       });
-      const target = foe(10);
-      target.condition = { name: "unconscious", expiresRound: 99 };
-      expect(attackRollMode(attacker, target)).toBe("advantage");
-      const result = resolveAttack(
-        seqRng([0.1, 0.7, 0.5]),
-        attacker,
-        target,
-        0,
-      );
-      expect(result.advantageMode).toBe("advantage");
-      expect(result.d20).toBe(15);
-      expect(result.hit).toBe(true);
-      expect(result.crit).toBe(false);
     },
   );
 
@@ -991,28 +998,30 @@ describe("resolveHpPool (Color Spray)", () => {
   }
 
   it("blinds low-HP foes from a 6d10 pool and skips already-blinded", () => {
-    const spell = getSpell("Color Spray")!;
-    const low = foe(10);
-    low.id = "a";
-    low.hp = 3;
-    low.maxHp = 3;
-    const blinded = foe(10);
-    blinded.id = "b";
-    blinded.hp = 1;
-    blinded.maxHp = 1;
-    blinded.condition = { name: "blinded", expiresRound: 99 };
-    const high = foe(10);
-    high.id = "c";
-    high.hp = 40;
-    high.maxHp = 40;
-    // six d10s of 2 → pool 12; covers a (3), skips blinded b, stops before c (40)
-    const { pool, affected } = resolveHpPool(
-      seqRng([0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
-      spell,
-      [high, blinded, low],
-    );
-    expect(pool).toBe(12);
-    expect(affected.map((c) => c.id)).toEqual(["a"]);
+    withSpellStatusOverrides({ "Color Spray": "implemented" }, () => {
+      const spell = getSpell("Color Spray")!;
+      const low = foe(10);
+      low.id = "a";
+      low.hp = 3;
+      low.maxHp = 3;
+      const blinded = foe(10);
+      blinded.id = "b";
+      blinded.hp = 1;
+      blinded.maxHp = 1;
+      blinded.condition = { name: "blinded", expiresRound: 99 };
+      const high = foe(10);
+      high.id = "c";
+      high.hp = 40;
+      high.maxHp = 40;
+      // six d10s of 2 → pool 12; covers a (3), skips blinded b, stops before c (40)
+      const { pool, affected } = resolveHpPool(
+        seqRng([0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
+        spell,
+        [high, blinded, low],
+      );
+      expect(pool).toBe(12);
+      expect(affected.map((c) => c.id)).toEqual(["a"]);
+    });
   });
 });
 

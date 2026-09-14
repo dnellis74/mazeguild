@@ -1,4 +1,5 @@
 import encounterData from "@/data/encounter.json";
+import { MONSTER_STATS } from "@/data/monsters";
 import { createRng } from "./rng";
 
 export type EncounterDifficulty = "easy" | "medium" | "hard" | "deadly";
@@ -31,13 +32,18 @@ type EncounterTables = {
     single_monster_multiplier_small_party: number;
     single_monster_multiplier_large_party: number;
   };
-  monster_xp_reference: Record<
-    string,
-    { challenge_rating: string; xp: number }
-  >;
+  /** Monster keys allowed in maze encounters; XP comes from MONSTER_STATS. */
+  enabled: string[];
 };
 
 const TABLES = encounterData as unknown as EncounterTables;
+
+/** Roster keys from encounter.json that exist in MONSTER_STATS with XP. */
+export function enabledMonsters(): string[] {
+  return TABLES.enabled.filter(
+    (type) => (MONSTER_STATS[type]?.xpValue ?? 0) > 0,
+  );
+}
 
 const DIFFICULTY_ORDER: EncounterDifficulty[] = [
   "easy",
@@ -137,7 +143,7 @@ export function partyThresholdBounds(
 }
 
 export function monsterXp(type: string): number {
-  return TABLES.monster_xp_reference[type]?.xp ?? 0;
+  return MONSTER_STATS[type]?.xpValue ?? 0;
 }
 
 export function totalMonsterXp(monsters: EncounterMonsterGroup[]): number {

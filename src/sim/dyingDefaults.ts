@@ -21,4 +21,6 @@ export const WEAR_DEFAULTS = {
 /** Optional monster/PC combat traits. */
 export const TRAIT_DEFAULTS = {
   brute: false,
+  packTactics: false,
+  undeadFortitude: false,
 } as const;
