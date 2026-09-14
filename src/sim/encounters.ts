@@ -4,8 +4,12 @@ import {
   type EncounterMonsterGroup,
 } from "./encounterScaling";
 import type { Rng } from "./rng";
-import type { CharacterEquipment } from "@/training/types";
 import type { Combatant } from "./types";
+import { MONSTER_STATS } from "@/data/monsters";
+import type { CharacterEquipment } from "@/training/types";
+
+export { MONSTER_STATS } from "@/data/monsters";
+export type { MonsterBlueprint } from "@/data/monsters";
 
 /** Flavor only. No mechanical effect in this layer. */
 export const LOOT = [
@@ -25,79 +29,16 @@ export const LOOT = [
 
 const AVAILABLE_MONSTERS = ["Goblin", "Hobgoblin", "Bugbear"] as const;
 
-/**
- * Monster blueprint. `equipment` uses the same `CharacterEquipment` shape as
- * PCs (`armor` / `mainHand` / `offHand` / `pack`). Combat weapon, AC, and
- * wearingMetalArmor are derived from equipment at spawn (not from a separate
- * monster_weapons table).
- */
-export type MonsterBlueprint = {
-  hp: number;
-  speed: number;
-  abilities: Record<"STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA", number>;
-  skills?: string[];
-  senses?: string[];
-  languages?: string[];
-  challengeRating: number;
-  xpValue: number;
-  /** Named traits (e.g. Bugbear "Brute"). */
-  features?: string[];
-  equipment: CharacterEquipment;
-};
-
-export const MONSTER_STATS: Record<string, MonsterBlueprint> = {
-  Goblin: {
-    hp: 7,
-    speed: 30,
-    abilities: { STR: 8, DEX: 14, CON: 10, INT: 10, WIS: 8, CHA: 8 },
-    senses: ["darkvision 60 ft.", "passive Perception 10"],
-    languages: ["Common", "Goblin"],
-    challengeRating: 0.25,
-    xpValue: 50,
-    features: ["Nimble Escape"],
-    equipment: {
-      armor: "leather",
-      mainHand: "scimitar",
-      offHand: "shield",
-      pack: { name: "Carried", contents: ["shortbow"] },
-    },
-  },
-  Hobgoblin: {
-    hp: 11,
-    speed: 30,
-    abilities: { STR: 13, DEX: 12, CON: 12, INT: 10, WIS: 10, CHA: 9 },
-    senses: ["darkvision 60 ft.", "passive Perception 10"],
-    languages: ["Common", "Goblin"],
-    challengeRating: 0.5,
-    xpValue: 100,
-    features: ["Martial Advantage"],
-    equipment: {
-      armor: "chain_mail",
-      mainHand: "longsword",
-      offHand: "shield",
-      // Longsword is Versatile (1d10), but shield occupies off hand → one-handed 1d8 only.
-      pack: { name: "Carried", contents: ["longbow"] },
-    },
-  },
-  Bugbear: {
-    hp: 27,
-    speed: 30,
-    abilities: { STR: 15, DEX: 14, CON: 13, INT: 8, WIS: 11, CHA: 9 },
-    challengeRating: 1,
-    xpValue: 200,
-    // Brute: melee weapon hits deal one extra die of damage (morningstar 1d8 → 2d8).
-    features: ["Brute","Surprise Attack"],
-    skills: ["stealth +6", "survival +2"],
-    senses: ["darkvision 60 ft.", "passive Perception 10"],
-    languages: ["Common", "Goblin"],
-    equipment: {
-      armor: "hide",
-      mainHand: "morningstar",
-      offHand: "shield",
-      pack: { name: "Carried", contents: ["javelin"] },
-    },
-  },
-};
+function equipmentOrEmpty(
+  partial: Partial<CharacterEquipment> | undefined,
+): CharacterEquipment {
+  return {
+    armor: partial?.armor ?? null,
+    mainHand: partial?.mainHand ?? null,
+    offHand: partial?.offHand ?? null,
+    pack: partial?.pack ?? null,
+  };
+}
 
 function expandGroups(
   groups: EncounterMonsterGroup[],
@@ -116,7 +57,7 @@ function expandGroups(
           name: `${group.type} ${index}`,
           hp: stats.hp,
           abilities: stats.abilities,
-          equipment: stats.equipment,
+          equipment: equipmentOrEmpty(stats.equipment),
           features: stats.features,
           xpValue: stats.xpValue,
         }),
@@ -150,5 +91,5 @@ export function spawnEncounter(
 }
 
 export function pickLoot(rng: Rng): string {
-  return LOOT[Math.floor(rng() * LOOT.length)];
+  return LOOT[Math.floor(rng() * LOOT.length)]!;
 }

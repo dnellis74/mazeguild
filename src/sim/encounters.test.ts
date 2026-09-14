@@ -4,26 +4,34 @@ import { MONSTER_STATS } from "./encounters";
 import { isMetalArmorId, weaponFromEquipmentId } from "./loadout";
 import type { CharacterEquipment } from "@/training/types";
 
+function fullEquipment(
+  partial: Partial<CharacterEquipment> | undefined,
+): CharacterEquipment {
+  return {
+    armor: partial?.armor ?? null,
+    mainHand: partial?.mainHand ?? null,
+    offHand: partial?.offHand ?? null,
+    pack: partial?.pack ?? null,
+  };
+}
+
 describe("monster equipment (CharacterEquipment)", () => {
   it("Goblin / Hobgoblin / Bugbear match the PC equipment shape and loadout", () => {
-    const goblin = MONSTER_STATS.Goblin!.equipment;
-    expect(goblin).toEqual({
+    expect(fullEquipment(MONSTER_STATS.Goblin!.equipment)).toEqual({
       armor: "leather",
       mainHand: "scimitar",
       offHand: "shield",
       pack: { name: "Carried", contents: ["shortbow"] },
     } satisfies CharacterEquipment);
 
-    const hob = MONSTER_STATS.Hobgoblin!.equipment;
-    expect(hob).toEqual({
+    expect(fullEquipment(MONSTER_STATS.Hobgoblin!.equipment)).toEqual({
       armor: "chain_mail",
       mainHand: "longsword",
       offHand: "shield",
       pack: { name: "Carried", contents: ["longbow"] },
     } satisfies CharacterEquipment);
 
-    const bug = MONSTER_STATS.Bugbear!.equipment;
-    expect(bug).toEqual({
+    expect(fullEquipment(MONSTER_STATS.Bugbear!.equipment)).toEqual({
       armor: "hide",
       mainHand: "morningstar",
       offHand: "shield",
@@ -32,16 +40,18 @@ describe("monster equipment (CharacterEquipment)", () => {
   });
 
   it("derives wearingMetalArmor from equipment armor material", () => {
-    expect(isMetalArmorId(MONSTER_STATS.Goblin!.equipment.armor)).toBe(false);
-    expect(isMetalArmorId(MONSTER_STATS.Hobgoblin!.equipment.armor)).toBe(true);
-    expect(isMetalArmorId(MONSTER_STATS.Bugbear!.equipment.armor)).toBe(false);
+    expect(isMetalArmorId(MONSTER_STATS.Goblin!.equipment?.armor)).toBe(false);
+    expect(isMetalArmorId(MONSTER_STATS.Hobgoblin!.equipment?.armor)).toBe(
+      true,
+    );
+    expect(isMetalArmorId(MONSTER_STATS.Bugbear!.equipment?.armor)).toBe(false);
 
     const hob = makeMonster({
       id: "h1",
       name: "Hobgoblin 1",
       hp: 11,
       abilities: MONSTER_STATS.Hobgoblin!.abilities,
-      equipment: MONSTER_STATS.Hobgoblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Hobgoblin!.equipment),
       xpValue: 100,
     });
     expect(hob.wearingMetalArmor).toBe(true);
@@ -51,7 +61,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Goblin 1",
       hp: 7,
       abilities: MONSTER_STATS.Goblin!.abilities,
-      equipment: MONSTER_STATS.Goblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Goblin!.equipment),
       xpValue: 50,
     });
     expect(gob.wearingMetalArmor).toBe(false);
@@ -63,7 +73,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Goblin 1",
       hp: 7,
       abilities: MONSTER_STATS.Goblin!.abilities,
-      equipment: MONSTER_STATS.Goblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Goblin!.equipment),
       xpValue: 50,
     });
     const scimitar = weaponFromEquipmentId("scimitar")!;
@@ -75,7 +85,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Hobgoblin 1",
       hp: 11,
       abilities: MONSTER_STATS.Hobgoblin!.abilities,
-      equipment: MONSTER_STATS.Hobgoblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Hobgoblin!.equipment),
       xpValue: 100,
     });
     // Catalog longsword is 1d8; versatile 1d10 is not applied while shield is equipped
@@ -83,18 +93,21 @@ describe("monster equipment (CharacterEquipment)", () => {
     expect(hob.weapon.name).toBe("Longsword");
     expect(hob.weapon.damage).toEqual({ count: 1, sides: 8 });
     expect(hob.weapon.properties.some((p) => /versatile/i.test(p))).toBe(true);
-    expect(MONSTER_STATS.Hobgoblin!.equipment.offHand).toBe("shield");
+    expect(MONSTER_STATS.Hobgoblin!.equipment?.offHand).toBe("shield");
   });
 
   it("Bugbear has Brute; morningstar stays catalog 1d8", () => {
-    expect(MONSTER_STATS.Bugbear!.features).toEqual(["Brute", "Surprise Attack"]);
+    expect(MONSTER_STATS.Bugbear!.features).toEqual([
+      "Brute",
+      "Surprise Attack",
+    ]);
 
     const bug = makeMonster({
       id: "b1",
       name: "Bugbear 1",
       hp: 27,
       abilities: MONSTER_STATS.Bugbear!.abilities,
-      equipment: MONSTER_STATS.Bugbear!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Bugbear!.equipment),
       features: MONSTER_STATS.Bugbear!.features,
       xpValue: 200,
     });
@@ -108,7 +121,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Goblin 1",
       hp: 7,
       abilities: MONSTER_STATS.Goblin!.abilities,
-      equipment: MONSTER_STATS.Goblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Goblin!.equipment),
       xpValue: 50,
     });
     expect(gob.brute).toBe(false);
@@ -120,7 +133,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Goblin 1",
       hp: 7,
       abilities: MONSTER_STATS.Goblin!.abilities,
-      equipment: MONSTER_STATS.Goblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Goblin!.equipment),
       xpValue: 50,
     });
     // Leather 11 + DEX(+2) + shield 2 = 15
@@ -131,7 +144,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Hobgoblin 1",
       hp: 11,
       abilities: MONSTER_STATS.Hobgoblin!.abilities,
-      equipment: MONSTER_STATS.Hobgoblin!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Hobgoblin!.equipment),
       xpValue: 100,
     });
     // Chain mail 16 + shield 2 = 18
@@ -142,7 +155,7 @@ describe("monster equipment (CharacterEquipment)", () => {
       name: "Bugbear 1",
       hp: 27,
       abilities: MONSTER_STATS.Bugbear!.abilities,
-      equipment: MONSTER_STATS.Bugbear!.equipment,
+      equipment: fullEquipment(MONSTER_STATS.Bugbear!.equipment),
       features: MONSTER_STATS.Bugbear!.features,
       xpValue: 200,
     });
