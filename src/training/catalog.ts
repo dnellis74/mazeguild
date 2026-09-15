@@ -1,13 +1,13 @@
-import skills from "../../public/data/skills.json";
-import races from "../../public/data/races.json";
-import alignments from "../../public/data/alignments.json";
-import timing from "../../public/data/training-timing.json";
-import favoredEnemy from "../../public/data/favored-enemy.json";
-import abilityMods from "../../public/data/ability-modifiers.json";
-import backstoryPrompt from "../../public/data/backstory-prompt.json";
-import cantripData from "../../public/data/cantrips.json";
-import spellData from "../../public/data/spells_level1.json";
-import spellDataL2 from "../../public/data/spells_level2.json";
+import skills from "@/data/skills.json";
+import races from "@/data/races.json";
+import alignments from "@/data/alignments.json";
+import timing from "@/data/training-timing.json";
+import favoredEnemy from "@/data/favored-enemy.json";
+import abilityMods from "@/data/ability-modifiers.json";
+import backstoryPrompt from "@/data/backstory-prompt.json";
+import cantripData from "@/data/cantrips.json";
+import spellData from "@/data/spells_level1.json";
+import spellDataL2 from "@/data/spells_level2.json";
 import type { Skill } from "./types";
 import {
   DEV_SHOW_PLACEHOLDERS,

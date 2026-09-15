@@ -1,4 +1,4 @@
-import cantripData from "../../public/data/cantrips.json";
+import cantripData from "@/data/cantrips.json";
 import type { Rng } from "./rng";
 import type { DiceExpr } from "./types";
 

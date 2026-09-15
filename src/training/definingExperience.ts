@@ -1,6 +1,6 @@
-import alignmentQuestions from "../../public/data/alignment-questions.json";
-import raceAlignment from "../../public/data/race-alignment.json";
-import alignments from "../../public/data/alignments.json";
+import alignmentQuestions from "@/data/alignment-questions.json";
+import raceAlignment from "@/data/race-alignment.json";
+import alignments from "@/data/alignments.json";
 import type { Character } from "./types";
 
 export type AlignmentQuestionOption = {

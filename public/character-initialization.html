@@ -36,15 +36,6 @@ function esc(s){
 }
 
 
-async function loadJson(path){
-  const res = await fetch(path);
-  if(!res.ok) throw new Error('Failed to load '+path+' ('+res.status+')');
-  return res.json();
-}
-
-
-
-
 let TRACKS = [];
 let RACES = [];
 let RACE_QUESTIONS = [];
@@ -828,21 +819,15 @@ function onAction(e){
 
 async function boot(){
   try {
-    const [
-      tracks, races, raceQuestions, alignments, alignmentQuestions, raceAlignment,
-    ] = await Promise.all([
-      loadJson('/data/tracks.json'),
-      loadJson('/data/races.json'),
-      loadJson('/data/race-questions.json'),
-      loadJson('/data/alignments.json'),
-      loadJson('/data/alignment-questions.json'),
-      loadJson('/data/race-alignment.json'),
-    ]);
-    TRACKS = tracks;
-    RACES = races;
-    RACE_QUESTIONS = raceQuestions;
-    ALIGNMENTS = alignments;
-    ALIGNMENT_QUESTIONS = Array.isArray(alignmentQuestions) ? alignmentQuestions : [];
+    const res = await fetch('/api/character-init');
+    if(!res.ok) throw new Error('Failed to load /api/character-init ('+res.status+')');
+    const data = await res.json();
+    TRACKS = data.tracks;
+    RACES = data.races;
+    RACE_QUESTIONS = data.raceQuestions;
+    ALIGNMENTS = data.alignments;
+    ALIGNMENT_QUESTIONS = Array.isArray(data.alignmentQuestions) ? data.alignmentQuestions : [];
+    const raceAlignment = data.raceAlignment || {};
     RACE_ALIGNMENT_EXTRAS = raceAlignment.extras || {};
     RACE_QUESTION_OVERRIDES = raceAlignment.overrides || {};
     RACE_QUESTION_SKIPS = raceAlignment.skips || {};

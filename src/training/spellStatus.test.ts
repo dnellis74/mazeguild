@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import cantripData from "../../public/data/cantrips.json";
-import spellDataL1 from "../../public/data/spells_level1.json";
-import spellDataL2 from "../../public/data/spells_level2.json";
+import cantripData from "@/data/cantrips.json";
+import spellDataL1 from "@/data/spells_level1.json";
+import spellDataL2 from "@/data/spells_level2.json";
 import { getCatalog } from "./catalog";
 import { cantripsForArchetype, spellsForArchetype } from "./magic";
 import {

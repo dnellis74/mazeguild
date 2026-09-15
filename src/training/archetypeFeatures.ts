@@ -1,6 +1,6 @@
 /**
  * Standard two starter skills for each class archetype (level-1 SRD pair).
- * Values are catalog skill ids from `public/data/skills.json`.
+ * Values are catalog skill ids from `@/data/skills.json`.
  *
  * Fighter: Defense fighting style + Second Wind (one of several style choices).
  */

@@ -1,5 +1,5 @@
-import spellDataL1 from "../../public/data/spells_level1.json";
-import spellDataL2 from "../../public/data/spells_level2.json";
+import spellDataL1 from "@/data/spells_level1.json";
+import spellDataL2 from "@/data/spells_level2.json";
 import type { ConditionName, DiceExpr } from "./types";
 
 export type SpellCombatType =

@@ -41,6 +41,7 @@ roster when returning to town.
 | `POST` | `/api/training/view` | `{ character, ui }` | `{ character, ui, view }` |
 | `POST` | `/api/training/action` | `{ character, ui, action }` | `{ character, ui, view, toast?, jobRunning?, navigate? }` |
 | `POST` | `/api/companions` | `{ raceId, alignmentId, … }` | `{ companion }` |
+| `GET` | `/api/character-init` | — | Creation catalog (races, alignments, questions, tracks) |
 | `POST` | `/api/defining-experience` | `{ alignmentId, raceId? }` | `{ definingExperience }` — direct alignment pick |
 | `POST` | `/api/names` | `{ raceId, gender?, taken? }` | `{ name, gender, race, seed }` |
 
@@ -50,7 +51,7 @@ roster when returning to town.
 |------|----------------|
 | `types.ts` | Character, UI state, actions, jobs |
 | `companion.ts` | Empty companion factory + labels |
-| `catalog.ts` | Load `public/data` |
+| `catalog.ts` | Load `@/data` |
 | `character.ts` | Migrate / validate / default UI |
 | `world.ts` | Area → building → room tree; inject Town Square |
 | `townSquare.ts` | Hub building constants |
@@ -65,6 +66,6 @@ roster when returning to town.
 | `/` · `TownSquareClient` | Roster hub |
 | `/training` · `TrainingClient` | World + sheet |
 | `/quest` · `QuestPageClient` | Stashed party → maze |
-| `/character-initialization.html` | Race / alignment → `POST /api/companions` |
+| `/character-initialization.html` | Race / alignment → `GET /api/character-init`, then `POST /api/companions` |
 
 Maze combat: `companionToCombatant` in `src/sim/`.

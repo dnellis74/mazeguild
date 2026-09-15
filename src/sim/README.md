@@ -157,8 +157,8 @@ Any new roll must consume the rng in a fixed order or determinism breaks.
 
 | Runtime loader | JSON / tables |
 |----------------|---------------|
-| `spells.ts` | `public/data/spells_level1.json` |
-| `cantrips.ts` | `public/data/cantrips.json` |
+| `spells.ts` | `@/data/spells_level1.json` |
+| `cantrips.ts` | `@/data/cantrips.json` |
 | `weapons.ts` | unarmed helpers; catalog weapons via `equipment.json` / `loadout.ts` |
 | `encounterScaling.ts` | encounter tables under `src/data` / related |
 
