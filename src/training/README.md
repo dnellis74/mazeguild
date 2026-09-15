@@ -8,7 +8,7 @@ this package should stay free of React and `localStorage`.
 
 ```
 Town Square (/)
-  ├─ Welcome a Stranger → character-initialization.html → POST /api/companions → /
+  ├─ Welcome a Stranger → /character → POST /api/companions → /
   ├─ 1 companion selected → Enter the City (/training?id=…)
   └─ 2+ selected → Quest (stash companions → /quest maze, auto-play)
 ```
@@ -66,6 +66,6 @@ roster when returning to town.
 | `/` · `TownSquareClient` | Roster hub |
 | `/training` · `TrainingClient` | World + sheet |
 | `/quest` · `QuestPageClient` | Stashed party → maze |
-| `/character-initialization.html` | Race / alignment → `GET /api/character-init`, then `POST /api/companions` |
+| `/character` · `CharacterInitClient` | Race / alignment wizard → `POST /api/companions` |
 
 Maze combat: `companionToCombatant` in `src/sim/`.

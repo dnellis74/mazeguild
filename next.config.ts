@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
         destination: "/training",
         permanent: false,
       },
+      {
+        source: "/character-initialization.html",
+        destination: "/character",
+        permanent: false,
+      },
+      {
+        source: "/race-selection.html",
+        destination: "/character",
+        permanent: false,
+      },
     ];
   },
 };

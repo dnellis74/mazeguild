@@ -2,7 +2,7 @@
  * Implementation status for spells and cantrips offered (or deferred) in training.
  * Status lives here — not in the JSON SRD catalog files.
  *
- * Dev toggle mirrors character-initialization.html's DEBUG_SHOW_WEIGHTS pattern:
+ * Dev toggle mirrors character creation's DEBUG_SHOW_WEIGHTS pattern:
  * a module-level const flipped by hand for local testing.
  */
 

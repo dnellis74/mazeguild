@@ -249,7 +249,7 @@ export function TownSquareClient() {
                   className="primary"
                   onClick={() => {
                     refresh();
-                    window.location.href = "/character-initialization.html";
+                    router.push("/character");
                   }}
                 >
                   Welcome a Stranger

@@ -21,26 +21,140 @@ export type DefiningExperience = NonNullable<
   Character["alignment"]["definingExperience"]
 >;
 
-type AlignmentAxes = { id: string; law: number; good: number };
+export type AlignQuizAnswer = {
+  questionId: string;
+  optionId: string;
+  label: string;
+} | null;
+
+export type ResolvedAlignment = {
+  law: number;
+  good: number;
+  lawSum: number;
+  goodSum: number;
+  lawRatio: number;
+  goodRatio: number;
+  alignmentId: string;
+};
+
+type AlignmentAxes = { id: string; law: number; good: number; name?: string };
+
+type RaceAlignmentConfig = {
+  extras?: Record<string, AlignmentQuestion[]>;
+  overrides?: Record<string, Record<string, Partial<AlignmentQuestion>>>;
+  skips?: Record<string, string[]>;
+  axisBias?: Record<string, { law?: number; good?: number }>;
+};
 
 const ALIGNMENTS = alignments as AlignmentAxes[];
 const BASE_QUESTIONS = alignmentQuestions as AlignmentQuestion[];
-const RACE_EXTRAS = (raceAlignment as { extras?: Record<string, AlignmentQuestion[]> })
-  .extras ?? {};
+const RACE_CFG = raceAlignment as RaceAlignmentConfig;
+const RACE_EXTRAS = RACE_CFG.extras ?? {};
+const RACE_OVERRIDES = RACE_CFG.overrides ?? {};
+const RACE_SKIPS = RACE_CFG.skips ?? {};
+const RACE_AXIS_BIAS = RACE_CFG.axisBias ?? {};
 
-function raceKey(raceId: string | null | undefined): string {
+const AXIS_THRESHOLD = 0.4;
+
+export function alignmentRaceKey(raceId: string | null | undefined): string {
   if (raceId === "half-elf") return "halfelf";
   if (raceId === "half-orc") return "halforc";
   return raceId || "";
 }
 
-/** Base alignment questions plus any race-specific extras. */
+/**
+ * Base alignment questions for a race: apply skips/overrides, then extras.
+ * Mirrors the creation wizard (not just extras-only).
+ */
 export function alignmentQuestionsFor(
   raceId: string | null | undefined,
 ): AlignmentQuestion[] {
-  const key = raceKey(raceId);
+  const key = alignmentRaceKey(raceId);
+  const skips = RACE_SKIPS[key] || RACE_SKIPS[raceId || ""] || [];
+  const overrides = RACE_OVERRIDES[key] || RACE_OVERRIDES[raceId || ""] || {};
   const extras = RACE_EXTRAS[key] || RACE_EXTRAS[raceId || ""] || [];
-  return BASE_QUESTIONS.concat(extras);
+  const base = BASE_QUESTIONS.filter((q) => !skips.includes(q.id)).map((q) =>
+    overrides[q.id] ? { ...q, ...overrides[q.id] } : q,
+  );
+  return base.concat(extras);
+}
+
+function bracket(ratio: number): number {
+  if (ratio >= AXIS_THRESHOLD) return 1;
+  if (ratio <= -AXIS_THRESHOLD) return -1;
+  return 0;
+}
+
+/** Score childhood-quiz answers into a nine-alignment cell. */
+export function resolveAlignmentFromQuiz(
+  raceId: string | null | undefined,
+  answers: readonly AlignQuizAnswer[],
+): ResolvedAlignment {
+  const questions = alignmentQuestionsFor(raceId);
+  const bias = RACE_AXIS_BIAS[raceId || ""] || { law: 0, good: 0 };
+
+  let lawSum = bias.law ?? 0;
+  let goodSum = bias.good ?? 0;
+  let lawMax = 0;
+  let goodMax = 0;
+
+  answers.forEach((ans, i) => {
+    if (!ans) return;
+    const q = questions[i];
+    if (!q) return;
+    const opt = q.options.find((o) => o.id === ans.optionId);
+    if (!opt) return;
+    lawSum += opt.law;
+    goodSum += opt.good;
+    lawMax += Math.max(...q.options.map((o) => Math.abs(o.law)));
+    goodMax += Math.max(...q.options.map((o) => Math.abs(o.good)));
+  });
+
+  const lawRatio = lawMax ? lawSum / lawMax : 0;
+  const goodRatio = goodMax ? goodSum / goodMax : 0;
+  const law = bracket(lawRatio);
+  const good = bracket(goodRatio);
+  const cell = ALIGNMENTS.find((a) => a.law === law && a.good === good);
+  return {
+    law,
+    good,
+    lawSum,
+    goodSum,
+    lawRatio,
+    goodRatio,
+    alignmentId: cell?.id ?? "n",
+  };
+}
+
+/**
+ * Quiz-path defining experience: the answered option with the largest
+ * |law|+|good|. Distinct from pickDefiningExperienceForAlignment (±2 pool).
+ */
+export function definingExperienceFromQuiz(
+  raceId: string | null | undefined,
+  answers: readonly AlignQuizAnswer[],
+): DefiningExperience | null {
+  const questions = alignmentQuestionsFor(raceId);
+  let best: DefiningExperience | null = null;
+  let bestWeight = -1;
+  answers.forEach((ans, i) => {
+    if (!ans) return;
+    const q = questions[i];
+    if (!q) return;
+    const opt = q.options.find((o) => o.id === ans.optionId);
+    if (!opt) return;
+    const weight = Math.abs(opt.law) + Math.abs(opt.good);
+    if (weight > bestWeight) {
+      bestWeight = weight;
+      best = {
+        questionId: q.id,
+        scenario: q.text,
+        optionId: opt.id,
+        label: opt.label,
+      };
+    }
+  });
+  return best;
 }
 
 export function alignmentAxes(

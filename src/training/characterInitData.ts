@@ -19,7 +19,7 @@ export type CharacterInitData = {
   };
 };
 
-/** Server-owned payload for character-initialization.html boot(). */
+/** Server-owned catalog for the `/character` creation wizard. */
 export function getCharacterInitData(): CharacterInitData {
   return {
     tracks,

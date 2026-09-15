@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  alignmentQuestionsFor,
   definingExperienceCandidates,
+  definingExperienceFromQuiz,
   pickDefiningExperienceForAlignment,
+  resolveAlignmentFromQuiz,
 } from "./definingExperience";
 
 describe("definingExperienceCandidates (direct alignment pick)", () => {
@@ -44,5 +47,40 @@ describe("definingExperienceCandidates (direct alignment pick)", () => {
     const base = definingExperienceCandidates("ln");
     expect(withRace.length).toBeGreaterThanOrEqual(base.length);
     expect(withRace.some((c) => c.questionId === "hold")).toBe(true);
+  });
+});
+
+describe("childhood quiz resolution", () => {
+  it("alignmentQuestionsFor appends race extras after the base set", () => {
+    const qs = alignmentQuestionsFor("dwarf");
+    expect(qs.some((q) => q.id === "hold")).toBe(true);
+    expect(qs.length).toBeGreaterThan(alignmentQuestionsFor(null).length);
+  });
+
+  it("resolveAlignmentFromQuiz maps strong lawful-good answers to lg", () => {
+    const qs = alignmentQuestionsFor("human");
+    const answers = qs.map((q) => {
+      const opt =
+        q.options.find((o) => o.law === 2 || o.good === 2) ?? q.options[0]!;
+      return { questionId: q.id, optionId: opt.id, label: opt.label };
+    });
+    const resolved = resolveAlignmentFromQuiz("human", answers);
+    expect(resolved.alignmentId).toBeTruthy();
+    expect(typeof resolved.lawRatio).toBe("number");
+  });
+
+  it("definingExperienceFromQuiz picks the strongest answered option", () => {
+    const qs = alignmentQuestionsFor("human");
+    const q = qs[0]!;
+    const strong =
+      [...q.options].sort(
+        (a, b) =>
+          Math.abs(b.law) + Math.abs(b.good) - (Math.abs(a.law) + Math.abs(a.good)),
+      )[0]!;
+    const exp = definingExperienceFromQuiz("human", [
+      { questionId: q.id, optionId: strong.id, label: strong.label },
+    ]);
+    expect(exp?.optionId).toBe(strong.id);
+    expect(exp?.scenario).toBe(q.text);
   });
 });
