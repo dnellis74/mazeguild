@@ -3,20 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dir, DungeonResult, Pos } from "@/sim/types";
 
-const AMBER = "#e4b45a";
-const DIM = "#6a4a1a";
+const EGA_YELLOW = "#FFFF55";
+const DIM = "#AA5500";
 const MONSTER_SPRITES: Record<string, string> = {
-  Goblin: "/monsters/goblin.png",
-  Hobgoblin: "/monsters/hobgoblin.png",
-  Bugbear: "/monsters/bugbear.png",
-  Kobold: "/monsters/kobold.png",
-  Skeleton: "/monsters/skeleton.png",
-  Zombie: "/monsters/zombie.png",
-  Wolf: "/monsters/wolf.png",
-  Orc: "/monsters/orc.png",
-  Ghoul: "/monsters/ghoul.png",
+  Goblin: "/monsters/goblin-color.png",
+  Hobgoblin: "/monsters/hobgoblin-color.png",
+  Bugbear: "/monsters/bugbear-color.png",
+  Kobold: "/monsters/kobold-color.png",
+  Skeleton: "/monsters/skeleton-color.png",
+  Zombie: "/monsters/zombie-color.png",
+  Wolf: "/monsters/wolf-color.png",
+  Orc: "/monsters/orc-color.png",
+  Ghoul: "/monsters/ghoul-color.png",
   // Encounter names use the roster key (`GiantSpider 1`), not the display name.
-  GiantSpider: "/monsters/giant-spider.png",
+  GiantSpider: "/monsters/giant-spider-color.png",
 };
 
 function hasWall(
@@ -123,9 +123,9 @@ export function DungeonView({
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      ctx.fillStyle = "#050301";
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, cssW, cssH);
-      ctx.strokeStyle = AMBER;
+      ctx.strokeStyle = EGA_YELLOW;
       ctx.lineWidth = Math.max(1.25, cssW / 280);
 
       const depths: boolean[] = [];
@@ -175,9 +175,9 @@ export function DungeonView({
         ctx.stroke();
 
         if (hasWall(maze, cell, facing) || d === blockedAt) {
-          ctx.strokeStyle = d === 0 ? AMBER : DIM;
+          ctx.strokeStyle = d === 0 ? EGA_YELLOW : DIM;
           ctx.strokeRect(b.x, b.y, b.w, b.h);
-          ctx.strokeStyle = AMBER;
+          ctx.strokeStyle = EGA_YELLOW;
           break;
         }
       }
@@ -221,7 +221,7 @@ export function DungeonView({
             x += w + gap;
           }
         }
-        ctx.fillStyle = AMBER;
+        ctx.fillStyle = EGA_YELLOW;
         ctx.font = `600 ${Math.max(11, Math.round(cssW / 28))}px ui-monospace, monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
@@ -238,7 +238,7 @@ export function DungeonView({
   return (
     <div
       ref={wrapRef}
-      className="min-h-0 w-full flex-1 overflow-hidden border border-amber-700/60 bg-black"
+      className="min-h-0 w-full flex-1 overflow-hidden border border-ega-dark-gray bg-black"
     >
       <canvas
         ref={canvasRef}

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 function MazeBoot() {
   return (
-    <div className="crt flex min-h-[70dvh] items-center justify-center bg-[#050301] font-mono text-amber-500">
+    <div className="crt flex min-h-[70dvh] items-center justify-center bg-ega-black font-mono text-ega-yellow">
       DESCENDING…
     </div>
   );
@@ -18,7 +18,7 @@ function MazeBoot() {
 
 export default function QuestPage() {
   return (
-    <CrtShell className="bg-[#050301] text-amber-300">
+    <CrtShell className="bg-ega-black text-ega-light-gray">
       <Suspense fallback={<MazeBoot />}>
         <QuestPageClient />
       </Suspense>

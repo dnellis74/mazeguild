@@ -43,7 +43,7 @@ export function QuestPageClient() {
 
   if (!booted || (!party && !error)) {
     return (
-      <div className="crt flex min-h-[70dvh] items-center justify-center bg-[#050301] font-mono text-amber-500">
+      <div className="crt flex min-h-[70dvh] items-center justify-center bg-ega-black font-mono text-ega-yellow">
         DESCENDING…
       </div>
     );
@@ -51,12 +51,12 @@ export function QuestPageClient() {
 
   if (error) {
     return (
-      <div className="crt flex min-h-[70dvh] flex-col items-start justify-center gap-4 bg-[#050301] p-4 font-mono text-amber-300">
-        <h1 className="text-lg tracking-widest text-amber-400">QUEST</h1>
-        <p className="text-sm text-amber-200/90">{error}</p>
+      <div className="crt flex min-h-[70dvh] flex-col items-start justify-center gap-4 bg-ega-black p-4 font-mono text-ega-light-gray">
+        <h1 className="text-lg tracking-widest text-ega-yellow">QUEST</h1>
+        <p className="text-sm text-ega-light-gray">{error}</p>
         <button
           type="button"
-          className="border border-amber-400 bg-amber-900/40 px-4 py-3 text-amber-100"
+          className="border border-ega-yellow bg-ega-blue px-4 py-3 text-ega-white"
           onClick={() => returnToTown()}
         >
           TOWN SQUARE

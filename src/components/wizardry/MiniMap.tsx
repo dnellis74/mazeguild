@@ -1,7 +1,7 @@
 import type { DungeonResult } from "@/sim/types";
 import type { ReplayFrame } from "@/replay/project";
 
-const WALL = "#c48a30";
+const WALL = "#AA5500";
 
 export function MiniMap({
   maze,
@@ -17,7 +17,7 @@ export function MiniMap({
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
-      className="aspect-square w-full max-w-[7.5rem] shrink-0 self-start border border-amber-700/60 bg-black sm:max-w-[10rem] lg:max-w-[12.5rem]"
+      className="aspect-square w-full max-w-[7.5rem] shrink-0 self-start border border-ega-dark-gray bg-black sm:max-w-[10rem] lg:max-w-[12.5rem]"
       aria-label="Explored maze map"
     >
       {maze.grid.flatMap((row, y) =>
@@ -29,12 +29,12 @@ export function MiniMap({
           const isExit = maze.exit.x === x && maze.exit.y === y;
           const isEnt = maze.entrance.x === x && maze.entrance.y === y;
           const fill = isHere
-            ? "#e4b45a"
+            ? "#FFFF55"
             : isExit
-              ? "#3d8"
+              ? "#55FF55"
               : isEnt
-                ? "#68a"
-                : "#3a2a10";
+                ? "#55FFFF"
+                : "#555555";
           const px = x * cell;
           const py = y * cell;
           return (

@@ -11,8 +11,17 @@ describe("placeImage", () => {
     expect(placeSlug("Town Square")).toBe("town-square");
   });
 
-  it("returns src only for known place art", () => {
-    expect(placeImageSrc("The Keep")).toBe("/places/keep.jpg");
+  it("returns EGA color variants for known place art", () => {
+    expect(placeImageSrc("The Keep")).toBe("/places/keep-color.png");
+    expect(placeImageSrc("Town Square")).toBe(
+      "/places/town-square-color.png",
+    );
+    expect(placeImageSrc("Town Gate")).toBe("/places/town-gate-color.png");
+    expect(placeImageSrc("Tavern")).toBe("/places/tavern-color.png");
+    expect(placeImageSrc("Walled City")).toBe(
+      "/places/walled-city-color.png",
+    );
+    expect(placeImageSrc("The Wilds")).toBe("/places/wilds-color.png");
     expect(placeImageSrc("Cathedral")).toBeNull();
     expect(placeImageSrc("")).toBeNull();
   });

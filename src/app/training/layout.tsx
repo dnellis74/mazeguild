@@ -7,8 +7,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * Theme: CRT amber to match town / character. Sheet and World use
- * character-creation.css via CrtShell. Quest lives at `/quest` with its own page.
+ * Theme: EGA 16 on black (shared with town / character via CrtShell).
+ * Quest lives at `/quest` with its own page.
  */
 export default function TrainingLayout({
   children,

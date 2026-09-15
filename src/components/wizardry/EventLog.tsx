@@ -27,13 +27,13 @@ export function EventLog({
   return (
     <ol
       ref={listRef}
-      className="h-[22dvh] shrink-0 overflow-y-auto overscroll-contain border border-amber-800/60 bg-black/60 p-2 font-mono text-xs leading-5 text-amber-300 sm:h-48"
+      className="h-[22dvh] shrink-0 overflow-y-auto overscroll-contain border border-ega-dark-gray bg-black/60 p-2 font-mono text-xs leading-5 text-ega-light-gray sm:h-48"
     >
       {lines.map((x, idx) => (
         <li
           key={x.i}
           ref={idx === lines.length - 1 ? endRef : undefined}
-          className={x.i === cursor ? "text-amber-100" : "text-amber-400/80"}
+          className={x.i === cursor ? "text-ega-white" : "text-ega-cyan"}
         >
           {x.text}
         </li>

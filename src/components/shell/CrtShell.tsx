@@ -7,7 +7,7 @@ const crt = Share_Tech_Mono({
   variable: "--font-crt",
 });
 
-/** Shared CRT amber shell: Share Tech Mono + character-creation.css. */
+/** Shared EGA shell: Share Tech Mono + character-creation.css. */
 export function CrtShell({
   children,
   className,

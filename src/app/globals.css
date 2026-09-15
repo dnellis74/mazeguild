@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050301;
-  --foreground: #e4b45a;
+  /* Classic IBM EGA 16 */
+  --ega-black: #000000;
+  --ega-blue: #0000aa;
+  --ega-green: #00aa00;
+  --ega-cyan: #00aaaa;
+  --ega-red: #aa0000;
+  --ega-magenta: #aa00aa;
+  --ega-brown: #aa5500;
+  --ega-light-gray: #aaaaaa;
+  --ega-dark-gray: #555555;
+  --ega-bright-blue: #5555ff;
+  --ega-bright-green: #55ff55;
+  --ega-bright-cyan: #55ffff;
+  --ega-bright-red: #ff5555;
+  --ega-bright-magenta: #ff55ff;
+  --ega-yellow: #ffff55;
+  --ega-white: #ffffff;
+
+  --background: var(--ega-black);
+  --foreground: var(--ega-light-gray);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -12,6 +30,22 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ega-black: #000000;
+  --color-ega-blue: #0000aa;
+  --color-ega-green: #00aa00;
+  --color-ega-cyan: #00aaaa;
+  --color-ega-red: #aa0000;
+  --color-ega-magenta: #aa00aa;
+  --color-ega-brown: #aa5500;
+  --color-ega-light-gray: #aaaaaa;
+  --color-ega-dark-gray: #555555;
+  --color-ega-bright-blue: #5555ff;
+  --color-ega-bright-green: #55ff55;
+  --color-ega-bright-cyan: #55ffff;
+  --color-ega-bright-red: #ff5555;
+  --color-ega-bright-magenta: #ff55ff;
+  --color-ega-yellow: #ffff55;
+  --color-ega-white: #ffffff;
 }
 
 /* iPhone landscape is height-compact (~402px on iPhone 17). */
@@ -31,10 +65,8 @@ body {
 
 
 .crt {
-  background:
-    radial-gradient(ellipse at center, rgba(228, 180, 90, 0.06), transparent 70%),
-    #050301;
-  text-shadow: 0 0 6px rgba(228, 180, 90, 0.35);
+  background: var(--ega-black);
+  text-shadow: none;
 }
 
 .crt::after {
@@ -46,7 +78,7 @@ body {
     to bottom,
     transparent 0,
     transparent 2px,
-    rgba(0, 0, 0, 0.12) 3px
+    rgba(0, 0, 0, 0.18) 3px
   );
   z-index: 50;
 }
@@ -74,17 +106,16 @@ select {
 
 input[type="range"] {
   height: 44px;
-  accent-color: #e4b45a;
+  accent-color: var(--ega-yellow);
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  height: 28px;
-  width: 28px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-@supports (-webkit-touch-callout: none) {
-  button,
-  a {
-    -webkit-tap-highlight-color: rgba(228, 180, 90, 0.2);
-  }
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--ega-bright-cyan) 25%, transparent);
 }

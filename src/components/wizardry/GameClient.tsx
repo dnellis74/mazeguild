@@ -118,19 +118,19 @@ export function GameClient({
   }
 
   return (
-    <div className="crt flex h-full min-h-0 max-h-full w-full flex-col overflow-hidden bg-[#050301] pb-[max(0.5rem,var(--safe-bottom))] text-amber-300">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-800/70 pb-2 select-none">
+    <div className="crt flex h-full min-h-0 max-h-full w-full flex-col overflow-hidden bg-ega-black pb-[max(0.5rem,var(--safe-bottom))] text-ega-light-gray">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-ega-dark-gray pb-2 select-none">
         <div className="min-w-0">
-          <p className="hidden font-mono text-[10px] tracking-[0.28em] text-amber-600 lg:block">
+          <p className="hidden font-mono text-[10px] tracking-[0.28em] text-ega-cyan lg:block">
             AUTOMATED PARTY CRAWLER — DUNGEON LAYER
           </p>
-          <h1 className="truncate font-mono text-lg tracking-widest text-amber-400 lg:text-2xl">
+          <h1 className="truncate font-mono text-lg tracking-widest text-ega-yellow lg:text-2xl">
             MAZE OF THE GUILD
           </h1>
           <button
             type="button"
             onClick={goTown}
-            className="mt-1 font-mono text-[10px] tracking-[0.28em] text-amber-500 underline-offset-2 hover:text-amber-300"
+            className="mt-1 font-mono text-[10px] tracking-[0.28em] text-ega-bright-cyan underline-offset-2 hover:text-ega-white"
           >
             RETURN TO TOWN SQUARE
           </button>
@@ -140,7 +140,7 @@ export function GameClient({
             type="button"
             disabled={!result}
             onClick={download}
-            className="tracking-wide text-amber-500 underline underline-offset-2 hover:text-amber-300 disabled:opacity-40 disabled:no-underline"
+            className="tracking-wide text-ega-bright-cyan underline underline-offset-2 hover:text-ega-white disabled:opacity-40 disabled:no-underline"
           >
             JSON
           </button>
@@ -157,7 +157,7 @@ export function GameClient({
               disabled={started || running}
               onChange={(e) => setSeed(Number(e.target.value))}
               onFocus={(e) => e.currentTarget.select()}
-              className="w-[5.5rem] border border-amber-700 bg-black px-2 text-amber-200 disabled:opacity-40"
+              className="w-[5.5rem] border border-ega-dark-gray bg-black px-2 text-ega-light-gray disabled:opacity-40"
               aria-label="Dungeon seed"
             />
           </label>
@@ -180,7 +180,7 @@ export function GameClient({
               </>
             ) : (
               <div
-                className="flex min-h-0 flex-1 items-center justify-center border border-amber-900/60 bg-black/80 font-mono text-xs tracking-[0.2em] text-amber-600"
+                className="flex min-h-0 flex-1 items-center justify-center border border-ega-dark-gray bg-black/80 font-mono text-xs tracking-[0.2em] text-ega-cyan"
                 aria-busy={running}
               >
                 {running ? "GENERATING MAZE…" : "LOADING…"}
@@ -194,10 +194,10 @@ export function GameClient({
 
           <div className="col-span-2 row-start-2 flex min-h-0 flex-col gap-2">
             {error ? (
-              <p className="font-mono text-xs text-amber-200">{error}</p>
+              <p className="font-mono text-xs text-ega-light-gray">{error}</p>
             ) : null}
             {inMaze && frame?.inCombat ? (
-              <p className="font-mono text-xs text-red-400">
+              <p className="font-mono text-xs text-ega-bright-red">
                 FIGHTING: {frame.enemies.join(", ")}
               </p>
             ) : null}
@@ -271,14 +271,14 @@ function ReplayDeck({
 }) {
   const last = Math.max(0, length - 1);
   return (
-    <div className="border border-amber-800/70 bg-black/70 px-2 py-1.5">
+    <div className="border border-ega-dark-gray bg-black/70 px-2 py-1.5">
       <div className="flex items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center" role="group" aria-label="Transport">
           <button
             type="button"
             disabled={cursor <= 0}
             onClick={onStepBack}
-            className={`${vcr} flex-1 border-amber-700 text-amber-200`}
+            className={`${vcr} flex-1 border-ega-dark-gray text-ega-light-gray`}
             aria-label="Step back"
             title="Step back"
           >
@@ -287,7 +287,7 @@ function ReplayDeck({
           <button
             type="button"
             onClick={onPlayPause}
-            className={`${vcr} flex-[1.6] border-amber-400 bg-amber-900/50 text-amber-100`}
+            className={`${vcr} flex-[1.6] border-ega-yellow bg-ega-blue text-ega-white`}
             aria-label={playing ? "Pause" : "Play"}
           >
             {playing ? "❚❚" : "▶"}
@@ -296,7 +296,7 @@ function ReplayDeck({
             type="button"
             disabled={cursor >= last}
             onClick={onStepForward}
-            className={`${vcr} flex-1 border-amber-700 text-amber-200`}
+            className={`${vcr} flex-1 border-ega-dark-gray text-ega-light-gray`}
             aria-label="Step forward"
             title="Step"
           >
@@ -312,8 +312,8 @@ function ReplayDeck({
               aria-pressed={speed === n}
               className={`${vcr} min-w-12 px-2 ${
                 speed === n
-                  ? "border-amber-400 bg-amber-900/50 text-amber-100"
-                  : "border-amber-800 text-amber-500"
+                  ? "border-ega-yellow bg-ega-blue text-ega-white"
+                  : "border-ega-dark-gray text-ega-yellow"
               }`}
             >
               {n}x
@@ -337,11 +337,11 @@ function ReplayDeck({
 function TownLog({ lines }: { lines: string[] }) {
   return (
     <ol
-      className="h-[22dvh] shrink-0 overflow-y-auto overscroll-contain border border-amber-800/60 bg-black/60 p-2 font-mono text-xs leading-5 text-amber-300 sm:h-48"
+      className="h-[22dvh] shrink-0 overflow-y-auto overscroll-contain border border-ega-dark-gray bg-black/60 p-2 font-mono text-xs leading-5 text-ega-light-gray sm:h-48"
       aria-label="Adventure log"
     >
       {lines.map((line) => (
-        <li key={line} className="text-amber-400/80">
+        <li key={line} className="text-ega-cyan">
           {line}
         </li>
       ))}
