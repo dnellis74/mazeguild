@@ -300,6 +300,29 @@ export function TrainingClient() {
     backToSquare();
   };
 
+  const downloadCompanionJson = () => {
+    if (!character) return;
+    const payload: Character = {
+      ...character,
+      name: character.name.trim() || "Companion",
+      originStory: originDraft,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const slug =
+      payload.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") || "companion";
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slug}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (bootError) {
     return (
       <div className="stage">
@@ -429,6 +452,7 @@ export function TrainingClient() {
                   )
                 }
                 onDismiss={dismissCompanion}
+                onDownload={downloadCompanionJson}
               />
             ) : onWorld && view.world ? (
               <WorldPanel
@@ -525,12 +549,14 @@ function SheetPanel({
   onOriginChange,
   onReset,
   onDismiss,
+  onDownload,
 }: {
   sheet: SheetView;
   originDraft: string;
   onOriginChange: (v: string) => void;
   onReset: () => void;
   onDismiss: () => void;
+  onDownload: () => void;
 }) {
   return (
     <>
@@ -678,11 +704,17 @@ function SheetPanel({
         </div>
       </div>
       <div className="sheet-block sheet-block-dismiss">
-        <button type="button" className="dismiss-companion" onClick={onDismiss}>
-          Dismiss companion
-        </button>
+        <div className="sheet-companion-actions">
+          <button type="button" className="download-companion" onClick={onDownload}>
+            Download JSON
+          </button>
+          <button type="button" className="dismiss-companion" onClick={onDismiss}>
+            Dismiss companion
+          </button>
+        </div>
         <p className="mechanic-note" style={{ marginTop: 10 }}>
-          Removes them from the square permanently.
+          Download saves a full companion snapshot. Dismiss removes them from the
+          square permanently.
         </p>
       </div>
     </>

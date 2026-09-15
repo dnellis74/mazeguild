@@ -758,8 +758,14 @@
     margin-top:8px;
     padding-top:8px;
   }
+  .sheet-companion-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .download-companion,
   .dismiss-companion{
-    width:100%;
+    flex:1 1 10rem;
     padding:12px 14px;
     border:1px solid var(--rule);
     border-radius:0;
@@ -770,6 +776,7 @@
     text-align:center;
     color:var(--ink-soft);
   }
+  .download-companion:hover,
   .dismiss-companion:hover{
     color:var(--ink);
     border-color:var(--seal-dark);

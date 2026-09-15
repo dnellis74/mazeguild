@@ -6,6 +6,7 @@ import {
 import type { Catalog } from "./catalog";
 import { alignmentById, raceById, skillById } from "./catalog";
 import { createEmptyCompanion } from "./companion";
+import { pickDefiningExperienceForAlignment } from "./definingExperience";
 import { asFeatureList, hasSkill, prereqMet } from "./features";
 import {
   cantripsForArchetype,
@@ -245,6 +246,9 @@ export function generateCharacter(
   }
 
   const rng = input.rng ?? Math.random;
+  const experience =
+    input.definingExperience ??
+    pickDefiningExperienceForAlignment(input.alignmentId, input.raceId, rng);
   let ch = createEmptyCompanion(catalog, {
     id: input.id,
     name: input.name,
@@ -252,7 +256,7 @@ export function generateCharacter(
     subrace: input.subrace ?? null,
     alignment: {
       alignmentId: input.alignmentId,
-      definingExperience: input.definingExperience ?? null,
+      definingExperience: experience,
     },
   });
 

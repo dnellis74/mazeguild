@@ -701,7 +701,40 @@ function onAction(e){
     render();
   }
   else if(action==='align-confirm'){
-    ch.alignment.alignmentId = e.currentTarget.dataset.id;
+    const alignmentId = e.currentTarget.dataset.id;
+    ch.alignment.alignmentId = alignmentId;
+    // Direct pick (skipped quiz): ask the server for a ±2 defining experience.
+    // Quiz path already set definingExperience from the strongest answered option.
+    if(!ch.alignment.tookQuiz){
+      const btn = e.currentTarget;
+      if(btn) btn.disabled = true;
+      void (async () => {
+        try {
+          const res = await fetch('/api/defining-experience', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              alignmentId,
+              raceId: ch.raceId,
+            }),
+          });
+          const data = await res.json();
+          if(!res.ok){
+            throw new Error(data.error || 'Could not pick defining experience');
+          }
+          ch.alignment.definingExperience = data.definingExperience ?? null;
+        } catch (err) {
+          console.warn('Defining experience pick failed.', err);
+          ch.alignment.definingExperience = null;
+          showToast(err instanceof Error ? err.message : 'Defining experience failed');
+        } finally {
+          if(btn) btn.disabled = false;
+          ui.screen='align-confirm';
+          render();
+        }
+      })();
+      return;
+    }
     ui.screen='align-confirm';
     render();
   }

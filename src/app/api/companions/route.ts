@@ -1,5 +1,6 @@
 import { getCatalog } from "@/training/catalog";
 import { createEmptyCompanion } from "@/training/companion";
+import { pickDefiningExperienceForAlignment } from "@/training/definingExperience";
 import { generateUniqueFantasyName } from "@/lib/fantasyNames";
 import type { Character } from "@/training/types";
 
@@ -7,6 +8,9 @@ import type { Character } from "@/training/types";
  * Build a fresh companion for intake.
  * Body: { raceId, alignmentId, name?, subrace?, definingExperience?, taken? }
  * Returns { companion } — client appends to mazeguild.roster.
+ *
+ * When definingExperience is omitted (direct alignment pick), one is chosen
+ * from childhood-question responses that score ±2 on the alignment's non-neutral axes.
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -60,6 +64,9 @@ export async function POST(request: Request) {
 
   try {
     const catalog = getCatalog();
+    const experience =
+      definingExperience ??
+      pickDefiningExperienceForAlignment(alignmentId, raceId);
     const companion = createEmptyCompanion(catalog, {
       id,
       name,
@@ -67,7 +74,7 @@ export async function POST(request: Request) {
       subrace: subrace ?? null,
       alignment: {
         alignmentId,
-        definingExperience: definingExperience ?? null,
+        definingExperience: experience,
       },
     });
     return Response.json({ companion });
