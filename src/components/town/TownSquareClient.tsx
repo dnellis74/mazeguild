@@ -14,7 +14,6 @@ import {
   stashQuestParty,
   type TownLevelUpNotice,
 } from "@/lib/questHandoff";
-import { fetchJsonOnce } from "@/lib/fetchOnce";
 import { companionToPartySnapshot } from "@/sim/adapter";
 import { PARTY_CAP } from "@/sim/constants";
 import { levelForXp, xpForNextLevel } from "@/sim/leveling";
@@ -27,17 +26,17 @@ import {
 } from "@/training/townSquare";
 import type { Character } from "@/training/types";
 
-type CatalogLabels = {
+export type CatalogLabels = {
   races: Record<string, string>;
   alignments: Record<string, string>;
 };
 
-function companionLine(ch: Character, labels: CatalogLabels | null): string {
+function companionLine(ch: Character, labels: CatalogLabels): string {
   const align =
-    labels?.alignments[ch.alignment?.alignmentId || ""] ||
+    labels.alignments[ch.alignment?.alignmentId || ""] ||
     ch.alignment?.alignmentId?.toUpperCase() ||
     "?";
-  const race = labels?.races[ch.raceId] || ch.raceId || "Unknown";
+  const race = labels.races[ch.raceId] || ch.raceId || "Unknown";
   return `${align} ${race}`;
 }
 
@@ -55,13 +54,12 @@ function featureArchetypes(ch: Character): string {
  * 1 selected: Enter the City (+ crumb into the world)
  * 2+ selected: Quest (party → maze)
  */
-export function TownSquareClient() {
+export function TownSquareClient({ labels }: { labels: CatalogLabels }) {
   const router = useRouter();
   const [roster, setRoster] = useState<Character[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [seeding, setSeeding] = useState(false);
-  const [labels, setLabels] = useState<CatalogLabels | null>(null);
   const [questBusy, setQuestBusy] = useState(false);
   const [questError, setQuestError] = useState<string | null>(null);
   const [levelUpNotes, setLevelUpNotes] = useState<TownLevelUpNotice[]>([]);
@@ -88,20 +86,6 @@ export function TownSquareClient() {
         setLevelUpNotes(consumeTownLevelUps());
       }
     })();
-    void fetchJsonOnce<{
-      races?: { id: string; name: string }[];
-      alignments?: { id: string; name: string }[];
-    }>("/api/training/catalog")
-      .then(({ data }) => {
-        const races: Record<string, string> = {};
-        const alignments: Record<string, string> = {};
-        for (const r of data.races || []) races[r.id] = r.name;
-        for (const a of data.alignments || []) alignments[a.id] = a.name;
-        if (!cancelled) setLabels({ races, alignments });
-      })
-      .catch(() => {
-        /* fall back to raw ids on the cards */
-      });
     return () => {
       cancelled = true;
     };

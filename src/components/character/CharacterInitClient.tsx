@@ -9,6 +9,7 @@ import type { CharacterInitData } from "@/training/characterInitData";
 import {
   alignmentQuestionsFor,
   definingExperienceFromQuiz,
+  pickDefiningExperienceForAlignment,
   resolveAlignmentFromQuiz,
   type AlignQuizAnswer,
   type DefiningExperience,
@@ -22,7 +23,7 @@ import {
 import type { Character } from "@/training/types";
 
 /** Debug: show quiz option weights under each answer. */
-const DEBUG_SHOW_WEIGHTS = true;
+const DEBUG_SHOW_WEIGHTS = process.env.NODE_ENV !== "production";
 
 type Screen =
   | "entry"
@@ -242,59 +243,29 @@ export function CharacterInitClient({ init }: { init: CharacterInitData }) {
     }
   };
 
-  const confirmAlignment = async (alignmentId: string) => {
-    setDraft((d) => ({
-      ...d,
-      alignment: { ...d.alignment, alignmentId },
-    }));
-
+  const confirmAlignment = (alignmentId: string) => {
     if (draft.alignment.tookQuiz) {
+      setDraft((d) => ({
+        ...d,
+        alignment: { ...d.alignment, alignmentId },
+      }));
       setUi((u) => ({ ...u, screen: "align-confirm" }));
       return;
     }
 
-    setBusy(true);
-    try {
-      const res = await fetch("/api/defining-experience", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          alignmentId,
-          raceId: draft.raceId,
-        }),
-      });
-      const data = (await res.json()) as {
-        definingExperience?: DefiningExperience | null;
-        error?: string;
-      };
-      if (!res.ok) {
-        throw new Error(data.error || "Could not pick defining experience");
-      }
-      setDraft((d) => ({
-        ...d,
-        alignment: {
-          ...d.alignment,
-          alignmentId,
-          definingExperience: data.definingExperience ?? null,
-        },
-      }));
-    } catch (err) {
-      console.warn("Defining experience pick failed.", err);
-      setDraft((d) => ({
-        ...d,
-        alignment: {
-          ...d.alignment,
-          alignmentId,
-          definingExperience: null,
-        },
-      }));
-      showToast(
-        err instanceof Error ? err.message : "Defining experience failed",
-      );
-    } finally {
-      setBusy(false);
-      setUi((u) => ({ ...u, screen: "align-confirm" }));
-    }
+    const definingExperience = pickDefiningExperienceForAlignment(
+      alignmentId,
+      draft.raceId,
+    );
+    setDraft((d) => ({
+      ...d,
+      alignment: {
+        ...d.alignment,
+        alignmentId,
+        definingExperience,
+      },
+    }));
+    setUi((u) => ({ ...u, screen: "align-confirm" }));
   };
 
   const onBack = () => {

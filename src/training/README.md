@@ -41,9 +41,11 @@ roster when returning to town.
 | `POST` | `/api/training/view` | `{ character, ui }` | `{ character, ui, view }` |
 | `POST` | `/api/training/action` | `{ character, ui, action }` | `{ character, ui, view, toast?, jobRunning?, navigate? }` |
 | `POST` | `/api/companions` | `{ raceId, alignmentId, … }` | `{ companion }` |
-| `GET` | `/api/character-init` | — | Creation catalog (races, alignments, questions, tracks) |
-| `POST` | `/api/defining-experience` | `{ alignmentId, raceId? }` | `{ definingExperience }` — direct alignment pick |
 | `POST` | `/api/names` | `{ raceId, gender?, taken? }` | `{ name, gender, race, seed }` |
+
+Creation catalog comes from `getCharacterInitData()` on the `/character` server
+page. Direct alignment pick uses `pickDefiningExperienceForAlignment` in the
+client (`/api/companions` still fills experience if omitted).
 
 ## Module map
 

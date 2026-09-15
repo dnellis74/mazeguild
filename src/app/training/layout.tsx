@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import { Share_Tech_Mono } from "next/font/google";
-
-const crt = Share_Tech_Mono({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-crt",
-});
+import { CrtShell } from "@/components/shell/CrtShell";
 
 export const metadata: Metadata = {
   title: "Training · guildmaze",
@@ -13,20 +7,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * Theme: CRT amber to match the maze GameClient.
- * Sheet / World use character-creation.css; Quest mounts GameClient under
- * `.stage-quest` / `.quest-adventure` (scanlines come from GameClient there).
+ * Theme: CRT amber to match town / character. Sheet and World use
+ * character-creation.css via CrtShell. Quest lives at `/quest` with its own page.
  */
 export default function TrainingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className={`${crt.variable} ${crt.className} training-page`}>
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/character-creation.css" />
-      {children}
-    </div>
-  );
+  return <CrtShell>{children}</CrtShell>;
 }

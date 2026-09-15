@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CrtShell } from "@/components/shell/CrtShell";
 import { QuestPageClient } from "./QuestPageClient";
 
 export const metadata: Metadata = {
@@ -17,10 +18,10 @@ function MazeBoot() {
 
 export default function QuestPage() {
   return (
-    <div className="training-page bg-[#050301] text-amber-300">
+    <CrtShell className="bg-[#050301] text-amber-300">
       <Suspense fallback={<MazeBoot />}>
         <QuestPageClient />
       </Suspense>
-    </div>
+    </CrtShell>
   );
 }

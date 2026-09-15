@@ -195,10 +195,6 @@ export function TrainingClient() {
           "{id}",
           encodeURIComponent(entryId),
         );
-        if (href.endsWith(".html") || href.includes(".html?")) {
-          window.location.href = href;
-          return;
-        }
         router.push(href);
         return;
       }

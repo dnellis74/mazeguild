@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import { Share_Tech_Mono } from "next/font/google";
+import { CrtShell } from "@/components/shell/CrtShell";
 import { TownSquareClient } from "@/components/town/TownSquareClient";
-
-const crt = Share_Tech_Mono({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-crt",
-});
+import { getCatalog } from "@/training/catalog";
 
 export const metadata: Metadata = {
   title: "Town Square · guildmaze",
@@ -14,11 +9,15 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
+  const catalog = getCatalog();
+  const races: Record<string, string> = {};
+  const alignments: Record<string, string> = {};
+  for (const r of catalog.races) races[r.id] = r.name;
+  for (const a of catalog.alignments) alignments[a.id] = a.name;
+
   return (
-    <div className={`${crt.variable} ${crt.className} training-page`}>
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="stylesheet" href="/css/character-creation.css" />
-      <TownSquareClient />
-    </div>
+    <CrtShell>
+      <TownSquareClient labels={{ races, alignments }} />
+    </CrtShell>
   );
 }
