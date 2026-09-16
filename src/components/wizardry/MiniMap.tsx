@@ -1,7 +1,11 @@
 import type { DungeonResult } from "@/sim/types";
 import type { ReplayFrame } from "@/replay/project";
 
-const WALL = "#AA5500";
+const WALL = "#AAAAAA";
+const HERE = "#FFFF55";
+const EXIT = "#55FF55";
+const ENTRANCE = "#55FFFF";
+const FLOOR = "#AA5500";
 
 export function MiniMap({
   maze,
@@ -29,12 +33,12 @@ export function MiniMap({
           const isExit = maze.exit.x === x && maze.exit.y === y;
           const isEnt = maze.entrance.x === x && maze.entrance.y === y;
           const fill = isHere
-            ? "#FFFF55"
+            ? HERE
             : isExit
-              ? "#55FF55"
+              ? EXIT
               : isEnt
-                ? "#55FFFF"
-                : "#555555";
+                ? ENTRANCE
+                : FLOOR;
           const px = x * cell;
           const py = y * cell;
           return (

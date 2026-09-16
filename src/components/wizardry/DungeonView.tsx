@@ -3,8 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dir, DungeonResult, Pos } from "@/sim/types";
 
-const EGA_YELLOW = "#FFFF55";
-const DIM = "#AA5500";
+/** Pool of Radiance–style EGA maze fills */
+const CEILING = "#FFFFFF";
+const WALL = "#AAAAAA";
+const FLOOR = "#AA5500";
+const OUTLINE = "#000000";
+const FIGHT = "#55FFFF";
+
 const MONSTER_SPRITES: Record<string, string> = {
   Goblin: "/monsters/goblin-color.png",
   Hobgoblin: "/monsters/hobgoblin-color.png",
@@ -53,6 +58,152 @@ function rect(depth: number, w: number, h: number) {
   const ix = t * w * 0.42;
   const iy = t * h * 0.42;
   return { x: ix, y: iy, w: w - ix * 2, h: h - iy * 2 };
+}
+
+type R = ReturnType<typeof rect>;
+
+function fillPoly(
+  ctx: CanvasRenderingContext2D,
+  pts: Array<[number, number]>,
+  fill: string,
+) {
+  if (pts.length < 3) return;
+  ctx.beginPath();
+  ctx.moveTo(pts[0]![0], pts[0]![1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i]![0], pts[i]![1]);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+}
+
+/** Left side-passage: floor/ceiling wedge + far wall face (not a flat door). */
+function drawLeftBranch(ctx: CanvasRenderingContext2D, a: R, b: R) {
+  // How far the branch pushes toward the screen edge (perspective inset mirrored out).
+  const inset = b.x - a.x;
+  const outN = Math.max(0, a.x - inset);
+  const outF = Math.max(0, a.x - inset * 0.75);
+
+  // Branch ceiling
+  fillPoly(
+    ctx,
+    [
+      [outN, a.y],
+      [a.x, a.y],
+      [b.x, b.y],
+      [outF, b.y],
+    ],
+    CEILING,
+  );
+  // Branch floor
+  fillPoly(
+    ctx,
+    [
+      [outN, a.y + a.h],
+      [a.x, a.y + a.h],
+      [b.x, b.y + b.h],
+      [outF, b.y + b.h],
+    ],
+    FLOOR,
+  );
+  // Outer wall of the side corridor (facing back toward the main hall)
+  if (outN < a.x - 0.5 || outF < b.x - 0.5) {
+    fillPoly(
+      ctx,
+      [
+        [outN, a.y],
+        [outF, b.y],
+        [outF, b.y + b.h],
+        [outN, a.y + a.h],
+      ],
+      WALL,
+    );
+  }
+  // Far face of the branch (what you see looking into the side passage)
+  fillPoly(
+    ctx,
+    [
+      [outF, b.y],
+      [b.x, b.y],
+      [b.x, b.y + b.h],
+      [outF, b.y + b.h],
+    ],
+    WALL,
+  );
+  // Near jamb (thin wall lip on the main corridor)
+  const jamb = Math.max(1.5, inset * 0.15);
+  fillPoly(
+    ctx,
+    [
+      [a.x, a.y],
+      [a.x + jamb, a.y + (b.y - a.y) * 0.08],
+      [a.x + jamb, a.y + a.h - (a.y + a.h - (b.y + b.h)) * 0.08],
+      [a.x, a.y + a.h],
+    ],
+    WALL,
+  );
+}
+
+/** Right side-passage (mirror of left). */
+function drawRightBranch(ctx: CanvasRenderingContext2D, a: R, b: R) {
+  const aR = a.x + a.w;
+  const bR = b.x + b.w;
+  const inset = aR - bR;
+  const outN = aR + inset;
+  const outF = bR + inset * 0.75;
+
+  fillPoly(
+    ctx,
+    [
+      [aR, a.y],
+      [outN, a.y],
+      [outF, b.y],
+      [bR, b.y],
+    ],
+    CEILING,
+  );
+  fillPoly(
+    ctx,
+    [
+      [aR, a.y + a.h],
+      [outN, a.y + a.h],
+      [outF, b.y + b.h],
+      [bR, b.y + b.h],
+    ],
+    FLOOR,
+  );
+  fillPoly(
+    ctx,
+    [
+      [outN, a.y],
+      [outF, b.y],
+      [outF, b.y + b.h],
+      [outN, a.y + a.h],
+    ],
+    WALL,
+  );
+  fillPoly(
+    ctx,
+    [
+      [bR, b.y],
+      [outF, b.y],
+      [outF, b.y + b.h],
+      [bR, b.y + b.h],
+    ],
+    WALL,
+  );
+  const jamb = Math.max(1.5, inset * 0.15);
+  fillPoly(
+    ctx,
+    [
+      [aR, a.y],
+      [aR - jamb, a.y + (b.y - a.y) * 0.08],
+      [aR - jamb, a.y + a.h - (a.y + a.h - (b.y + b.h)) * 0.08],
+      [aR, a.y + a.h],
+    ],
+    WALL,
+  );
 }
 
 function monsterSpriteKey(name: string): string | null {
@@ -123,10 +274,10 @@ export function DungeonView({
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = OUTLINE;
       ctx.fillRect(0, 0, cssW, cssH);
-      ctx.strokeStyle = EGA_YELLOW;
-      ctx.lineWidth = Math.max(1.25, cssW / 280);
+      ctx.lineWidth = Math.max(1, cssW / 320);
+      ctx.lineJoin = "miter";
 
       const depths: boolean[] = [];
       for (let d = 0; d < 6; d++) {
@@ -138,47 +289,78 @@ export function DungeonView({
       let blockedAt = depths.findIndex(Boolean);
       if (blockedAt === -1) blockedAt = depths.length - 1;
 
-      for (let d = 0; d <= blockedAt; d++) {
+      // Far → near so nearer planes cover seams (painter's algorithm).
+      for (let d = blockedAt; d >= 0; d--) {
         const cell = ahead(pos, facing, d);
-        const a = rect(d, cssW, cssH);
-        const b = rect(d + 1, cssW, cssH);
+        const a: R = rect(d, cssW, cssH);
+        const b: R = rect(d + 1, cssW, cssH);
         const leftWall = hasWall(maze, cell, leftOf(facing));
         const rightWall = hasWall(maze, cell, rightOf(facing));
+        const forwardWall =
+          hasWall(maze, cell, facing) || d === blockedAt;
 
-        ctx.beginPath();
+        fillPoly(
+          ctx,
+          [
+            [a.x, a.y],
+            [a.x + a.w, a.y],
+            [b.x + b.w, b.y],
+            [b.x, b.y],
+          ],
+          CEILING,
+        );
+        fillPoly(
+          ctx,
+          [
+            [a.x, a.y + a.h],
+            [a.x + a.w, a.y + a.h],
+            [b.x + b.w, b.y + b.h],
+            [b.x, b.y + b.h],
+          ],
+          FLOOR,
+        );
+
         if (leftWall) {
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.moveTo(a.x, a.y + a.h);
-          ctx.lineTo(b.x, b.y + b.h);
+          fillPoly(
+            ctx,
+            [
+              [a.x, a.y],
+              [b.x, b.y],
+              [b.x, b.y + b.h],
+              [a.x, a.y + a.h],
+            ],
+            WALL,
+          );
         } else {
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(a.x, a.y + a.h);
-          ctx.moveTo(a.x, b.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.lineTo(b.x, b.y + b.h);
-          ctx.lineTo(a.x, b.y + b.h);
+          drawLeftBranch(ctx, a, b);
         }
-        if (rightWall) {
-          ctx.moveTo(a.x + a.w, a.y);
-          ctx.lineTo(b.x + b.w, b.y);
-          ctx.moveTo(a.x + a.w, a.y + a.h);
-          ctx.lineTo(b.x + b.w, b.y + b.h);
-        } else {
-          ctx.moveTo(a.x + a.w, a.y);
-          ctx.lineTo(a.x + a.w, a.y + a.h);
-          ctx.moveTo(a.x + a.w, b.y);
-          ctx.lineTo(b.x + b.w, b.y);
-          ctx.lineTo(b.x + b.w, b.y + b.h);
-          ctx.lineTo(a.x + a.w, b.y + b.h);
-        }
-        ctx.stroke();
 
-        if (hasWall(maze, cell, facing) || d === blockedAt) {
-          ctx.strokeStyle = d === 0 ? EGA_YELLOW : DIM;
-          ctx.strokeRect(b.x, b.y, b.w, b.h);
-          ctx.strokeStyle = EGA_YELLOW;
-          break;
+        if (rightWall) {
+          fillPoly(
+            ctx,
+            [
+              [a.x + a.w, a.y],
+              [b.x + b.w, b.y],
+              [b.x + b.w, b.y + b.h],
+              [a.x + a.w, a.y + a.h],
+            ],
+            WALL,
+          );
+        } else {
+          drawRightBranch(ctx, a, b);
+        }
+
+        if (forwardWall) {
+          fillPoly(
+            ctx,
+            [
+              [b.x, b.y],
+              [b.x + b.w, b.y],
+              [b.x + b.w, b.y + b.h],
+              [b.x, b.y + b.h],
+            ],
+            WALL,
+          );
         }
       }
 
@@ -214,14 +396,13 @@ export function DungeonView({
             sizes.reduce((sum, s) => sum + s.w, 0) + (count - 1) * gap;
           const floorY = cssH * 0.94;
           let x = (cssW - total) / 2;
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
+          ctx.imageSmoothingEnabled = false;
           for (const { sprite, w, h } of sizes) {
             ctx.drawImage(sprite, x, floorY - h, w, h);
             x += w + gap;
           }
         }
-        ctx.fillStyle = EGA_YELLOW;
+        ctx.fillStyle = FIGHT;
         ctx.font = `600 ${Math.max(11, Math.round(cssW / 28))}px ui-monospace, monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
