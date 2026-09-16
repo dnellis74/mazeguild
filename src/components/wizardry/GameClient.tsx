@@ -118,7 +118,7 @@ export function GameClient({
   }
 
   return (
-    <div className="crt flex h-full min-h-0 max-h-full w-full flex-col overflow-hidden bg-ega-black pb-[max(0.5rem,var(--safe-bottom))] text-ega-light-gray">
+    <div className="flex h-full min-h-0 max-h-full w-full flex-col overflow-hidden bg-ega-black pb-[max(0.5rem,var(--safe-bottom))] text-ega-light-gray">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-ega-dark-gray pb-2 select-none">
         <div className="min-w-0">
           <p className="hidden font-mono text-[10px] tracking-[0.28em] text-ega-cyan lg:block">
